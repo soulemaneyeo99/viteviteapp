@@ -1,0 +1,261 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --yellow: #FFD43B;
+    --gray: #D9D9D9;
+    --white: #FFFFFF;
+    --dark: #1F2937;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--yellow);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #FFC107;
+  }
+}
+
+@layer components {
+  /* Custom utilities */
+  .card {
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    transition: box-shadow 0.3s ease;
+  }
+
+  .card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  }
+
+  .btn-primary {
+    background-color: #FFD43B;
+    color: #1F2937;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    background-color: #FFC107;
+  }
+
+  .btn-secondary {
+    background-color: #E5E7EB;
+    color: #1F2937;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-secondary:hover {
+    background-color: #D1D5DB;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .badge-success {
+    background-color: #DCFCE7;
+    color: #166534;
+  }
+
+  .badge-warning {
+    background-color: #FEF3C7;
+    color: #92400E;
+  }
+
+  .badge-danger {
+    background-color: #FEE2E2;
+    color: #991B1B;
+  }
+
+  .badge-info {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+  }
+
+  /* Status indicators */
+  .status-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 9999px;
+    display: inline-block;
+  }
+
+  .status-open {
+    background-color: #10B981;
+  }
+
+  .status-closed {
+    background-color: #EF4444;
+  }
+
+  .status-paused {
+    background-color: #F59E0B;
+  }
+
+  /* Affluence levels */
+  .affluence-low {
+    color: #059669;
+    background-color: #F0FDF4;
+  }
+
+  .affluence-moderate {
+    color: #D97706;
+    background-color: #FFFBEB;
+  }
+
+  .affluence-high {
+    color: #EA580C;
+    background-color: #FFF7ED;
+  }
+
+  .affluence-very-high {
+    color: #DC2626;
+    background-color: #FEF2F2;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    border: 4px solid #E5E7EB;
+    border-top-color: #FFD43B;
+    border-radius: 9999px;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@layer utilities {
+  /* Animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes gradient {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-slideIn {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient 8s ease infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spin 3s linear infinite;
+  }
+
+  /* Utility classes */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .shadow-3xl {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
