@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { X, Send, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Message {
   id: string;
@@ -17,7 +19,7 @@ export default function ChatBotPro() {
     {
       id: '1',
       role: 'assistant',
-      content: 'Bonjour ! 👋 Je suis l\'assistant ViteviteApp propulsé par l\'IA.\n\nComment puis-je vous aider aujourd\'hui ?',
+      content: 'Bonjour ! 👋 Je suis l\'assistant **ViteviteApp** propulsé par l\'IA Gemini.\n\nComment puis-je vous aider aujourd\'hui ?',
       timestamp: new Date()
     }
   ]);
@@ -32,6 +34,7 @@ export default function ChatBotPro() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
+  // ✅ CORRECTION: Auto-scroll optimisé
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -41,6 +44,33 @@ export default function ChatBotPro() {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [isOpen]);
+
+  // ✅ AJOUT: Sauvegarde conversation dans sessionStorage
+  useEffect(() => {
+    if (messages.length > 1) {
+      try {
+        sessionStorage.setItem('chatbot_messages', JSON.stringify(messages.slice(-10)));
+      } catch (e) {
+        console.warn('SessionStorage non disponible');
+      }
+    }
+  }, [messages]);
+
+  // ✅ AJOUT: Récupération conversation au chargement
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('chatbot_messages');
+      if (saved) {
+        const parsedMessages = JSON.parse(saved);
+        setMessages(parsedMessages.map((m: any) => ({
+          ...m,
+          timestamp: new Date(m.timestamp)
+        })));
+      }
+    } catch (e) {
+      console.warn('Impossible de charger l\'historique');
+    }
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -68,7 +98,7 @@ export default function ChatBotPro() {
           : msg
       ));
       
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 30)); // ✅ Plus fluide
     }
 
     setMessages(prev => prev.map(msg => 
@@ -98,16 +128,26 @@ export default function ChatBotPro() {
     setIsTyping(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/ai/chat', {
+      // ✅ CORRECTION: URL API dynamique
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      
+      const response = await fetch(`${API_URL}/api/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           message: trimmedInput,
-          context: { previous_messages: messages.slice(-4) }
+          context: { 
+            previous_messages: messages.slice(-4).map(m => ({
+              role: m.role,
+              content: m.content
+            }))
+          }
         })
       });
 
-      if (!response.ok) throw new Error('Erreur API');
+      if (!response.ok) {
+        throw new Error(`Erreur API: ${response.status}`);
+      }
 
       const data = await response.json();
       await streamMessage(data.response);
@@ -157,7 +197,7 @@ export default function ChatBotPro() {
       setIsRecording(true);
     } catch (error) {
       console.error('Erreur microphone:', error);
-      alert('Impossible d\'accéder au microphone');
+      alert('Impossible d\'accéder au microphone. Vérifiez les permissions.');
     }
   };
 
@@ -170,15 +210,18 @@ export default function ChatBotPro() {
 
   const transcribeAudio = async (audioBlob: Blob) => {
     try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       const formData = new FormData();
       formData.append('audio', audioBlob);
 
-      const response = await fetch('http://localhost:8000/api/ai/transcribe', {
+      const response = await fetch(`${API_URL}/api/ai/transcribe`, {
         method: 'POST',
         body: formData
       });
 
-      if (!response.ok) throw new Error('Erreur transcription');
+      if (!response.ok) {
+        throw new Error('Erreur transcription');
+      }
 
       const data = await response.json();
       setInputValue(data.text);
@@ -186,6 +229,7 @@ export default function ChatBotPro() {
       
     } catch (error) {
       console.error('Erreur transcription:', error);
+      alert('Transcription impossible. Service non configuré.');
     }
   };
 
@@ -195,7 +239,9 @@ export default function ChatBotPro() {
     try {
       setIsSpeaking(true);
 
-      const response = await fetch('http://localhost:8000/api/ai/speak', {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      
+      const response = await fetch(`${API_URL}/api/ai/speak`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -204,7 +250,9 @@ export default function ChatBotPro() {
         })
       });
 
-      if (!response.ok) throw new Error('Erreur TTS');
+      if (!response.ok) {
+        throw new Error('Erreur TTS');
+      }
 
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
@@ -232,14 +280,6 @@ export default function ChatBotPro() {
     setAudioEnabled(prev => !prev);
   };
 
-  const closeChat = () => {
-    setIsOpen(false);
-  };
-
-  const openChat = () => {
-    setIsOpen(true);
-  };
-
   const quickQuestions = [
     "Comment prendre un ticket ?",
     "Quels sont les horaires ?",
@@ -247,41 +287,13 @@ export default function ChatBotPro() {
     "Comment fonctionne la marketplace ?"
   ];
 
-  const renderMessageContent = (content: string) => {
-    return content.split('\n').map((line, i) => {
-      const boldRegex = /\*\*(.*?)\*\*/g;
-      const parts = [];
-      let lastIndex = 0;
-      let match;
-
-      while ((match = boldRegex.exec(line)) !== null) {
-        if (match.index > lastIndex) {
-          parts.push(line.substring(lastIndex, match.index));
-        }
-        parts.push(<strong key={match.index}>{match[1]}</strong>);
-        lastIndex = match.index + match[0].length;
-      }
-
-      if (lastIndex < line.length) {
-        parts.push(line.substring(lastIndex));
-      }
-
-      return (
-        <span key={i}>
-          {parts.length > 0 ? parts : line}
-          {i < content.split('\n').length - 1 && <br />}
-        </span>
-      );
-    });
-  };
-
   return (
     <div className="fixed z-50">
       {/* Floating Button */}
       {!isOpen && (
         <button
           type="button"
-          onClick={openChat}
+          onClick={() => setIsOpen(true)}
           className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-full shadow-2xl hover:scale-110 transition-transform duration-200 flex items-center justify-center"
           aria-label="Ouvrir le chat"
         >
@@ -292,30 +304,30 @@ export default function ChatBotPro() {
         </button>
       )}
 
-      {/* Chat Window */}
+      {/* Chat Window - ✅ CORRECTION POSITIONNEMENT */}
       {isOpen && (
         <>
           {/* Backdrop mobile */}
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 lg:hidden"
-            onClick={closeChat}
+            className="fixed inset-0 bg-black bg-opacity-50 lg:hidden z-40"
+            onClick={() => setIsOpen(false)}
           />
           
-          {/* Chat container */}
-          <div className="fixed bottom-4 right-4 w-[calc(100vw-2rem)] lg:w-[420px] h-[calc(100vh-2rem)] lg:h-[700px] max-h-[700px]">
-            <div className="bg-white rounded-2xl shadow-2xl h-full flex flex-col overflow-hidden">
+          {/* ✅ Container chat FIXÉ avec positionnement responsive */}
+          <div className="fixed bottom-0 right-0 left-0 lg:bottom-4 lg:right-4 lg:left-auto lg:w-[420px] z-50">
+            <div className="bg-white rounded-t-2xl lg:rounded-2xl shadow-2xl h-[calc(100vh-60px)] lg:h-[700px] max-h-[700px] flex flex-col overflow-hidden">
               {/* Header */}
               <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 shrink-0">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-3 min-w-0 flex-1">
                     <div className="w-10 h-10 bg-white bg-opacity-20 backdrop-blur rounded-full flex items-center justify-center shrink-0">
                       <span className="text-xl">🤖</span>
                     </div>
-                    <div className="min-w-0">
-                      <h3 className="font-bold text-sm">Assistant ViteviteApp</h3>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-sm truncate">Assistant ViteviteApp</h3>
                       <div className="flex items-center space-x-2 text-xs">
                         <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse shrink-0"></span>
-                        <span className="truncate">En ligne • Gemini Pro</span>
+                        <span className="truncate">En ligne • Gemini Flash</span>
                       </div>
                     </div>
                   </div>
@@ -330,7 +342,7 @@ export default function ChatBotPro() {
                     </button>
                     <button
                       type="button"
-                      onClick={closeChat}
+                      onClick={() => setIsOpen(false)}
                       className="w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-colors"
                       aria-label="Fermer"
                     >
@@ -340,7 +352,7 @@ export default function ChatBotPro() {
                 </div>
               </div>
 
-              {/* Messages */}
+              {/* Messages - ✅ CORRECTION OVERFLOW */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
                 {messages.map((message) => (
                   <div
@@ -359,8 +371,15 @@ export default function ChatBotPro() {
                         </div>
                       )}
                       
-                      <div className="text-sm leading-relaxed">
-                        {renderMessageContent(message.content)}
+                      {/* ✅ AJOUT: Rendu Markdown */}
+                      <div className="text-sm leading-relaxed prose prose-sm max-w-none">
+                        {message.role === 'assistant' ? (
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {message.content}
+                          </ReactMarkdown>
+                        ) : (
+                          <p>{message.content}</p>
+                        )}
                       </div>
                       
                       {message.isStreaming && (
@@ -458,7 +477,7 @@ export default function ChatBotPro() {
                 )}
                 
                 <div className="text-xs text-gray-400 mt-2 text-center">
-                  viteviteapp ✨
+                  Propulsé par Gemini Flash ✨
                 </div>
               </div>
             </div>
