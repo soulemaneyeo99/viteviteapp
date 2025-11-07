@@ -1,12 +1,63 @@
 import React, { useState } from 'react';
 import { BarChart3, TrendingUp, TrendingDown, Users, Clock, MapPin, Zap, Calendar, Brain, Target, AlertTriangle, CheckCircle2, Activity, PieChart } from 'lucide-react';
 
+type AIInsight = {
+  id: number;
+  type: string;
+  icon: string;
+  title: string;
+  message: string;
+  confidence: number;
+  action: string;
+  priority: 'high' | 'medium' | 'low';
+};
+
+type Service = {
+  name: string;
+  trend: 'up' | 'down' | 'stable';
+  change: number;
+  status: 'improving' | 'stable' | 'worsening';
+};
+
+type Recommendation = {
+  id?: number;
+  title: string;
+  location: string;
+  reason: string;
+  impact: string;
+  cost: 'Faible' | 'Moyen' | 'Élevé';
+  priority: 'high' | 'medium' | 'low';
+};
+
+type MetricCardProps = {
+  icon: React.ReactElement;
+  value: string | number;
+  label: string;
+  color: string;
+  trend?: 'improving' | string;
+  suffix?: string;
+};
+
+type HourlyBarProps = {
+  data: { hour: string; tickets: number; wait: number };
+  maxTickets: number;
+  maxWait: number;
+};
+
+type BusinessInsightProps = {
+  icon: string;
+  title: string;
+  value: string;
+  change: string;
+  period: string;
+};
+
 const ViteviteAnalytics = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('today');
   const [selectedMetric, setSelectedMetric] = useState('all');
 
   // Données de démonstration
-  const aiInsights = [
+  const aiInsights: AIInsight[] = [
     {
       id: 1,
       type: 'prediction',
@@ -48,7 +99,7 @@ const ViteviteAnalytics = () => {
     aiAccuracy: 91
   };
 
-  const serviceTrends = [
+  const serviceTrends: Service[] = [
     { name: 'Mairie Cocody', trend: 'down', change: -12, status: 'improving' },
     { name: 'Banque Atlantique', trend: 'stable', change: 2, status: 'stable' },
     { name: 'CHU Treichville', trend: 'up', change: 18, status: 'worsening' },
@@ -68,7 +119,7 @@ const ViteviteAnalytics = () => {
     { hour: '17h', tickets: 78, wait: 25 }
   ];
 
-  const recommendations = [
+  const recommendations: Recommendation[] = [
     {
       id: 1,
       title: 'Ouvrir nouveau point de service',
@@ -305,7 +356,7 @@ const ViteviteAnalytics = () => {
   );
 };
 
-const MetricCard = ({ icon, value, label, color, trend, suffix = '' }) => (
+const MetricCard = ({ icon, value, label, color, trend, suffix = '' }: MetricCardProps) => (
   <div className={`bg-gradient-to-br ${color} rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all`}>
     <div className="mb-4">
       {React.cloneElement(icon, { className: 'w-8 h-8' })}
@@ -323,8 +374,8 @@ const MetricCard = ({ icon, value, label, color, trend, suffix = '' }) => (
   </div>
 );
 
-const AIInsightCard = ({ insight }) => {
-  const priorityColors = {
+const AIInsightCard = ({ insight }: { insight: AIInsight }) => {
+  const priorityColors: Record<AIInsight['priority'], string> = {
     high: 'from-red-500 to-pink-600',
     medium: 'from-yellow-500 to-orange-600',
     low: 'from-blue-500 to-indigo-600'
@@ -358,7 +409,7 @@ const AIInsightCard = ({ insight }) => {
   );
 };
 
-const HourlyBar = ({ data, maxTickets, maxWait }) => {
+const HourlyBar = ({ data, maxTickets, maxWait }: HourlyBarProps) => {
   const ticketWidth = (data.tickets / maxTickets) * 100;
   const waitWidth = (data.wait / maxWait) * 100;
 
@@ -393,14 +444,14 @@ const HourlyBar = ({ data, maxTickets, maxWait }) => {
   );
 };
 
-const ServiceTrendRow = ({ service }) => {
+const ServiceTrendRow = ({ service }: { service: Service }) => {
   const trendIcons = {
     up: { icon: <TrendingUp className="w-5 h-5" />, color: 'text-red-600', bg: 'bg-red-100' },
     down: { icon: <TrendingDown className="w-5 h-5" />, color: 'text-green-600', bg: 'bg-green-100' },
     stable: { icon: <Activity className="w-5 h-5" />, color: 'text-blue-600', bg: 'bg-blue-100' }
   };
 
-  const statusColors = {
+  const statusColors: Record<Service['status'], string> = {
     improving: 'bg-green-100 text-green-800',
     stable: 'bg-blue-100 text-blue-800',
     worsening: 'bg-red-100 text-red-800'
@@ -431,17 +482,17 @@ const ServiceTrendRow = ({ service }) => {
   );
 };
 
-const RecommendationCard = ({ recommendation }) => {
-  const priorityBadge = {
+const RecommendationCard = ({ recommendation }: { recommendation: Recommendation }) => {
+  const priorityBadge: Record<Recommendation['priority'], { color: string; label: string }> = {
     high: { color: 'bg-red-100 text-red-800', label: '🔴 Haute' },
     medium: { color: 'bg-yellow-100 text-yellow-800', label: '🟡 Moyenne' },
     low: { color: 'bg-blue-100 text-blue-800', label: '🔵 Basse' }
   };
 
-  const costBadge = {
-    'Faible': 'bg-green-100 text-green-800',
-    'Moyen': 'bg-yellow-100 text-yellow-800',
-    'Élevé': 'bg-red-100 text-red-800'
+  const costBadge: Record<Recommendation['cost'], string> = {
+    Faible: 'bg-green-100 text-green-800',
+    Moyen: 'bg-yellow-100 text-yellow-800',
+    Élevé: 'bg-red-100 text-red-800'
   };
 
   const priority = priorityBadge[recommendation.priority];
@@ -481,7 +532,7 @@ const RecommendationCard = ({ recommendation }) => {
   );
 };
 
-const BusinessInsight = ({ icon, title, value, change, period }) => (
+const BusinessInsight = ({ icon, title, value, change, period }: BusinessInsightProps) => (
   <div className="bg-white/10 backdrop-blur-lg border-2 border-white/20 rounded-2xl p-6">
     <div className="text-5xl mb-4">{icon}</div>
     <h3 className="text-lg font-semibold mb-2 opacity-90">{title}</h3>
