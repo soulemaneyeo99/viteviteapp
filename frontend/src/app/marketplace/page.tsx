@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { ShoppingCart, Package, Truck, CreditCard, Clock, Star, Heart, Filter, Search, ChevronRight, Tag, Zap } from 'lucide-react';
 
+type CartItem = typeof products[number] & { quantity: number };
+
 const ViteviteMarketplace = () => {
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -114,16 +116,32 @@ const ViteviteMarketplace = () => {
     return matchesCategory && matchesSearch;
   });
 
-  const addToCart = (product) => {
-    const existing = cart.find(item => item.id === product.id);
+interface Product {
+    id: number;
+    name: string;
+    category: string;
+    price: number;
+    unit: string;
+    image: string;
+    seller: string;
+    rating: number;
+    reviews: number;
+    delivery: string;
+    stock: number;
+    discount: number;
+    featured: boolean;
+}
+
+const addToCart = (product: Product) => {
+    const existing: CartItem | undefined = cart.find(item => item.id === product.id);
     if (existing) {
-      setCart(cart.map(item =>
-        item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-      ));
+        setCart(cart.map(item =>
+            item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        ));
     } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
+        setCart([...cart, { ...product, quantity: 1 }]);
     }
-  };
+};
 
   const cartTotal = cart.reduce((sum, item) => {
     const finalPrice = item.discount > 0
@@ -315,7 +333,14 @@ const ViteviteMarketplace = () => {
   );
 };
 
-const QuickStat = ({ icon, value, label, color }) => (
+interface QuickStatProps {
+  icon: React.ReactElement;
+  value: string;
+  label: string;
+  color: string;
+}
+
+const QuickStat = ({ icon, value, label, color }: QuickStatProps) => (
   <div className={`bg-gradient-to-br ${color} rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all`}>
     <div className="mb-3">{React.cloneElement(icon, { className: 'w-8 h-8' })}</div>
     <div className="text-3xl font-black mb-1">{value}</div>
@@ -323,7 +348,13 @@ const QuickStat = ({ icon, value, label, color }) => (
   </div>
 );
 
-const ProductCard = ({ product, addToCart, featured = false }) => {
+interface ProductCardProps {
+  product: Product;
+  addToCart: (product: Product) => void;
+  featured?: boolean;
+}
+
+const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart, featured = false }) => {
   const finalPrice = product.discount > 0
     ? product.price * (1 - product.discount / 100)
     : product.price;
