@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useRef, useEffect } from 'react';
 import { X, Send, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -242,6 +244,7 @@ export default function ChatBotPro() {
         <button
           onClick={() => setIsOpen(true)}
           className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-full shadow-2xl hover:scale-110 transition-all z-50 flex items-center justify-center group"
+          aria-label="Ouvrir le chat"
         >
           <span className="text-3xl">💬</span>
           <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold animate-pulse">
@@ -258,10 +261,10 @@ export default function ChatBotPro() {
             onClick={() => setIsOpen(false)}
           />
           
-          <div className="fixed inset-x-4 bottom-4 lg:right-6 lg:bottom-6 lg:left-auto lg:w-[420px] z-50 max-h-[85vh] lg:max-h-[700px] animate-slideIn">
+          <div className="fixed inset-x-4 bottom-4 lg:right-6 lg:bottom-6 lg:left-auto lg:w-[420px] z-50 max-h-[85vh] lg:max-h-[700px]">
             <div className="bg-white rounded-2xl shadow-2xl flex flex-col h-full overflow-hidden">
               {/* Header */}
-              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4">
+              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
@@ -277,15 +280,23 @@ export default function ChatBotPro() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => setAudioEnabled(!audioEnabled)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAudioEnabled(!audioEnabled);
+                      }}
                       className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition"
                       title={audioEnabled ? 'Désactiver audio' : 'Activer audio'}
+                      aria-label={audioEnabled ? 'Désactiver audio' : 'Activer audio'}
                     >
                       {audioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
                     </button>
                     <button
-                      onClick={() => setIsOpen(false)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsOpen(false);
+                      }}
                       className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition"
+                      aria-label="Fermer le chat"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -354,13 +365,14 @@ export default function ChatBotPro() {
 
               {/* Quick Questions */}
               {messages.length <= 2 && (
-                <div className="p-3 bg-white border-t">
+                <div className="p-3 bg-white border-t flex-shrink-0">
                   <div className="text-xs font-semibold text-gray-500 mb-2">Questions rapides :</div>
                   <div className="flex flex-wrap gap-2">
                     {quickQuestions.map((q, idx) => (
                       <button
                         key={idx}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setInputValue(q);
                           setTimeout(() => handleSendMessage(), 100);
                         }}
@@ -374,17 +386,25 @@ export default function ChatBotPro() {
               )}
 
               {/* Input */}
-              <div className="p-4 bg-white border-t">
+              <div className="p-4 bg-white border-t flex-shrink-0">
                 <div className="flex items-center space-x-2">
                   {/* Voice Button */}
                   <button
-                    onClick={isRecording ? stopRecording : startRecording}
-                    className={`p-3 rounded-xl transition-all ${
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isRecording) {
+                        stopRecording();
+                      } else {
+                        startRecording();
+                      }
+                    }}
+                    className={`p-3 rounded-xl transition-all flex-shrink-0 ${
                       isRecording 
                         ? 'bg-red-500 text-white animate-pulse' 
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                     title={isRecording ? 'Arrêter l\'enregistrement' : 'Parler'}
+                    aria-label={isRecording ? 'Arrêter l\'enregistrement' : 'Parler'}
                   >
                     {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                   </button>
@@ -394,16 +414,20 @@ export default function ChatBotPro() {
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyPress}
                     placeholder={isRecording ? 'Enregistrement en cours...' : 'Tapez ou parlez...'}
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
                     disabled={isTyping || isRecording}
                   />
                   
                   <button
-                    onClick={handleSendMessage}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSendMessage();
+                    }}
                     disabled={!inputValue.trim() || isTyping || isRecording}
-                    className="p-3 bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-3 bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                    aria-label="Envoyer le message"
                   >
                     <Send className="w-5 h-5" />
                   </button>
