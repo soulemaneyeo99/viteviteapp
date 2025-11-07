@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { BarChart3, TrendingUp, TrendingDown, Users, Clock, MapPin, Zap, Calendar, Brain, Target, AlertTriangle, CheckCircle2, Activity, PieChart } from 'lucide-react';
 
