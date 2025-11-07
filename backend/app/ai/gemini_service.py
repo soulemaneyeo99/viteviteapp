@@ -1,20 +1,42 @@
+"""
+Fichier: backend/app/ai/gemini_service.py (VERSION AMÉLIORÉE)
+Service IA avec Gemini Pro optimisé pour ViteviteApp
+"""
+
 import google.generativeai as genai
 import os
-from typing import Optional
+from typing import Optional, Dict, Any
 from datetime import datetime
 import json
 from app.models import AffluenceLevel
+import logging
+
+logger = logging.getLogger(__name__)
 
 class GeminiService:
     def __init__(self):
         api_key = os.getenv("GEMINI_API_KEY")
         if api_key:
-            genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel('gemini-pro')
-            self.enabled = True
+            try:
+                genai.configure(api_key=api_key)
+                # Configuration optimisée pour des réponses rapides et pertinentes
+                self.model = genai.GenerativeModel(
+                    'gemini-pro',
+                    generation_config={
+                        'temperature': 0.7,  # Équilibre créativité/précision
+                        'top_p': 0.8,
+                        'top_k': 40,
+                        'max_output_tokens': 500,  # Limiter pour rapidité
+                    }
+                )
+                self.enabled = True
+                logger.info("✅ Gemini AI activé avec succès")
+            except Exception as e:
+                self.enabled = False
+                logger.error(f"❌ Erreur initialisation Gemini: {str(e)}")
         else:
             self.enabled = False
-            print("⚠️  GEMINI_API_KEY non configurée - prédictions IA désactivées")
+            logger.warning("⚠️  GEMINI_API_KEY non configurée - prédictions IA désactivées")
     
     async def predict_wait_time(self, service_data: dict, historical_data: list = None) -> dict:
         """Prédit le temps d'attente pour un service"""
@@ -22,13 +44,11 @@ class GeminiService:
             return self._fallback_prediction(service_data)
         
         try:
-            # Prépare le contexte pour Gemini
             current_time = datetime.now()
             day_of_week = current_time.strftime("%A")
             hour = current_time.hour
             
-            prompt = f"""
-Tu es un assistant IA pour ViteviteApp, une application de gestion de files d'attente en Côte d'Ivoire.
+            prompt = f"""Tu es un assistant IA pour ViteviteApp, une application de gestion de files d'attente en Côte d'Ivoire.
 
 Analyse les données suivantes et prédit le temps d'attente optimal :
 
@@ -77,14 +97,13 @@ Réponds UNIQUEMENT au format JSON suivant (pas de texte avant ou après) :
             }
         
         except Exception as e:
-            print(f"Erreur prédiction Gemini: {e}")
+            logger.error(f"Erreur prédiction Gemini: {str(e)}")
             return self._fallback_prediction(service_data)
     
     def _fallback_prediction(self, service_data: dict) -> dict:
         """Prédiction de secours si Gemini n'est pas disponible"""
         queue_size = service_data['current_queue_size']
         
-        # Logique simple basée sur la taille de la file
         if queue_size == 0:
             predicted_time = 5
             affluence = "faible"
@@ -106,7 +125,6 @@ Réponds UNIQUEMENT au format JSON suivant (pas de texte avant ou après) :
             affluence = "très_élevée"
             recommendation = "Très forte affluence, nous recommandons de revenir plus tard"
         
-        # Meilleur créneau basé sur l'heure actuelle
         current_hour = datetime.now().hour
         if current_hour < 10:
             best_time = "Après 14h"
@@ -125,36 +143,91 @@ Réponds UNIQUEMENT au format JSON suivant (pas de texte avant ou après) :
         }
     
     async def get_chatbot_response(self, user_message: str, context: dict = None) -> str:
-        """Répond aux questions des utilisateurs via chatbot"""
+        """
+        Répond aux questions des utilisateurs via chatbot
+        Optimisé pour des réponses naturelles et contextuelles
+        """
         if not self.enabled:
             return "Je suis désolé, le service de chat IA est temporairement indisponible. Veuillez consulter la FAQ ou contacter le support."
         
         try:
-            prompt = f"""
-Tu es l'assistant virtuel de ViteviteApp, une application ivoirienne de gestion de files d'attente.
+            # Construction du contexte enrichi
+            context_info = ""
+            if context:
+                if 'services' in context:
+                    services_list = ', '.join([s['name'] for s in context['services']])
+                    context_info = f"\n\nSERVICES DISPONIBLES: {services_list}"
+                
+                if 'previous_messages' in context and len(context['previous_messages']) > 0:
+                    context_info += "\n\nHISTORIQUE RÉCENT:"
+                    for msg in context['previous_messages'][-2:]:
+                        context_info += f"\n- {msg['role']}: {msg['content'][:100]}"
+            
+            prompt = f"""Tu es l'assistant virtuel de ViteviteApp, une application ivoirienne innovante de gestion de files d'attente.
 
-CONTEXTE UTILISATEUR :
-{json.dumps(context, indent=2) if context else "Aucun contexte"}
+TES CARACTÉRISTIQUES:
+- Tu es amical, professionnel et efficace
+- Tu utilises un français accessible avec quelques expressions ivoiriennes quand approprié
+- Tu donnes des réponses courtes et claires (maximum 3 phrases)
+- Tu es expert en gestion de files d'attente, services publics ivoiriens, et marketplace
 
-MESSAGE UTILISATEUR : {user_message}
+TU PEUX AIDER AVEC:
+✅ Comment prendre un ticket virtuel
+✅ Trouver les documents nécessaires pour chaque service
+✅ Connaître les horaires et adresses des services
+✅ Éviter les files d'attente (conseils affluence)
+✅ Utiliser la marketplace pour acheter pendant l'attente
+✅ Comprendre le fonctionnement de l'application
 
-Réponds de manière amicale, concise et en français ivoirien si approprié.
-Tu peux aider avec :
-- Questions sur les services disponibles
-- Comment prendre un ticket virtuel
-- Documents nécessaires
-- Horaires d'ouverture
-- Conseils pour éviter l'affluence
+SERVICES PRINCIPAUX:
+- Mairies (État civil, cartes d'identité)
+- Banques (Services bancaires)
+- Hôpitaux (Consultations)
+- Administration (DGI, etc.)
 
-Sois chaleureux et professionnel. Maximum 3 phrases.
+CONTEXTE ACTUEL:{context_info}
+
+MESSAGE UTILISATEUR: {user_message}
+
+Réponds de manière naturelle, chaleureuse et concise. Si tu ne connais pas la réponse exacte, oriente l'utilisateur vers les bonnes ressources.
 """
             
             response = self.model.generate_content(prompt)
-            return response.text.strip()
+            response_text = response.text.strip()
+            
+            # Nettoyage de la réponse
+            if len(response_text) > 500:
+                response_text = response_text[:497] + "..."
+            
+            # Ajout d'émojis contextuels si manquants
+            if not any(emoji in response_text for emoji in ['👋', '✅', '📄', '🎫', '⏰', '📍']):
+                response_text = "💬 " + response_text
+            
+            return response_text
         
         except Exception as e:
-            print(f"Erreur chatbot Gemini: {e}")
-            return "Je rencontre une difficulté technique. Pouvez-vous reformuler votre question ?"
+            logger.error(f"Erreur chatbot Gemini: {str(e)}")
+            
+            # Réponses de secours intelligentes basées sur les mots-clés
+            user_message_lower = user_message.lower()
+            
+            if any(word in user_message_lower for word in ['ticket', 'prendre', 'créer']):
+                return "🎫 Pour prendre un ticket : allez sur 'Services', choisissez votre service, cliquez sur 'Prendre un ticket' et renseignez vos informations. Vous recevrez votre numéro de ticket instantanément !"
+            
+            elif any(word in user_message_lower for word in ['document', 'papier', 'fournir']):
+                return "📄 Les documents requis dépendent du service. Sur chaque page de service, vous trouverez la liste complète des pièces nécessaires. Préparez-les avant de venir pour gagner du temps !"
+            
+            elif any(word in user_message_lower for word in ['horaire', 'heure', 'ouvert']):
+                return "⏰ Les horaires varient selon les services. Consultez la page du service qui vous intéresse pour voir ses horaires d'ouverture précis. La plupart sont ouverts de 8h à 16h en semaine."
+            
+            elif any(word in user_message_lower for word in ['marketplace', 'acheter', 'produit']):
+                return "🛍️ La marketplace vous permet d'acheter matériaux, médicaments et plus encore pendant votre attente ! Parcourez nos produits et commandez en quelques clics. Livraison rapide à Abidjan."
+            
+            elif any(word in user_message_lower for word in ['comment', 'utiliser', 'marche']):
+                return "💡 ViteviteApp est simple : 1) Choisissez votre service 2) Prenez un ticket virtuel 3) Suivez votre position en temps réel 4) Venez quand c'est votre tour ! Plus de longues files d'attente."
+            
+            else:
+                return "Je rencontre une difficulté technique momentanée. Pour toute question, vous pouvez consulter notre FAQ ou nous contacter directement. Comment puis-je vous aider autrement ? 😊"
 
 # Instance globale
 gemini_service = GeminiService()

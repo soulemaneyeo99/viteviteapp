@@ -1,14 +1,64 @@
-import React, { useState } from 'react';
-import { ShoppingCart, Package, Truck, CreditCard, Clock, Star, Heart, Filter, Search, ChevronRight, Tag, Zap } from 'lucide-react';
+'use client';
 
-type CartItem = typeof products[number] & { quantity: number };
+import React, { useState, useEffect } from 'react';
+import { ShoppingCart, Package, Truck, Star, Heart, Filter, Search, Zap, Tag } from 'lucide-react';
 
-const ViteviteMarketplace = () => {
+// ========== TYPES TYPESCRIPT ==========
+interface Product {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+  unit: string;
+  image: string;
+  seller: string;
+  rating: number;
+  reviews: number;
+  delivery: string;
+  stock: number;
+  discount: number;
+  featured: boolean;
+}
+
+interface CartItem extends Product {
+  quantity: number;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+interface QuickStatProps {
+  icon: React.ReactElement;
+  value: string;
+  label: string;
+  color: string;
+}
+
+interface ProductCardProps {
+  product: Product;
+  addToCart: (product: Product) => void;
+  featured?: boolean;
+}
+
+interface BenefitCardProps {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+// ========== COMPOSANT PRINCIPAL ==========
+export default function ViteviteMarketplace() {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const categories = [
+  // Catégories
+  const categories: Category[] = [
     { id: 'all', name: 'Tout', icon: '🎯' },
     { id: 'construction', name: 'Matériaux', icon: '🏗️' },
     { id: 'health', name: 'Santé', icon: '💊' },
@@ -16,7 +66,8 @@ const ViteviteMarketplace = () => {
     { id: 'services', name: 'Services', icon: '⚙️' }
   ];
 
-  const products = [
+  // Produits (version statique pour développement)
+  const staticProducts: Product[] = [
     {
       id: 1,
       name: 'Ciment 50kg',
@@ -109,48 +160,74 @@ const ViteviteMarketplace = () => {
     }
   ];
 
-  const filteredProducts = products.filter(p => {
+  // Chargement des produits
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async (): Promise<void> => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${API_URL}/api/marketplace/products`);
+      
+      if (response.ok) {
+        const data: Product[] = await response.json();
+        setProducts(data);
+      } else {
+        // Fallback vers produits statiques
+        setProducts(staticProducts);
+      }
+    } catch (error) {
+      console.error('Erreur chargement produits:', error);
+      // Fallback vers produits statiques
+      setProducts(staticProducts);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filtrage des produits
+  const filteredProducts: Product[] = products.filter((p: Product) => {
     const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          p.seller.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
-interface Product {
-    id: number;
-    name: string;
-    category: string;
-    price: number;
-    unit: string;
-    image: string;
-    seller: string;
-    rating: number;
-    reviews: number;
-    delivery: string;
-    stock: number;
-    discount: number;
-    featured: boolean;
-}
-
-const addToCart = (product: Product) => {
-    const existing: CartItem | undefined = cart.find(item => item.id === product.id);
+  // Ajout au panier
+  const addToCart = (product: Product): void => {
+    const existing = cart.find((item: CartItem) => item.id === product.id);
+    
     if (existing) {
-        setCart(cart.map(item =>
-            item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        ));
+      setCart(cart.map((item: CartItem) =>
+        item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+      ));
     } else {
-        setCart([...cart, { ...product, quantity: 1 }]);
+      setCart([...cart, { ...product, quantity: 1 }]);
     }
-};
+  };
 
-  const cartTotal = cart.reduce((sum, item) => {
+  // Calcul du total du panier
+  const cartTotal: number = cart.reduce((sum: number, item: CartItem) => {
     const finalPrice = item.discount > 0
       ? item.price * (1 - item.discount / 100)
       : item.price;
     return sum + (finalPrice * item.quantity);
   }, 0);
 
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartCount: number = cart.reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 font-semibold">Chargement de la marketplace...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
@@ -169,7 +246,7 @@ const addToCart = (product: Product) => {
             </div>
 
             <div className="flex items-center space-x-4">
-              <button className="relative p-3 bg-purple-100 rounded-xl hover:bg-purple-200 transition-all">
+              <button className="relative p-3 bg-purple-100 rounded-xl hover:bg-purple-200 transition-all" aria-label="Voir le panier">
                 <ShoppingCart className="w-6 h-6 text-purple-600" />
                 {cartCount > 0 && (
                   <span className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
@@ -177,7 +254,7 @@ const addToCart = (product: Product) => {
                   </span>
                 )}
               </button>
-              <div className="text-right">
+              <div className="text-right hidden sm:block">
                 <div className="text-xs text-gray-500">Total panier</div>
                 <div className="text-lg font-bold text-purple-600">{cartTotal.toLocaleString()} FCFA</div>
               </div>
@@ -188,8 +265,8 @@ const addToCart = (product: Product) => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Hero banner */}
-        <section className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 rounded-3xl p-10 text-white shadow-2xl">
-          <div className="flex items-center justify-between">
+        <section className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 rounded-3xl p-6 sm:p-10 text-white shadow-2xl">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center space-x-2 mb-3">
                 <Zap className="w-6 h-6" />
@@ -197,12 +274,12 @@ const addToCart = (product: Product) => {
                   NOUVEAU
                 </span>
               </div>
-              <h2 className="text-4xl font-black mb-3">Gagnez du temps !</h2>
-              <p className="text-xl text-purple-100 mb-6 max-w-2xl">
+              <h2 className="text-3xl sm:text-4xl font-black mb-3">Gagnez du temps !</h2>
+              <p className="text-lg sm:text-xl text-purple-100 mb-6 max-w-2xl">
                 Profitez de votre temps d'attente pour commander ce dont vous avez besoin.
                 Livraison rapide dans toute la zone d'Abidjan.
               </p>
-              <div className="flex space-x-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button className="px-6 py-3 bg-white text-purple-600 rounded-xl font-bold hover:shadow-xl transition-all">
                   Voir les offres du jour
                 </button>
@@ -234,12 +311,12 @@ const addToCart = (product: Product) => {
                 type="text"
                 placeholder="Rechercher un produit, un vendeur..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-lg"
               />
             </div>
             <div className="flex space-x-3 overflow-x-auto pb-2">
-              {categories.map(cat => (
+              {categories.map((cat: Category) => (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
@@ -258,16 +335,18 @@ const addToCart = (product: Product) => {
         </section>
 
         {/* Featured products */}
-        {filteredProducts.some(p => p.featured) && (
+        {filteredProducts.some((p: Product) => p.featured) && (
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
               <Zap className="w-6 h-6 mr-2 text-yellow-500" />
               Offres vedettes
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {filteredProducts.filter(p => p.featured).map(product => (
-                <ProductCard key={product.id} product={product} addToCart={addToCart} featured />
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts
+                .filter((p: Product) => p.featured)
+                .map((product: Product) => (
+                  <ProductCard key={product.id} product={product} addToCart={addToCart} featured />
+                ))}
             </div>
           </section>
         )}
@@ -280,12 +359,12 @@ const addToCart = (product: Product) => {
             </h2>
             <button className="flex items-center space-x-2 text-purple-600 font-semibold hover:text-purple-700">
               <Filter className="w-5 h-5" />
-              <span>Plus de filtres</span>
+              <span className="hidden sm:inline">Plus de filtres</span>
             </button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map(product => (
+            {filteredProducts.map((product: Product) => (
               <ProductCard key={product.id} product={product} addToCart={addToCart} />
             ))}
           </div>
@@ -315,14 +394,14 @@ const addToCart = (product: Product) => {
 
         {/* Floating cart */}
         {cartCount > 0 && (
-          <div className="fixed bottom-6 right-6 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl shadow-2xl p-6 animate-bounce">
-            <div className="flex items-center space-x-4">
-              <ShoppingCart className="w-8 h-8" />
+          <div className="fixed bottom-6 right-6 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl shadow-2xl p-4 sm:p-6 animate-pulse z-40">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <ShoppingCart className="w-6 h-6 sm:w-8 sm:h-8" />
               <div>
-                <div className="font-bold text-lg">{cartCount} article{cartCount > 1 ? 's' : ''}</div>
-                <div className="text-2xl font-black">{cartTotal.toLocaleString()} FCFA</div>
+                <div className="font-bold text-sm sm:text-lg">{cartCount} article{cartCount > 1 ? 's' : ''}</div>
+                <div className="text-xl sm:text-2xl font-black">{cartTotal.toLocaleString()} FCFA</div>
               </div>
-              <button className="ml-4 px-6 py-3 bg-white text-purple-600 rounded-xl font-bold hover:shadow-xl transition-all">
+              <button className="ml-2 sm:ml-4 px-4 sm:px-6 py-2 sm:py-3 bg-white text-purple-600 rounded-xl font-bold hover:shadow-xl transition-all text-sm sm:text-base">
                 Commander
               </button>
             </div>
@@ -331,31 +410,20 @@ const addToCart = (product: Product) => {
       </main>
     </div>
   );
-};
-
-interface QuickStatProps {
-  icon: React.ReactElement;
-  value: string;
-  label: string;
-  color: string;
 }
 
-const QuickStat = ({ icon, value, label, color }: QuickStatProps) => (
-  <div className={`bg-gradient-to-br ${color} rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all`}>
-    <div className="mb-3">{React.cloneElement(icon, { className: 'w-8 h-8' })}</div>
-    <div className="text-3xl font-black mb-1">{value}</div>
-    <div className="text-sm font-medium opacity-90">{label}</div>
+// ========== COMPOSANTS ENFANTS ==========
+
+const QuickStat: React.FC<QuickStatProps> = ({ icon, value, label, color }) => (
+  <div className={`bg-gradient-to-br ${color} rounded-2xl p-4 sm:p-6 text-white shadow-lg hover:shadow-xl transition-all`}>
+    <div className="mb-2 sm:mb-3">{React.cloneElement(icon, { className: 'w-6 h-6 sm:w-8 sm:h-8' })}</div>
+    <div className="text-2xl sm:text-3xl font-black mb-1">{value}</div>
+    <div className="text-xs sm:text-sm font-medium opacity-90">{label}</div>
   </div>
 );
 
-interface ProductCardProps {
-  product: Product;
-  addToCart: (product: Product) => void;
-  featured?: boolean;
-}
-
 const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart, featured = false }) => {
-  const finalPrice = product.discount > 0
+  const finalPrice: number = product.discount > 0
     ? product.price * (1 - product.discount / 100)
     : product.price;
 
@@ -365,7 +433,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart, featured 
     }`}>
       {/* Image and badges */}
       <div className="relative bg-gradient-to-br from-purple-100 to-pink-100 p-8 flex items-center justify-center">
-        <div className="text-7xl">{product.image}</div>
+        <div className="text-6xl sm:text-7xl">{product.image}</div>
         {product.discount > 0 && (
           <div className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
             -{product.discount}%
@@ -373,11 +441,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart, featured 
         )}
         {featured && (
           <div className="absolute top-3 left-3 bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-xs font-bold flex items-center">
-            <Star className="w-4 h-4 mr-1" />
+            <Star className="w-4 h-4 mr-1 fill-current" />
             VEDETTE
           </div>
         )}
-        <button className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-lg hover:bg-red-50 transition-all">
+        <button 
+          className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-lg hover:bg-red-50 transition-all"
+          aria-label="Ajouter aux favoris"
+        >
           <Heart className="w-5 h-5 text-gray-400 hover:text-red-500" />
         </button>
       </div>
@@ -439,12 +510,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart, featured 
   );
 };
 
-const BenefitCard = ({ icon, title, description }) => (
+const BenefitCard: React.FC<BenefitCardProps> = ({ icon, title, description }) => (
   <div className="text-center">
     <div className="text-6xl mb-4">{icon}</div>
     <h3 className="text-xl font-bold mb-2">{title}</h3>
     <p className="text-gray-300">{description}</p>
   </div>
 );
-
-export default ViteviteMarketplace;

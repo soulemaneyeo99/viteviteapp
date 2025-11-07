@@ -1,9 +1,8 @@
-// Fichier: frontend/src/app/layout.tsx (VERSION MISE À JOUR)
-
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import Link from 'next/link';
+import ChatBot from '@/components/ChatBot';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,7 +22,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <div className="min-h-screen bg-gray-50">
           {/* Header */}
-          <header className="bg-[#FFD43B] shadow-md sticky top-0 z-50">
+          <header className="bg-[#FFD43B] shadow-md sticky top-0 z-40">
             <nav className="container mx-auto px-4 py-4">
               <div className="flex items-center justify-between">
                 {/* Logo */}
@@ -123,8 +122,8 @@ export default function RootLayout({
                       Analytics avancés
                     </li>
                     <li className="flex items-center">
-                      <span className="mr-2">🔔</span>
-                      Notifications push
+                      <span className="mr-2">💬</span>
+                      Assistant IA Gemini
                     </li>
                   </ul>
                 </div>
@@ -175,6 +174,9 @@ export default function RootLayout({
               </div>
             </div>
           </footer>
+
+          {/* ChatBot - Toujours disponible */}
+          <ChatBot position="bottom-right" />
         </div>
       </body>
     </html>

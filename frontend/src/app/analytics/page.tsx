@@ -103,7 +103,7 @@ const ViteviteAnalytics = () => {
       {/* Header */}
       <header className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 shadow-2xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center space-x-4">
               <div className="w-16 h-16 bg-white rounded-2xl shadow-xl flex items-center justify-center">
                 <Brain className="w-10 h-10 text-purple-600" />
@@ -117,12 +117,12 @@ const ViteviteAnalytics = () => {
               <select
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="px-4 py-2 bg-white/20 text-white border-2 border-white/30 rounded-xl font-semibold"
+                className="px-4 py-2 bg-white/20 text-white border-2 border-white/30 rounded-xl font-semibold backdrop-blur-sm"
               >
-                <option value="today">Aujourd'hui</option>
-                <option value="week">Cette semaine</option>
-                <option value="month">Ce mois</option>
-                <option value="year">Cette année</option>
+                <option value="today" className="text-gray-900">Aujourd'hui</option>
+                <option value="week" className="text-gray-900">Cette semaine</option>
+                <option value="month" className="text-gray-900">Ce mois</option>
+                <option value="year" className="text-gray-900">Cette année</option>
               </select>
             </div>
           </div>
@@ -193,7 +193,7 @@ const ViteviteAnalytics = () => {
 
         {/* Hourly Analysis Chart */}
         <section className="bg-white rounded-3xl shadow-xl p-8">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
             <h2 className="text-2xl font-bold text-gray-900 flex items-center">
               <BarChart3 className="w-6 h-6 mr-2 text-purple-600" />
               Analyse horaire de l'affluence
@@ -253,7 +253,7 @@ const ViteviteAnalytics = () => {
             <p className="text-xl text-gray-300 mb-6">
               Visualisation en temps réel des zones de forte affluence à Abidjan
             </p>
-            <div className="grid grid-cols-3 gap-6 max-w-3xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
               <div className="bg-green-500/20 border-2 border-green-500 rounded-xl p-4">
                 <div className="text-3xl font-bold text-green-400">12</div>
                 <div className="text-sm text-green-300">Zones fluides</div>
@@ -372,7 +372,9 @@ const HourlyBar = ({ data, maxTickets, maxWait }) => {
               className="bg-gradient-to-r from-purple-500 to-purple-600 h-full rounded-full flex items-center justify-end pr-2"
               style={{ width: `${ticketWidth}%` }}
             >
-              <span className="text-white text-xs font-bold">{data.tickets}</span>
+              {ticketWidth > 15 && (
+                <span className="text-white text-xs font-bold">{data.tickets}</span>
+              )}
             </div>
           </div>
           <div className="flex-1 bg-gray-100 rounded-full h-8 overflow-hidden">
@@ -380,7 +382,9 @@ const HourlyBar = ({ data, maxTickets, maxWait }) => {
               className="bg-gradient-to-r from-orange-500 to-red-600 h-full rounded-full flex items-center justify-end pr-2"
               style={{ width: `${waitWidth}%` }}
             >
-              <span className="text-white text-xs font-bold">{data.wait}min</span>
+              {waitWidth > 15 && (
+                <span className="text-white text-xs font-bold">{data.wait}min</span>
+              )}
             </div>
           </div>
         </div>
@@ -412,7 +416,7 @@ const ServiceTrendRow = ({ service }) => {
         </div>
         <div className="flex-1">
           <h4 className="font-bold text-gray-900">{service.name}</h4>
-          <div className="flex items-center space-x-3 mt-1">
+          <div className="flex items-center space-x-3 mt-1 flex-wrap gap-1">
             <span className={`text-sm font-semibold ${trend.color}`}>
               {service.change > 0 ? '+' : ''}{service.change}%
             </span>
@@ -444,7 +448,7 @@ const RecommendationCard = ({ recommendation }) => {
 
   return (
     <div className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all">
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-4 flex-wrap gap-2">
         <span className={`px-3 py-1 rounded-full text-xs font-bold ${priority.color}`}>
           {priority.label}
         </span>
@@ -457,15 +461,15 @@ const RecommendationCard = ({ recommendation }) => {
       
       <div className="space-y-3 mb-4 text-sm">
         <div className="flex items-start space-x-2">
-          <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+          <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
           <span className="text-gray-600">{recommendation.location}</span>
         </div>
         <div className="flex items-start space-x-2">
-          <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5" />
+          <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
           <span className="text-gray-600">{recommendation.reason}</span>
         </div>
         <div className="flex items-start space-x-2">
-          <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5" />
+          <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
           <span className="text-gray-600">{recommendation.impact}</span>
         </div>
       </div>
@@ -482,7 +486,7 @@ const BusinessInsight = ({ icon, title, value, change, period }) => (
     <div className="text-5xl mb-4">{icon}</div>
     <h3 className="text-lg font-semibold mb-2 opacity-90">{title}</h3>
     <div className="text-4xl font-black mb-2">{value}</div>
-    <div className="flex items-center space-x-2 text-sm">
+    <div className="flex items-center space-x-2 text-sm flex-wrap gap-1">
       <span className="bg-green-400 text-green-900 px-2 py-1 rounded font-bold">{change}</span>
       <span className="opacity-75">{period}</span>
     </div>

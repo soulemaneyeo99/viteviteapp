@@ -1,7 +1,42 @@
+# Core Framework
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
+
+# Data Validation
 pydantic==2.5.0
+
+# Environment Variables
 python-dotenv==1.0.0
+
+# AI & Machine Learning
 google-generativeai==0.3.1
+
+# File Handling
 python-multipart==0.0.6
 aiofiles==23.2.1
+
+# HTTP Requests (pour tests)
+requests==2.31.0
+
+# Testing & Development
+colorama==0.4.6
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# CORS & Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Future: Database
+# psycopg2-binary==2.9.9
+# sqlalchemy==2.0.23
+# alembic==1.12.1
+
+# Future: Notifications
+# twilio==8.10.0
+
+# Future: Payments
+# stripe==7.4.0
+
+# Future: Monitoring
+# sentry-sdk==1.38.0
