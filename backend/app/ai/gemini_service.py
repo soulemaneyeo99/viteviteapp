@@ -21,7 +21,7 @@ class GeminiService:
                 genai.configure(api_key=api_key)
                 # Configuration optimisée pour des réponses rapides et pertinentes
                 self.model = genai.GenerativeModel(
-                    'gemini-pro',
+                    '2.5 Flash',
                     generation_config={
                         'temperature': 0.7,  # Équilibre créativité/précision
                         'top_p': 0.8,
