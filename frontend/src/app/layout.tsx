@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { Menu, X, Home, Briefcase, ShoppingBag, BarChart3, Settings, MessageCircle } from 'lucide-react';
 
