@@ -2,8 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { X, Send, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 
 interface Message {
   id: string;
@@ -19,7 +17,7 @@ export default function ChatBotPro() {
     {
       id: '1',
       role: 'assistant',
-      content: 'Bonjour ! 👋 Je suis l\'assistant **ViteviteApp** propulsé par l\'IA.\n\nComment puis-je vous aider aujourd\'hui ?',
+      content: 'Bonjour ! 👋 Je suis l\'assistant ViteviteApp propulsé par l\'IA.\n\nComment puis-je vous aider aujourd\'hui ?',
       timestamp: new Date()
     }
   ]);
@@ -40,7 +38,7 @@ export default function ChatBotPro() {
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
-      inputRef.current.focus();
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [isOpen]);
 
@@ -48,12 +46,10 @@ export default function ChatBotPro() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Streaming text simulation (à remplacer par vraie API streaming)
   const streamMessage = async (fullText: string) => {
     const tempId = Date.now().toString();
     let currentText = '';
     
-    // Ajoute message vide avec flag streaming
     setMessages(prev => [...prev, {
       id: tempId,
       role: 'assistant',
@@ -62,7 +58,6 @@ export default function ChatBotPro() {
       isStreaming: true
     }]);
 
-    // Simule streaming caractère par caractère
     const words = fullText.split(' ');
     for (let i = 0; i < words.length; i++) {
       currentText += (i > 0 ? ' ' : '') + words[i];
@@ -73,30 +68,28 @@ export default function ChatBotPro() {
           : msg
       ));
       
-      // Délai entre mots (ajustable)
       await new Promise(resolve => setTimeout(resolve, 50));
     }
 
-    // Marque comme fini
     setMessages(prev => prev.map(msg => 
       msg.id === tempId 
         ? { ...msg, isStreaming: false }
         : msg
     ));
 
-    // TTS si activé
     if (audioEnabled) {
       await speakText(fullText);
     }
   };
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+    const trimmedInput = inputValue.trim();
+    if (!trimmedInput) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: inputValue,
+      content: trimmedInput,
       timestamp: new Date()
     };
 
@@ -105,12 +98,11 @@ export default function ChatBotPro() {
     setIsTyping(true);
 
     try {
-      // Appel API
       const response = await fetch('http://localhost:8000/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          message: inputValue,
+          message: trimmedInput,
           context: { previous_messages: messages.slice(-4) }
         })
       });
@@ -118,27 +110,32 @@ export default function ChatBotPro() {
       if (!response.ok) throw new Error('Erreur API');
 
       const data = await response.json();
-      
-      // Stream la réponse
       await streamMessage(data.response);
       
     } catch (error) {
       console.error('Erreur chatbot:', error);
-      const errorMsg = "Désolé, je rencontre un problème technique. 🔧\n\nPouvez-vous **reformuler** votre question ?";
+      const errorMsg = "Désolé, je rencontre un problème technique. 🔧\n\nPouvez-vous reformuler votre question ?";
       await streamMessage(errorMsg);
     } finally {
       setIsTyping(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
 
-  // Voice Recognition (STT)
+  const toggleRecording = async () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      await startRecording();
+    }
+  };
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -173,7 +170,6 @@ export default function ChatBotPro() {
 
   const transcribeAudio = async (audioBlob: Blob) => {
     try {
-      // Envoi à ElevenLabs ou autre service STT
       const formData = new FormData();
       formData.append('audio', audioBlob);
 
@@ -186,8 +182,6 @@ export default function ChatBotPro() {
 
       const data = await response.json();
       setInputValue(data.text);
-      
-      // Envoie automatiquement le message
       setTimeout(() => handleSendMessage(), 100);
       
     } catch (error) {
@@ -195,7 +189,6 @@ export default function ChatBotPro() {
     }
   };
 
-  // Text-to-Speech (TTS) avec ElevenLabs
   const speakText = async (text: string) => {
     if (!audioEnabled) return;
 
@@ -207,7 +200,7 @@ export default function ChatBotPro() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           text: text,
-          voice_id: 'hgZie8MSRBRgVn6w8BzP' // Anicet
+          voice_id: 'hgZie8MSRBRgVn6w8BzP'
         })
       });
 
@@ -230,6 +223,23 @@ export default function ChatBotPro() {
     }
   };
 
+  const handleQuickQuestion = (question: string) => {
+    setInputValue(question);
+    setTimeout(() => handleSendMessage(), 100);
+  };
+
+  const toggleAudio = () => {
+    setAudioEnabled(prev => !prev);
+  };
+
+  const closeChat = () => {
+    setIsOpen(false);
+  };
+
+  const openChat = () => {
+    setIsOpen(true);
+  };
+
   const quickQuestions = [
     "Comment prendre un ticket ?",
     "Quels sont les horaires ?",
@@ -237,13 +247,42 @@ export default function ChatBotPro() {
     "Comment fonctionne la marketplace ?"
   ];
 
+  const renderMessageContent = (content: string) => {
+    return content.split('\n').map((line, i) => {
+      const boldRegex = /\*\*(.*?)\*\*/g;
+      const parts = [];
+      let lastIndex = 0;
+      let match;
+
+      while ((match = boldRegex.exec(line)) !== null) {
+        if (match.index > lastIndex) {
+          parts.push(line.substring(lastIndex, match.index));
+        }
+        parts.push(<strong key={match.index}>{match[1]}</strong>);
+        lastIndex = match.index + match[0].length;
+      }
+
+      if (lastIndex < line.length) {
+        parts.push(line.substring(lastIndex));
+      }
+
+      return (
+        <span key={i}>
+          {parts.length > 0 ? parts : line}
+          {i < content.split('\n').length - 1 && <br />}
+        </span>
+      );
+    });
+  };
+
   return (
-    <>
+    <div className="fixed z-50">
       {/* Floating Button */}
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-full shadow-2xl hover:scale-110 transition-all z-50 flex items-center justify-center group"
+          type="button"
+          onClick={openChat}
+          className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-full shadow-2xl hover:scale-110 transition-transform duration-200 flex items-center justify-center"
           aria-label="Ouvrir le chat"
         >
           <span className="text-3xl">💬</span>
@@ -253,50 +292,47 @@ export default function ChatBotPro() {
         </button>
       )}
 
-      {/* Chat Window - Responsive */}
+      {/* Chat Window */}
       {isOpen && (
         <>
+          {/* Backdrop mobile */}
           <div 
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-            onClick={() => setIsOpen(false)}
+            className="fixed inset-0 bg-black bg-opacity-50 lg:hidden"
+            onClick={closeChat}
           />
           
-          <div className="fixed inset-x-4 bottom-4 lg:right-6 lg:bottom-6 lg:left-auto lg:w-[420px] z-50 max-h-[85vh] lg:max-h-[700px]">
-            <div className="bg-white rounded-2xl shadow-2xl flex flex-col h-full overflow-hidden">
+          {/* Chat container */}
+          <div className="fixed bottom-4 right-4 w-[calc(100vw-2rem)] lg:w-[420px] h-[calc(100vh-2rem)] lg:h-[700px] max-h-[700px]">
+            <div className="bg-white rounded-2xl shadow-2xl h-full flex flex-col overflow-hidden">
               {/* Header */}
-              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 flex-shrink-0">
+              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-white bg-opacity-20 backdrop-blur rounded-full flex items-center justify-center shrink-0">
                       <span className="text-xl">🤖</span>
                     </div>
-                    <div>
-                      <h3 className="font-bold">Assistant ViteviteApp</h3>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-sm">Assistant ViteviteApp</h3>
                       <div className="flex items-center space-x-2 text-xs">
-                        <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                        <span>En ligne • Gemini Pro</span>
+                        <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse shrink-0"></span>
+                        <span className="truncate">En ligne • Gemini Pro</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 shrink-0">
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setAudioEnabled(!audioEnabled);
-                      }}
-                      className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition"
+                      type="button"
+                      onClick={toggleAudio}
+                      className="w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-colors"
                       title={audioEnabled ? 'Désactiver audio' : 'Activer audio'}
-                      aria-label={audioEnabled ? 'Désactiver audio' : 'Activer audio'}
                     >
                       {audioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
                     </button>
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsOpen(false);
-                      }}
-                      className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition"
-                      aria-label="Fermer le chat"
+                      type="button"
+                      onClick={closeChat}
+                      className="w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-colors"
+                      aria-label="Fermer"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -323,13 +359,8 @@ export default function ChatBotPro() {
                         </div>
                       )}
                       
-                      {/* Markdown Rendering */}
-                      <div className={`text-sm leading-relaxed prose prose-sm max-w-none ${
-                        message.role === 'user' ? 'prose-invert' : ''
-                      }`}>
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {message.content}
-                        </ReactMarkdown>
+                      <div className="text-sm leading-relaxed">
+                        {renderMessageContent(message.content)}
                       </div>
                       
                       {message.isStreaming && (
@@ -365,18 +396,15 @@ export default function ChatBotPro() {
 
               {/* Quick Questions */}
               {messages.length <= 2 && (
-                <div className="p-3 bg-white border-t flex-shrink-0">
+                <div className="p-3 bg-white border-t shrink-0">
                   <div className="text-xs font-semibold text-gray-500 mb-2">Questions rapides :</div>
                   <div className="flex flex-wrap gap-2">
                     {quickQuestions.map((q, idx) => (
                       <button
                         key={idx}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setInputValue(q);
-                          setTimeout(() => handleSendMessage(), 100);
-                        }}
-                        className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-800 px-3 py-1.5 rounded-full transition font-medium"
+                        type="button"
+                        onClick={() => handleQuickQuestion(q)}
+                        className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-800 px-3 py-1.5 rounded-full transition-colors font-medium"
                       >
                         {q}
                       </button>
@@ -386,25 +414,17 @@ export default function ChatBotPro() {
               )}
 
               {/* Input */}
-              <div className="p-4 bg-white border-t flex-shrink-0">
+              <div className="p-4 bg-white border-t shrink-0">
                 <div className="flex items-center space-x-2">
-                  {/* Voice Button */}
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (isRecording) {
-                        stopRecording();
-                      } else {
-                        startRecording();
-                      }
-                    }}
-                    className={`p-3 rounded-xl transition-all flex-shrink-0 ${
+                    type="button"
+                    onClick={toggleRecording}
+                    className={`p-3 rounded-xl transition-all shrink-0 ${
                       isRecording 
                         ? 'bg-red-500 text-white animate-pulse' 
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
-                    title={isRecording ? 'Arrêter l\'enregistrement' : 'Parler'}
-                    aria-label={isRecording ? 'Arrêter l\'enregistrement' : 'Parler'}
+                    title={isRecording ? 'Arrêter' : 'Parler'}
                   >
                     {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                   </button>
@@ -414,20 +434,17 @@ export default function ChatBotPro() {
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    placeholder={isRecording ? 'Enregistrement en cours...' : 'Tapez ou parlez...'}
+                    onKeyDown={handleKeyDown}
+                    placeholder={isRecording ? 'Enregistrement...' : 'Tapez votre message...'}
                     className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
                     disabled={isTyping || isRecording}
                   />
                   
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSendMessage();
-                    }}
+                    type="button"
+                    onClick={handleSendMessage}
                     disabled={!inputValue.trim() || isTyping || isRecording}
-                    className="p-3 bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                    aria-label="Envoyer le message"
+                    className="p-3 bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                   >
                     <Send className="w-5 h-5" />
                   </button>
@@ -448,6 +465,6 @@ export default function ChatBotPro() {
           </div>
         </>
       )}
-    </>
+    </div>
   );
 }
