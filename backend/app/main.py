@@ -14,6 +14,7 @@ from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
 import logging
+from app.routers import voice
 
 # Configuration du logging
 logging.basicConfig(level=logging.INFO)
@@ -60,6 +61,8 @@ async def error_handling_middleware(request: Request, call_next):
         )
 
 # Inclut tous les routers
+
+app.include_router(voice.router)
 app.include_router(services.router)
 app.include_router(tickets.router)
 app.include_router(admin.router)

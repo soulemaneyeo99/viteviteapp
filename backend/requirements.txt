@@ -15,7 +15,8 @@ google-generativeai==0.3.1
 python-multipart==0.0.6
 aiofiles==23.2.1
 
-# HTTP Requests (pour tests)
+# HTTP Requests & Async
+httpx==0.25.2
 requests==2.31.0
 
 # Testing & Development
@@ -26,6 +27,9 @@ pytest-asyncio==0.21.1
 # CORS & Security
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+
+# Audio/Voice (ElevenLabs via httpx)
+# elevenlabs==0.2.27  # Optionnel si on veut le SDK officiel
 
 # Future: Database
 # psycopg2-binary==2.9.9
