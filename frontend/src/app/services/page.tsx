@@ -1,239 +1,261 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
-import { Service, TicketCreate } from '@/lib/types';
-import ServiceCard from '@/components/ServiceCard';
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { servicesAPI, ticketsAPI, predictionsAPI } from "@/lib/api";
+import { Service } from "@/types";
+import { Clock, Users, MapPin, FileText, ArrowRight, Sparkles } from "lucide-react";
+import { toast } from "sonner";
+import Link from "next/link";
 
 export default function ServicesPage() {
-  const router = useRouter();
-  const [services, setServices] = useState<Service[]>([]);
-  const [filteredServices, setFilteredServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showTicketModal, setShowTicketModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const [ticketData, setTicketData] = useState({ name: '', phone: '', notes: '' });
-  const [creatingTicket, setCreatingTicket] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [ticketForm, setTicketForm] = useState({ name: "", phone: "", notes: "" });
 
-  useEffect(() => {
-    loadServices();
-  }, []);
+  // Fetch services
+  const { data: servicesData, isLoading } = useQuery({
+    queryKey: ["services", selectedCategory],
+    queryFn: async () => {
+      const params = selectedCategory !== "all" ? { category: selectedCategory } : {};
+      const response = await servicesAPI.getAll(params);
+      return response.data;
+    },
+  });
 
-  useEffect(() => {
-    filterServices();
-  }, [services, selectedCategory, searchQuery]);
-
-  const loadServices = async () => {
-    try {
-      const data = await api.getServices();
-      setServices(data);
-      setFilteredServices(data);
-    } catch (error) {
-      console.error('Erreur chargement services:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filterServices = () => {
-    let filtered = services;
-
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(s => s.category === selectedCategory);
-    }
-
-    if (searchQuery) {
-      filtered = filtered.filter(s =>
-        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    setFilteredServices(filtered);
-  };
-
-  const categories = ['all', ...Array.from(new Set(services.map(s => s.category)))];
+  const services: Service[] = servicesData?.services || [];
+  const categories: string[] = ["all", ...Array.from(new Set(services.map((s: Service) => s.category)))];
 
   const handleTakeTicket = (service: Service) => {
+    if (service.status !== "ouvert") {
+      toast.error("Ce service est actuellement fermé");
+      return;
+    }
     setSelectedService(service);
-    setShowTicketModal(true);
+    setShowModal(true);
   };
 
-  const handleCreateTicket = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitTicket = async () => {
     if (!selectedService) return;
 
-    setCreatingTicket(true);
     try {
-      const ticketPayload: TicketCreate = {
+      const response = await ticketsAPI.create({
         service_id: selectedService.id,
-        user_name: ticketData.name || undefined,
-        user_phone: ticketData.phone || undefined,
-        notes: ticketData.notes || undefined,
-      };
+        user_name: ticketForm.name || undefined,
+        user_phone: ticketForm.phone || undefined,
+        notes: ticketForm.notes || undefined,
+      });
 
-      const ticket = await api.createTicket(ticketPayload);
-      
-      // Redirige vers la page du ticket
-      router.push(`/ticket/${ticket.id}`);
+      toast.success(`Ticket ${response.data.ticket.ticket_number} créé !`);
+      setShowModal(false);
+      setTicketForm({ name: "", phone: "", notes: "" });
+
+      // Rediriger vers le ticket
+      window.location.href = `/ticket/${response.data.ticket.id}`;
     } catch (error: any) {
-      alert(error.message || 'Erreur lors de la création du ticket');
-    } finally {
-      setCreatingTicket(false);
+      toast.error(error.response?.data?.detail || "Erreur lors de la création");
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="spinner"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 animate-fadeIn">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Services disponibles</h1>
-        <p className="text-xl text-gray-600">
-          Choisissez un service et prenez votre ticket virtuel
-        </p>
-      </div>
+      <header className="bg-white border-b sticky top-0 z-40">
+        <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center space-x-2">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+              <span className="text-xl">⚡</span>
+            </div>
+            <span className="text-xl font-black">ViteviteApp</span>
+          </Link>
+          <Link
+            href="/dashboard"
+            className="px-4 py-2 text-sm font-semibold text-gray-700 hover:text-black transition"
+          >
+            Mes tickets
+          </Link>
+        </nav>
+      </header>
 
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Search */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Rechercher un service
-            </label>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Nom du service..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD43B] focus:border-transparent"
-            />
-          </div>
+      <div className="container mx-auto px-4 py-8">
+        {/* Page Title */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-black mb-2">Services disponibles</h1>
+          <p className="text-xl text-gray-600">
+            Choisissez un service et prenez votre ticket virtuel
+          </p>
+        </div>
 
-          {/* Category filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Catégorie
-            </label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD43B] focus:border-transparent"
+        {/* Category Filter */}
+        <div className="flex flex-wrap gap-2 mb-8 justify-center">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-6 py-2 rounded-lg font-semibold transition ${
+                selectedCategory === cat
+                  ? "bg-primary text-black"
+                  : "bg-white text-gray-700 hover:bg-gray-100"
+              }`}
             >
-              {categories.map(cat => (
-                <option key={cat} value={cat}>
-                  {cat === 'all' ? 'Toutes les catégories' : cat}
-                </option>
-              ))}
-            </select>
-          </div>
+              {cat === "all" ? "Tous" : cat}
+            </button>
+          ))}
         </div>
-      </div>
 
-      {/* Services Grid */}
-      {filteredServices.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-6xl mb-4">🔍</div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Aucun service trouvé</h3>
-          <p className="text-gray-600">Essayez de modifier vos filtres de recherche</p>
-        </div>
-      ) : (
+        {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredServices.map(service => (
+          {services.map((service: Service) => (
             <ServiceCard
               key={service.id}
               service={service}
-              onTakeTicket={handleTakeTicket}
+              onTakeTicket={() => handleTakeTicket(service)}
             />
           ))}
         </div>
-      )}
 
-      {/* Ticket Modal */}
-      {showTicketModal && selectedService && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 animate-fadeIn">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Prendre un ticket
-            </h2>
-            <div className="bg-[#FFD43B] bg-opacity-20 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-gray-900 mb-1">{selectedService.name}</h3>
+        {services.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              Aucun service trouvé
+            </h3>
+            <p className="text-gray-600">Essayez une autre catégorie</p>
+          </div>
+        )}
+      </div>
+
+      {/* Modal Ticket */}
+      {showModal && selectedService && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 animate-fade-in">
+            <h2 className="text-2xl font-bold mb-4">Prendre un ticket</h2>
+            <div className="bg-primary/10 rounded-lg p-4 mb-6">
+              <h3 className="font-bold text-lg mb-1">{selectedService.name}</h3>
               <p className="text-sm text-gray-600">
-                Temps d'attente estimé: {selectedService.estimated_wait_time} minutes
+                Temps d'attente estimé: {selectedService.estimated_wait_time} min
               </p>
             </div>
 
-            <form onSubmit={handleCreateTicket} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Votre nom (optionnel)
-                </label>
-                <input
-                  type="text"
-                  value={ticketData.name}
-                  onChange={(e) => setTicketData({...ticketData, name: e.target.value})}
-                  placeholder="Ex: Amadou Koné"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD43B] focus:border-transparent"
-                />
-              </div>
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Votre nom (optionnel)"
+                value={ticketForm.name}
+                onChange={(e) => setTicketForm({ ...ticketForm, name: e.target.value })}
+                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none"
+              />
+              <input
+                type="tel"
+                placeholder="Téléphone (optionnel)"
+                value={ticketForm.phone}
+                onChange={(e) => setTicketForm({ ...ticketForm, phone: e.target.value })}
+                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none"
+              />
+              <textarea
+                placeholder="Notes (optionnel)"
+                rows={3}
+                value={ticketForm.notes}
+                onChange={(e) => setTicketForm({ ...ticketForm, notes: e.target.value })}
+                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none"
+              />
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Téléphone (optionnel)
-                </label>
-                <input
-                  type="tel"
-                  value={ticketData.phone}
-                  onChange={(e) => setTicketData({...ticketData, phone: e.target.value})}
-                  placeholder="Ex: +225 XX XX XX XX XX"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD43B] focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Notes (optionnel)
-                </label>
-                <textarea
-                  value={ticketData.notes}
-                  onChange={(e) => setTicketData({...ticketData, notes: e.target.value})}
-                  placeholder="Informations supplémentaires..."
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD43B] focus:border-transparent"
-                />
-              </div>
-
-              <div className="flex space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowTicketModal(false)}
-                  className="flex-1 px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={creatingTicket}
-                  className="flex-1 btn-primary"
-                >
-                  {creatingTicket ? 'Création...' : 'Confirmer'}
-                </button>
-              </div>
-            </form>
+            <div className="flex space-x-3 mt-6">
+              <button
+                onClick={() => setShowModal(false)}
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={submitTicket}
+                className="flex-1 px-6 py-3 bg-primary text-black rounded-lg font-bold hover:bg-primary-dark"
+              >
+                Confirmer
+              </button>
+            </div>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Service Card Component
+function ServiceCard({ service, onTakeTicket }: { service: Service; onTakeTicket: () => void }) {
+  const affluenceColors = {
+    faible: "bg-green-100 text-green-800",
+    modérée: "bg-yellow-100 text-yellow-800",
+    élevée: "bg-orange-100 text-orange-800",
+    "très_élevée": "bg-red-100 text-red-800",
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition p-6">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center space-x-3">
+          <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center text-2xl">
+            {service.icon === "hospital" ? "🏥" : service.icon === "building-columns" ? "🏦" : "🏢"}
+          </div>
+          <div>
+            <h3 className="font-bold text-lg">{service.name}</h3>
+            <p className="text-sm text-gray-500">{service.category}</p>
+          </div>
+        </div>
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-bold ${
+            service.status === "ouvert" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+          }`}
+        >
+          {service.status}
+        </span>
+      </div>
+
+      <p className="text-gray-600 text-sm mb-4 line-clamp-2">{service.description}</p>
+
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="bg-gray-50 rounded-lg p-3">
+          <div className="flex items-center space-x-2 text-gray-600 text-xs mb-1">
+            <Clock className="w-4 h-4" />
+            <span>Attente</span>
+          </div>
+          <div className="text-xl font-bold">{service.estimated_wait_time} min</div>
+        </div>
+        <div className="bg-gray-50 rounded-lg p-3">
+          <div className="flex items-center space-x-2 text-gray-600 text-xs mb-1">
+            <Users className="w-4 h-4" />
+            <span>File</span>
+          </div>
+          <div className="text-xl font-bold">{service.current_queue_size} pers.</div>
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+          affluenceColors[service.affluence_level as keyof typeof affluenceColors] || "bg-gray-100 text-gray-800"
+        }`}>
+          Affluence {service.affluence_level}
+        </span>
+      </div>
+
+      <button
+        onClick={onTakeTicket}
+        disabled={service.status !== "ouvert"}
+        className="w-full py-3 bg-primary text-black rounded-lg font-bold hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center space-x-2"
+      >
+        <span>Prendre un ticket</span>
+        <ArrowRight className="w-5 h-5" />
+      </button>
     </div>
   );
 }
