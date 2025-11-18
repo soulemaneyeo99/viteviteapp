@@ -1,46 +1,70 @@
-# Core Framework
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
+# ===============================================
+# VITEVITEAPP - BACKEND PRODUCTION REQUIREMENTS
+# Python 3.11+
+# ===============================================
 
-# Data Validation
-pydantic==2.5.0
+# ========== CORE FRAMEWORK ==========
+fastapi==0.110.0
+uvicorn[standard]==0.27.1
+python-multipart==0.0.9
+email-validator==2.1.0
 
-# Environment Variables
-python-dotenv==1.0.0
+# ========== DATABASE ==========
+sqlalchemy==2.0.27
+asyncpg==0.29.0          # PostgreSQL async driver
+alembic==1.13.1          # Migrations
+psycopg2-binary==2.9.9   # PostgreSQL sync (pour Alembic)
 
-# AI & Machine Learning
-google-generativeai==0.3.1
+# ========== VALIDATION ==========
+pydantic==2.6.1
+pydantic-settings==2.1.0
 
-# File Handling
-python-multipart==0.0.6
-aiofiles==23.2.1
-
-# HTTP Requests & Async
-httpx==0.25.2
-requests==2.31.0
-
-# Testing & Development
-colorama==0.4.6
-pytest==7.4.3
-pytest-asyncio==0.21.1
-
-# CORS & Security
+# ========== AUTHENTICATION ==========
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+python-dotenv==1.0.1
+bcrypt==4.1.2
 
-# Audio/Voice (ElevenLabs via httpx)
-# elevenlabs==0.2.27  # Optionnel si on veut le SDK officiel
+# ========== AI & ML ==========
+google-generativeai==0.3.2    # Gemini
+openai==1.12.0                # Fallback
+scikit-learn==1.4.0
+xgboost==2.0.3
+numpy==1.26.3
+pandas==2.2.0
 
-# Future: Database
-# psycopg2-binary==2.9.9
-# sqlalchemy==2.0.23
-# alembic==1.12.1
+# ========== VOICE (OPTIONAL) ==========
+elevenlabs==0.2.27
+SpeechRecognition==3.10.1
 
-# Future: Notifications
-# twilio==8.10.0
+# ========== CACHE & QUEUE ==========
+redis==5.0.1
+aioredis==2.0.1
+celery==5.3.6            # Background tasks
 
-# Future: Payments
-# stripe==7.4.0
+# ========== HTTP & REQUESTS ==========
+httpx==0.26.0
+aiofiles==23.2.1
+requests==2.31.0
 
-# Future: Monitoring
-# sentry-sdk==1.38.0
+# ========== MONITORING & LOGGING ==========
+structlog==24.1.0
+sentry-sdk[fastapi]==1.40.0
+
+# ========== TESTING ==========
+pytest==7.4.0
+pytest-asyncio==0.22.0
+pytest-cov==4.1.0
+httpx==0.26.0            # Pour TestClient
+faker==22.6.0
+
+# ========== UTILS ==========
+python-dateutil==2.8.2
+pytz==2024.1
+
+# ========== DEPLOYMENT ==========
+gunicorn==21.2.0
+
+# ========== OPTIONAL: PAYMENT GATEWAYS ==========
+# stripe==8.2.0          # Décommenter si nécessaire
+# cinetpay-sdk==1.0.0    # API paiement mobile CI
