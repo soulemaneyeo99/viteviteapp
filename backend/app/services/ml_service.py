@@ -8,8 +8,21 @@ from typing import Dict, Any
 import logging
 
 from app.core.config import settings
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+# Tenter de charger le modèle ML entraîné
+try:
+    from app.services.ml_trainer import predictor as ml_predictor
+    ML_MODEL_AVAILABLE = Path("models/queue_predictor.pkl").exists()
+    if ML_MODEL_AVAILABLE:
+        ml_predictor.load_model()
+        logger.info("✅ Modèle ML chargé avec succès")
+except Exception as e:
+    ML_MODEL_AVAILABLE = False
+    ml_predictor = None
+    logger.warning(f"⚠️ Modèle ML non disponible: {e}")
 
 # Import Gemini uniquement si configuré
 if settings.gemini_enabled:
