@@ -1,14 +1,16 @@
 # backend/app/api/v1/admin.py
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
-from app.core.database import get_db
-from app.core.security import get_current_user
-from app.models.user import User
-from app.models.ticket import Ticket
-from app.models.service import Service
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, or_, func
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
+
+from app.core.database import get_db
+from app.api.v1.deps import get_current_admin
+from app.models.user import User
+from app.models.ticket import Ticket
+from app.models.service import Service
 
 router = APIRouter()
 
@@ -23,15 +25,6 @@ class TicketUpdate(BaseModel):
     status: Optional[str] = None
     notes: Optional[str] = None
 
-# ========== MIDDLEWARE ==========
-def require_admin(current_user: User = Depends(get_current_user)):
-    if current_user.role not in ["admin", "super"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Accès réservé aux administrateurs"
-        )
-    return current_user
-
 # ========== USERS CRUD ==========
 @router.get("/users")
 async def get_all_users(
@@ -39,22 +32,30 @@ async def get_all_users(
     limit: int = Query(50, ge=1, le=100),
     role: Optional[str] = None,
     search: Optional[str] = None,
-    db: Session = Depends(get_db),
-    admin: User = Depends(require_admin)
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
 ):
-    query = db.query(User)
+    stmt = select(User)
     
     if role:
-        query = query.filter(User.role == role)
+        stmt = stmt.where(User.role == role)
     
     if search:
-        query = query.filter(
-            (User.email.ilike(f"%{search}%")) | 
-            (User.full_name.ilike(f"%{search}%"))
+        stmt = stmt.where(
+            or_(
+                User.email.ilike(f"%{search}%"),
+                User.full_name.ilike(f"%{search}%")
+            )
         )
     
-    total = query.count()
-    users = query.offset(skip).limit(limit).all()
+    # Total avant pagination
+    total_result = await db.execute(stmt.with_only_columns(func.count()))
+    total = total_result.scalar_one()
+    
+    # Pagination
+    stmt = stmt.offset(skip).limit(limit)
+    result = await db.execute(stmt)
+    users = result.scalars().all()
     
     return {
         "success": True,
@@ -74,12 +75,15 @@ async def get_all_users(
     }
 
 @router.get("/users/{user_id}")
-async def get_user(
+async def get_user_by_id(
     user_id: str,
-    db: Session = Depends(get_db),
-    admin: User = Depends(require_admin)
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
 ):
-    user = db.query(User).filter(User.id == user_id).first()
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+    
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     
@@ -101,10 +105,13 @@ async def get_user(
 async def update_user(
     user_id: str,
     user_data: UserUpdate,
-    db: Session = Depends(get_db),
-    admin: User = Depends(require_admin)
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
 ):
-    user = db.query(User).filter(User.id == user_id).first()
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+    
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     
@@ -120,8 +127,9 @@ async def update_user(
         user.is_active = user_data.is_active
     
     user.updated_at = datetime.utcnow()
-    db.commit()
-    db.refresh(user)
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
     
     return {
         "success": True,
@@ -139,18 +147,20 @@ async def update_user(
 @router.delete("/users/{user_id}")
 async def delete_user(
     user_id: str,
-    db: Session = Depends(get_db),
-    admin: User = Depends(require_admin)
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
 ):
-    user = db.query(User).filter(User.id == user_id).first()
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+    
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-    
     if user.role == "super":
         raise HTTPException(status_code=403, detail="Impossible de supprimer un super admin")
     
-    db.delete(user)
-    db.commit()
+    await db.delete(user)
+    await db.commit()
     
     return {"success": True, "message": "Utilisateur supprimé"}
 
@@ -161,18 +171,22 @@ async def get_all_tickets_admin(
     limit: int = Query(50, ge=1, le=100),
     status: Optional[str] = None,
     service_id: Optional[str] = None,
-    db: Session = Depends(get_db),
-    admin: User = Depends(require_admin)
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
 ):
-    query = db.query(Ticket)
+    stmt = select(Ticket)
     
     if status:
-        query = query.filter(Ticket.status == status)
+        stmt = stmt.where(Ticket.status == status)
     if service_id:
-        query = query.filter(Ticket.service_id == service_id)
+        stmt = stmt.where(Ticket.service_id == service_id)
     
-    total = query.count()
-    tickets = query.order_by(Ticket.created_at.desc()).offset(skip).limit(limit).all()
+    total_result = await db.execute(stmt.with_only_columns(func.count()))
+    total = total_result.scalar_one()
+    
+    stmt = stmt.order_by(Ticket.created_at.desc()).offset(skip).limit(limit)
+    result = await db.execute(stmt)
+    tickets = result.scalars().all()
     
     return {
         "success": True,
@@ -195,10 +209,13 @@ async def get_all_tickets_admin(
 async def update_ticket_admin(
     ticket_id: str,
     ticket_data: TicketUpdate,
-    db: Session = Depends(get_db),
-    admin: User = Depends(require_admin)
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
 ):
-    ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+    stmt = select(Ticket).where(Ticket.id == ticket_id)
+    result = await db.execute(stmt)
+    ticket = result.scalar_one_or_none()
+    
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket non trouvé")
     
@@ -218,8 +235,9 @@ async def update_ticket_admin(
         ticket.notes = ticket_data.notes
     
     ticket.updated_at = datetime.utcnow()
-    db.commit()
-    db.refresh(ticket)
+    db.add(ticket)
+    await db.commit()
+    await db.refresh(ticket)
     
     return {
         "success": True,
@@ -235,15 +253,18 @@ async def update_ticket_admin(
 @router.delete("/tickets/{ticket_id}")
 async def delete_ticket_admin(
     ticket_id: str,
-    db: Session = Depends(get_db),
-    admin: User = Depends(require_admin)
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
 ):
-    ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+    stmt = select(Ticket).where(Ticket.id == ticket_id)
+    result = await db.execute(stmt)
+    ticket = result.scalar_one_or_none()
+    
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket non trouvé")
     
-    db.delete(ticket)
-    db.commit()
+    await db.delete(ticket)
+    await db.commit()
     
     return {"success": True, "message": "Ticket supprimé"}
 
@@ -251,13 +272,13 @@ async def delete_ticket_admin(
 @router.post("/services")
 async def create_service_admin(
     service_data: dict,
-    db: Session = Depends(get_db),
-    admin: User = Depends(require_admin)
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
 ):
     new_service = Service(**service_data)
     db.add(new_service)
-    db.commit()
-    db.refresh(new_service)
+    await db.commit()
+    await db.refresh(new_service)
     
     return {"success": True, "message": "Service créé", "service": new_service}
 
@@ -265,10 +286,13 @@ async def create_service_admin(
 async def update_service_admin(
     service_id: str,
     service_data: dict,
-    db: Session = Depends(get_db),
-    admin: User = Depends(require_admin)
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
 ):
-    service = db.query(Service).filter(Service.id == service_id).first()
+    stmt = select(Service).where(Service.id == service_id)
+    result = await db.execute(stmt)
+    service = result.scalar_one_or_none()
+    
     if not service:
         raise HTTPException(status_code=404, detail="Service non trouvé")
     
@@ -276,22 +300,26 @@ async def update_service_admin(
         setattr(service, key, value)
     
     service.updated_at = datetime.utcnow()
-    db.commit()
-    db.refresh(service)
+    db.add(service)
+    await db.commit()
+    await db.refresh(service)
     
     return {"success": True, "message": "Service mis à jour", "service": service}
 
 @router.delete("/services/{service_id}")
 async def delete_service_admin(
     service_id: str,
-    db: Session = Depends(get_db),
-    admin: User = Depends(require_admin)
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
 ):
-    service = db.query(Service).filter(Service.id == service_id).first()
+    stmt = select(Service).where(Service.id == service_id)
+    result = await db.execute(stmt)
+    service = result.scalar_one_or_none()
+    
     if not service:
         raise HTTPException(status_code=404, detail="Service non trouvé")
     
-    db.delete(service)
-    db.commit()
+    await db.delete(service)
+    await db.commit()
     
     return {"success": True, "message": "Service supprimé"}

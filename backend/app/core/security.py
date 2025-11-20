@@ -120,17 +120,25 @@ async def get_user(db: AsyncSession, user_id: str) -> User | None:
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 
 
-async def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_async_db)
-) -> User:
-    payload = decode_token(token)
-    user_id = payload.get("sub")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Token invalide")
-    
-    user = await get_user(db, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-    
+from typing import Optional
+import uuid
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+from app.models.user import User
+
+async def get_user(db: AsyncSession, user_id: str) -> Optional[User]:
+    """
+    Récupère un utilisateur depuis la DB via AsyncSession.
+    Gère les UUID si nécessaire.
+    """
+    try:
+        user_uuid = uuid.UUID(user_id)  # conversion si id = UUID
+    except ValueError:
+        return None
+
+    result = await db.execute(select(User).where(User.id == user_uuid))
+    user = result.scalars().first()
     return user
+
