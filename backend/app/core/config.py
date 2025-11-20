@@ -6,13 +6,11 @@
 ======================================================
 """
 
-import json
 import secrets
 from typing import Optional, List
 
-from distro import info
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import field_validator, model_validator, ValidationInfo
 
 
 class Settings(BaseSettings):
@@ -24,8 +22,6 @@ class Settings(BaseSettings):
     - Parse intelligent des CORS origins
     """
     
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:3001"]
-
     # -------------------------------------------------
     # BASE Pydantic Config
     # -------------------------------------------------
@@ -43,21 +39,21 @@ class Settings(BaseSettings):
     APP_VERSION: str = "2.0.0"
     API_V1_PREFIX: str = "/api/v1"
 
-    ENVIRONMENT: str = "production"  # production | development | staging
-    DEBUG: bool = False
+    ENVIRONMENT: str = "development"  # production | development | staging
+    DEBUG: bool = True
 
     # -------------------------------------------------
     # SERVER
     # -------------------------------------------------
     HOST: str = "0.0.0.0"
     PORT: int = 8000
-    RELOAD: bool = False
-    WORKERS: int = 4
+    RELOAD: bool = True
+    WORKERS: int = 1  # 1 en dev, 4 en prod
 
     # -------------------------------------------------
     # SECURITY / AUTH
     # -------------------------------------------------
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    SECRET_KEY: str = "cTJ5PjKuCXe_P5VxVPQODKkb6SVGwL4bFl1QS5ezGeo"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
@@ -73,15 +69,34 @@ class Settings(BaseSettings):
 
     DATABASE_URL: Optional[str] = None  # Auto-générée si absente
 
+    @model_validator(mode='after')
+    def assemble_db_connection(self):
+        """Construit DATABASE_URL si non fournie"""
+        if not self.DATABASE_URL:
+            self.DATABASE_URL = (
+                f"postgresql+asyncpg://{self.POSTGRES_USER}:"
+                f"{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:"
+                f"{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+            )
+        return self
 
-    @model_validator(mode="before")
+    # -------------------------------------------------
+    # CORS - FIX CRITIQUE
+    # -------------------------------------------------
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3000"
+    ]
+
+    @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
-    def parse_cors(cls, values):
-        cors = values.get("CORS_ORIGINS")
-        if isinstance(cors, str):
-            values["CORS_ORIGINS"] = [o.strip() for o in cors.split(",")]
-        return values
-
+    def parse_cors(cls, v):
+        """Parse CORS_ORIGINS depuis string ou list"""
+        if isinstance(v, str):
+            # Split par virgule et nettoie les espaces
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
 
     # -------------------------------------------------
     # REDIS (CACHE)
@@ -90,27 +105,11 @@ class Settings(BaseSettings):
     CACHE_EXPIRE_SECONDS: int = 300
 
     # -------------------------------------------------
-    # CORS
-    # -------------------------------------------------
-
-    @field_validator("DATABASE_URL", mode="before")
-    @classmethod
-    def assemble_db_connection(cls, v: Optional[str], info: ValidationInfo) -> str:
-        if isinstance(v, str) and v:
-            return v
-        data = info.data
-        return (
-            f"postgresql+asyncpg://{data.get('POSTGRES_USER')}:" 
-            f"{data.get('POSTGRES_PASSWORD')}@{data.get('POSTGRES_SERVER')}:" 
-            f"{data.get('POSTGRES_PORT')}/{data.get('POSTGRES_DB')}"
-        )
-
-    # -------------------------------------------------
     # AI SERVICES
     # -------------------------------------------------
-    GEMINI_API_KEY: Optional[str] = None
+    GEMINI_API_KEY: Optional[str] = "AIzaSyBTgUsWLxRwNITfy4EtoFeWYkYVzy7Yk7o"
     OPENAI_API_KEY: Optional[str] = None
-    ELEVENLABS_API_KEY: Optional[str] = None
+    ELEVENLABS_API_KEY: Optional[str] = "sk_48c42deff40314a49a55fa0fca7b1a3b0777ef935b91caf"
     ELEVENLABS_VOICE_ID: str = "hgZie8MSRBRgVn6w8BzP"
 
     # -------------------------------------------------
@@ -120,7 +119,7 @@ class Settings(BaseSettings):
     ENABLE_VOICE: bool = False
     ENABLE_MARKETPLACE: bool = True
     ENABLE_ANALYTICS: bool = True
-    ENABLE_NOTIFICATIONS: bool = True
+    ENABLE_NOTIFICATIONS: bool = False
 
     # -------------------------------------------------
     # RATE LIMITING
@@ -236,4 +235,4 @@ def validate_settings() -> None:
     print(f"🔗 Database : {settings.DATABASE_URL}")
     print(f"🧠 AI : {'ON' if settings.gemini_enabled else 'OFF'}")
     print(f"🎤 Voix : {'ON' if settings.voice_enabled else 'OFF'}")
-    print(f"🗄️  Cache : {settings.REDIS_URL}")
+    print(f"🌐 CORS Origins : {settings.CORS_ORIGINS}")

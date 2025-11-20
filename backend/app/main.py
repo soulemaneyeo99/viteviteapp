@@ -1,70 +1,35 @@
 """
 ViteviteApp - Main Application
-Backend FastAPI production-ready
+FastAPI avec tous les routers et configurations
 """
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from contextlib import asynccontextmanager
 import logging
 
 from app.core.config import settings, validate_settings
-from app.core.database import init_db, close_db, check_db_connection
-from app.api.v1.api import api_router
+from app.core.database import check_db_connection
+from app.api.v1 import api as api_v1
 
 # Configuration logging
 logging.basicConfig(
-    level=settings.LOG_LEVEL,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=getattr(logging, settings.LOG_LEVEL),
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Lifecycle events"""
-    # Startup
-    logger.info(f"🚀 Démarrage {settings.APP_NAME} v{settings.APP_VERSION}")
-    
-    # Validation config
-    try:
-        validate_settings()
-    except ValueError as e:
-        logger.error(f"❌ Configuration invalide: {e}")
-        raise
-    
-    # Init database
-    if settings.is_development:
-        logger.warning("🔧 Mode développement - Base recréée")
-        await init_db()
-    
-    # Check DB connection
-    if not await check_db_connection():
-        logger.error("❌ Impossible de se connecter à la base")
-        raise RuntimeError("Database connection failed")
-    
-    logger.info("✅ Application prête")
-    
-    yield
-    
-    # Shutdown
-    logger.info("🛑 Arrêt application")
-    await close_db()
-
-
-# Application FastAPI
+# ========== APPLICATION FASTAPI ==========
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="API de gestion de files d'attente intelligente",
-    docs_url="/docs" if settings.DEBUG else None,
-    redoc_url="/redoc" if settings.DEBUG else None,
-    lifespan=lifespan
+    description="API de gestion intelligente des files d'attente avec IA",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json"
 )
 
-
-# CORS Middleware
+# ========== CORS MIDDLEWARE ==========
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -73,53 +38,103 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# Include routers
+# ========== ROUTERS ==========
+# Inclure tous les routers API v1
 app.include_router(
-    api_router,
+    api_v1.router,
     prefix=settings.API_V1_PREFIX
 )
 
-
-# Root endpoint
-@app.get("/")
-async def root():
-    """Endpoint racine"""
-    return {
-        "app": settings.APP_NAME,
-        "version": settings.APP_VERSION,
-        "status": "online",
-        "docs": "/docs" if settings.DEBUG else None
-    }
-
-
-# Health check
-@app.get("/health")
+# ========== HEALTH CHECK ==========
+@app.get("/health", tags=["Health"])
 async def health_check():
-    """Health check endpoint"""
+    """
+    Health check endpoint
+    Vérifie l'état de l'API et de la base de données
+    """
     db_ok = await check_db_connection()
     
-    return {
-        "status": "healthy" if db_ok else "unhealthy",
-        "database": "connected" if db_ok else "disconnected",
-        "version": settings.APP_VERSION,
-        "environment": settings.ENVIRONMENT
-    }
-
-
-# Global exception handler
-@app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
-    """Handler d'erreur global"""
-    logger.error(f"Erreur non gérée: {exc}", exc_info=True)
-    
     return JSONResponse(
-        status_code=500,
+        status_code=200 if db_ok else 503,
         content={
-            "detail": "Erreur interne du serveur" if settings.is_production else str(exc)
+            "status": "healthy" if db_ok else "unhealthy",
+            "version": settings.APP_VERSION,
+            "database": "connected" if db_ok else "disconnected",
+            "environment": settings.ENVIRONMENT
         }
     )
 
+@app.get("/", tags=["Root"])
+async def root():
+    """
+    Root endpoint avec informations API
+    """
+    return {
+        "message": "ViteviteApp API",
+        "version": settings.APP_VERSION,
+        "docs": "/docs",
+        "health": "/health",
+        "api_v1": settings.API_V1_PREFIX
+    }
+
+# ========== STARTUP EVENT ==========
+@app.on_event("startup")
+async def startup_event():
+    """Actions au démarrage de l'application"""
+    logger.info("🚀 Starting ViteviteApp...")
+    
+    # Validation configuration
+    try:
+        validate_settings()
+    except Exception as e:
+        logger.error(f"❌ Configuration error: {e}")
+        raise
+    
+    # Test connexion database
+    db_ok = await check_db_connection()
+    if db_ok:
+        logger.info("✅ Database connection OK")
+    else:
+        logger.warning("⚠️ Database connection failed")
+    
+    logger.info(f"✅ ViteviteApp started on {settings.HOST}:{settings.PORT}")
+    logger.info(f"📚 API Docs: http://{settings.HOST}:{settings.PORT}/docs")
+
+# ========== SHUTDOWN EVENT ==========
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Actions à l'arrêt de l'application"""
+    logger.info("🛑 Shutting down ViteviteApp...")
+    
+    from app.core.database import close_db
+    await close_db()
+    
+    logger.info("✅ ViteviteApp stopped")
+
+# ========== EXCEPTION HANDLERS ==========
+@app.exception_handler(404)
+async def not_found_handler(request, exc):
+    """Handler pour 404 Not Found"""
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": "Route non trouvée",
+            "path": str(request.url.path),
+            "method": request.method
+        }
+    )
+
+@app.exception_handler(500)
+async def internal_error_handler(request, exc):
+    """Handler pour 500 Internal Server Error"""
+    logger.error(f"Internal error: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "Erreur interne du serveur",
+            "type": type(exc).__name__
+        }
+    )
 
 if __name__ == "__main__":
     import uvicorn
@@ -129,6 +144,5 @@ if __name__ == "__main__":
         host=settings.HOST,
         port=settings.PORT,
         reload=settings.RELOAD,
-        workers=1 if settings.RELOAD else settings.WORKERS,
         log_level=settings.LOG_LEVEL.lower()
     )

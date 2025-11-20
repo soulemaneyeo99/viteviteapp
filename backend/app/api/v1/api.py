@@ -9,22 +9,41 @@ from app.api.v1.endpoints import auth, services, tickets, predictions
 
 
 # ========== API V1 ROUTER ==========
-api_router = APIRouter()
+router = APIRouter()
 
-# Inclure tous les routers
-api_router.include_router(auth.router)
-api_router.include_router(services.router)
-api_router.include_router(tickets.router)
-api_router.include_router(predictions.router)
+# Inclure tous les routers avec leurs préfixes
+router.include_router(
+    auth.router,
+    prefix="/auth",
+    tags=["Authentication"]
+)
+
+router.include_router(
+    services.router,
+    prefix="/services",
+    tags=["Services"]
+)
+
+router.include_router(
+    tickets.router,
+    prefix="/tickets",
+    tags=["Tickets"]
+)
+
+router.include_router(
+    predictions.router,
+    prefix="/predictions",
+    tags=["ML Predictions"]
+)
 
 
-# ========== HEALTH CHECK ==========
-@api_router.get("/health", tags=["Health"])
-async def health_check():
+# ========== HEALTH CHECK V1 ==========
+@router.get("/health", tags=["Health"])
+async def api_v1_health_check():
     """
-    ❤️ **Health check de l'API**
+    ❤️ **Health check de l'API v1**
     
-    Vérifie que l'API fonctionne correctement.
+    Vérifie que l'API v1 fonctionne correctement.
     
     Returns:
         - Status: healthy
@@ -33,5 +52,11 @@ async def health_check():
     return {
         "status": "healthy",
         "version": "1.0.0",
-        "api": "ViteviteApp API"
+        "api": "ViteviteApp API v1",
+        "endpoints": {
+            "auth": "/api/v1/auth",
+            "services": "/api/v1/services",
+            "tickets": "/api/v1/tickets",
+            "predictions": "/api/v1/predictions"
+        }
     }
