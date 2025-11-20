@@ -2,6 +2,7 @@
 ViteviteApp - Main Application
 Point d'entrée FastAPI avec configuration production-ready
 """
+from app.core.database import Base, engine
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -73,7 +74,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-
+@app.on_event("startup")
+async def startup():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 # ========== MIDDLEWARES ==========
 
 # CORS

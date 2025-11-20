@@ -3,25 +3,36 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    @apply border-border;
+  :root {
+    --primary: #FF8C00;
+    --primary-dark: #FF6F00;
+    --secondary: #FFD43B;
+    --background: #FFF8E7;
   }
+  
   body {
-    @apply bg-background text-foreground;
+    @apply bg-[#FFF8E7] text-gray-900;
   }
 }
 
-@layer utilities {
-  .animate-fadeIn {
-    animation: fadeIn 0.3s ease-in-out;
+@layer components {
+  .btn-primary {
+    @apply bg-[#FF8C00] hover:bg-[#FF6F00] text-white font-semibold px-6 py-3 rounded-lg transition-all;
   }
   
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+  .btn-secondary {
+    @apply bg-white border-2 border-[#FF8C00] text-[#FF8C00] hover:bg-[#FF8C00] hover:text-white font-semibold px-6 py-3 rounded-lg transition-all;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8C00] focus:border-transparent;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-100;
+  }
+  
+  .badge-status {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold;
   }
 }

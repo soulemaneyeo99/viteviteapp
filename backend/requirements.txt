@@ -85,6 +85,7 @@ python-multipart==0.0.9
 pytz==2024.1
 PyYAML==6.0.3
 redis==5.0.1
+aiosqlite
 requests==2.31.0
 rsa==4.9.1
 scikit-learn==1.4.0
