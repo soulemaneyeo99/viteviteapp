@@ -96,21 +96,22 @@ class Settings(BaseSettings):
     # -------------------------
     # HELPERS / VALIDATORS
     # -------------------------
-    def validate_settings(settings):
-    # Vérifier que la base de données est bien configurée
-    required_fields = [
-        "POSTGRES_HOST",
-        "POSTGRES_PORT",
-        "POSTGRES_DB",
-        "POSTGRES_USER",
-        "POSTGRES_PASSWORD",
-    ]
+    @model_validator(mode="after")
+    def validate_settings(cls, model):
+        # Vérifier que la base de données est bien configurée
+        required_fields = [
+            "POSTGRES_SERVER",
+            "POSTGRES_PORT",
+            "POSTGRES_DB",
+            "POSTGRES_USER",
+            "POSTGRES_PASSWORD",
+        ]
 
-    for field in required_fields:
-        if not getattr(settings, field, None):
-            raise ValueError(f"Missing required configuration: {field}")
+        for field in required_fields:
+            if not getattr(model, field, None):
+                raise ValueError(f"Missing required configuration: {field}")
 
-    return True
+        return model
 
     @property
     def CORS_ORIGINS(self) -> List[str]:
