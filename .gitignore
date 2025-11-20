@@ -40,7 +40,7 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # Env files (globaux)
-.env*
+.env
 !.env.example
 
 # Vercel
