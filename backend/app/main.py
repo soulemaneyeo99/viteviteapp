@@ -3,6 +3,7 @@ ViteviteApp - Main Application
 Point d'entrée FastAPI avec configuration production-ready
 """
 from app.core.database import Base, engine
+from app.api.v1.endpoints import auth, services, tickets, predictions, admin
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -125,6 +126,12 @@ async def error_handling_middleware(request: Request, call_next):
 
 
 # ========== ROUTERS ==========
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
+app.include_router(services.router, prefix="/api/v1/services", tags=["Services"])
+app.include_router(tickets.router, prefix="/api/v1/tickets", tags=["Tickets"])
+app.include_router(predictions.router, prefix="/api/v1/predictions", tags=["Predictions"])
+app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
+
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
 

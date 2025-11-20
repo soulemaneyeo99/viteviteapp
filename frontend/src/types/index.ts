@@ -1,16 +1,9 @@
-/**
- * ViteviteApp - TypeScript Types
- */
-
-// ========== USER ==========
 export interface User {
   id: string;
   email: string;
   full_name?: string;
   phone?: string;
   role: "user" | "admin" | "super";
-  is_active: boolean;
-  is_verified: boolean;
   created_at: string;
 }
 
@@ -27,7 +20,6 @@ export interface LoginResponse {
   user: User;
 }
 
-// ========== SERVICE ==========
 export type ServiceStatus = "ouvert" | "fermé" | "en_pause";
 export type AffluenceLevel = "faible" | "modérée" | "élevée" | "très_élevée";
 
@@ -54,18 +46,13 @@ export interface Service {
   affluence_level: AffluenceLevel;
   estimated_wait_time: number;
   current_queue_size: number;
-  max_queue_size?: number;
   required_documents: DocumentRequired[];
   opening_hours: string;
   location?: Location;
-  average_service_time: number;
-  total_tickets_served: number;
-  rating?: number;
   created_at: string;
   updated_at: string;
 }
 
-// ========== TICKET ==========
 export type TicketStatus = "en_attente" | "appelé" | "en_service" | "terminé" | "annulé";
 
 export interface Ticket {
@@ -82,18 +69,10 @@ export interface Ticket {
   started_at?: string;
   completed_at?: string;
   notes?: string;
-  qr_code?: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface TicketWithService extends Ticket {
-  service_name: string;
-  service_category: string;
-  service_status: string;
-}
-
-// ========== PREDICTION ==========
 export interface Prediction {
   success: boolean;
   service_id: string;
@@ -103,18 +82,5 @@ export interface Prediction {
   recommendation: string;
   best_time_to_visit: string;
   method: string;
-}
-
-// ========== API RESPONSES ==========
-export interface APIResponse<T> {
-  success: boolean;
-  message?: string;
-  data?: T;
-  error?: string;
-}
-
-export interface PaginatedResponse<T> {
-  success: boolean;
-  total: number;
-  items: T[];
+  message: string;
 }

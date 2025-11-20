@@ -3,6 +3,10 @@ import os
 from typing import List, Optional
 from datetime import datetime
 import uuid
+from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+
+from app.core.database import AsyncSessionLocal
 
 class Database:
     def __init__(self):
@@ -229,6 +233,8 @@ class Database:
             "services_open": len([s for s in services if s["status"] == "ouvert"]),
             "busiest_service": busiest
         }
-
+async def get_async_db() -> AsyncSession:
+    async with AsyncSessionLocal() as session:
+        yield session
 # Instance globale
 db = Database()

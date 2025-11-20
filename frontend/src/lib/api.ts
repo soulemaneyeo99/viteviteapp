@@ -1,13 +1,7 @@
-/**
- * ViteviteApp - API Client
- * Axios client avec interceptors et error handling
- */
-
 import axios, { AxiosError, AxiosInstance } from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-// Axios instance
 const api: AxiosInstance = axios.create({
   baseURL: `${API_URL}/api/v1`,
   timeout: 10000,
@@ -16,7 +10,6 @@ const api: AxiosInstance = axios.create({
   },
 });
 
-// Request interceptor (ajoute le token)
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access_token");
@@ -28,13 +21,11 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor (gère le refresh token)
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
 
-    // Si 401 et pas déjà retry
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
@@ -51,10 +42,9 @@ api.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
           return api(originalRequest);
         } catch {
-          // Refresh failed, logout
           localStorage.removeItem("access_token");
           localStorage.removeItem("refresh_token");
-          window.location.href = "/login";
+          window.location.href = "/auth";
         }
       }
     }
@@ -63,7 +53,6 @@ api.interceptors.response.use(
   }
 );
 
-// ========== AUTH ==========
 export const authAPI = {
   register: (data: { email: string; password: string; full_name?: string; phone?: string }) =>
     api.post("/auth/register", data),
@@ -79,17 +68,13 @@ export const authAPI = {
   getMe: () => api.get("/auth/me"),
 };
 
-// ========== SERVICES ==========
 export const servicesAPI = {
   getAll: (params?: { category?: string; status?: string }) =>
     api.get("/services", { params }),
 
   getById: (id: string) => api.get(`/services/${id}`),
-
-  getQueue: (id: string) => api.get(`/services/${id}/queue`),
 };
 
-// ========== TICKETS ==========
 export const ticketsAPI = {
   create: (data: { service_id: string; user_name?: string; user_phone?: string; notes?: string }) =>
     api.post("/tickets", data),
@@ -99,9 +84,14 @@ export const ticketsAPI = {
   getMyTickets: () => api.get("/tickets/user/me"),
 
   cancel: (id: string) => api.delete(`/tickets/${id}`),
+
+  callNext: (serviceId: string) => api.post(`/tickets/call-next/${serviceId}`, {}),
+
+  complete: (ticketId: string) => api.post(`/tickets/${ticketId}/complete`, {}),
+
+  getTodayStats: () => api.get("/tickets/stats/today"),
 };
 
-// ========== PREDICTIONS ==========
 export const predictionsAPI = {
   predict: (serviceId: string) => api.post(`/predictions/${serviceId}`),
 };

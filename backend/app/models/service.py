@@ -67,7 +67,7 @@ class Service(Base, BaseModel):
     rating = Column(Integer, default=0, nullable=True)  # 0-5
     
     # ========== RELATIONSHIPS ==========
-    tickets = relationship("Ticket", back_populates="service", cascade="all, delete-orphan")
+    tickets = relationship("Ticket", back_populates="service", cascade="all, delete")
     
     # ========== PROPERTIES ==========
     @property

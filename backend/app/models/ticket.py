@@ -58,7 +58,7 @@ class Ticket(Base, BaseModel):
     # ========== RELATIONSHIPS ==========
     service = relationship("Service", back_populates="tickets")
     user = relationship("User", back_populates="tickets")
-    
+
     # ========== PROPERTIES ==========
     @property
     def is_active(self) -> bool:
