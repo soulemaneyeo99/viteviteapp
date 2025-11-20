@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 import logging
 import time
 
-from app.core.config import settings, validate_settings
+from app.core.config import settings
 from app.core.database import init_db, close_db, check_db_connection
 from app.api.v1.api import api_router
 
@@ -36,11 +36,7 @@ async def lifespan(app: FastAPI):
     logger.info("🚀 Démarrage de ViteviteApp API...")
     
     # Valider la configuration
-    try:
-        validate_settings()
-    except Exception as e:
-        logger.error(f"❌ Configuration invalide: {e}")
-        raise
+   
     
     # Initialiser la base de données (dev only)
     if settings.is_development:
