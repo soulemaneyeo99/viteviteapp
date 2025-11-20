@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     # -------------------------
     # Raw CORS pour override depuis .env
     CORS_ORIGINS_RAW: Optional[str] = None
-    CORS_ORIGINS_DEFAULT: List[str] = ["http://localhost:3000", "http://localhost:3001"]
+    CORS_ORIGINS_DEFAULT: List[str] = ["http://localhost:3000", "https://viteviteapp.vercel.app"]
 
     # -------------------------
     # Configuration Pydantic
