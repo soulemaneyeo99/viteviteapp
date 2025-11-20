@@ -1,51 +1,116 @@
-# Backend
-backend/venv/
-backend/__pycache__/
-backend/.env
-backend/.mypy_cache/
-backend/.pytest_cache/
-backend/.env.example
-# Frontend (ne pas ignorer tout le dossier, seulement ce qu’il faut)
-frontend/node_modules/
-frontend/.next/
-frontend/out/
-frontend/.env.local
-frontend/.env.production
-frontend/.env.development
+#############################
+# GLOBAL IGNORE
+#############################
 
-# Common dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# Testing
-/coverage
-
-# Production builds
-/build
-
-# Misc
+# OS files
 .DS_Store
-*.pem
+Thumbs.db
 
-# Debug logs
+# Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
 
-# Env files (globaux)
+# Certificates
+*.pem
+
+# Build artifacts
+/build
+/dist
+/out
+/.pnp
+.pnp.*
+
+#############################
+# ENVIRONMENTS FILES
+#############################
+
+# Fichiers d'environnement : ignorer tous sauf le .env.example racine
 .env
+.env.*
 !.env.example
 
-# Vercel
-.vercel
+# Spécifique backend
+backend/.env
+backend/.env.*
+backend/.env.local
+backend/.env.production
+backend/.env.development
+backend/.env.test
+backend/.env.example  # on ignore celui-là, contrairement au root
 
-# TypeScript
-*.tsbuildinfo
+# Spécifique frontend
+frontend/.env
+frontend/.env.*
+frontend/.env.local
+frontend/.env.production
+frontend/.env.development
+frontend/.env.test
+# On n'ignore PAS frontend/.env.example si tu veux en garder un modèle
+# sinon décommente la ligne suivante :
+# frontend/.env.example
+
+#############################
+# PYTHON BACKEND (FastAPI)
+#############################
+
+backend/__pycache__/
+backend/.mypy_cache/
+backend/.pytest_cache/
+backend/venv/
+backend/instance/
+backend/.ruff_cache/
+*.pyc
+*.pyo
+*.pyd
+*.coverage
+.coverage.*
+
+#############################
+# NODE / FRONTEND (React / Next / Vite)
+#############################
+
+frontend/node_modules/
+frontend/.next/
+frontend/.vercel/
+frontend/.turbo/
+frontend/dist/
+frontend/build/
+node_modules/
+
+# Lock du package manager
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+#############################
+# DOCKER
+#############################
+
+docker-data/
+docker-compose.override.yml
+
+#############################
+# TESTS
+#############################
+
+/coverage
+coverage.xml
+test-output/
+
+#############################
+# MISC
+#############################
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+
+# Generated types
 next-env.d.ts
+*.tsbuildinfo
