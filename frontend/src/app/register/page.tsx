@@ -22,28 +22,43 @@ export default function RegisterPage() {
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const response = await authAPI.register({
-        email: form.email,
-        password: form.password,
-        full_name: form.full_name || undefined,
-        phone: form.phone || undefined,
-      });
+  try {
+    const response = await authAPI.register({
+      email: form.email,
+      password: form.password,
+      full_name: form.full_name || undefined,
+      phone: form.phone || undefined,
+    });
 
-      localStorage.setItem("access_token", response.data.tokens.access_token);
-      localStorage.setItem("refresh_token", response.data.tokens.refresh_token);
+    localStorage.setItem("access_token", response.data.tokens.access_token);
+    localStorage.setItem("refresh_token", response.data.tokens.refresh_token);
 
-      toast.success("Compte créé avec succès !");
-      router.push(accountType === "admin" ? "/admin" : "/services");
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Erreur lors de l'inscription");
-    } finally {
-      setLoading(false);
+    toast.success("Compte créé avec succès !");
+    router.push(accountType === "admin" ? "/admin" : "/services");
+  } catch (error: any) {
+    const data = error.response?.data;
+
+    // Cas FastAPI renvoie un tableau d'erreurs
+    if (Array.isArray(data)) {
+      const messages = data
+        .map((err: any) => {
+          const field = err.loc[err.loc.length - 1]; // dernier élément du loc = champ
+          return `${field}: ${err.msg}`;
+        })
+        .join("\n");
+      toast.error(messages);
+    } else {
+      // Cas d'erreur simple
+      toast.error(data?.detail || "Erreur lors de l'inscription");
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-[#FFF8E7] flex items-center justify-center p-4">

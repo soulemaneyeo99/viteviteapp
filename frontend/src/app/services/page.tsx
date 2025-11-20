@@ -1,49 +1,65 @@
-// frontend/src/app/services/page.tsx
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { servicesAPI, ticketsAPI } from "@/lib/api";
+import { servicesAPI, ticketsAPI, predictionsAPI } from "@/lib/api";
 import { Service } from "@/types";
-import { Search, MapPin, Clock, Users, FileText, ChevronLeft } from "lucide-react";
+import {
+  Clock,
+  Users,
+  MapPin,
+  FileText,
+  ArrowRight,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
-import ChatBotPro from "@/components/ChatBot";
 
 export default function ServicesPage() {
-  const [selectedCategory, setSelectedCategory] = useState<string>("Tous");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [ticketForm, setTicketForm] = useState({ name: "", phone: "", notes: "" });
+  const [prediction, setPrediction] = useState<any>(null);
+  const [loadingPrediction, setLoadingPrediction] = useState(false);
 
-  const { data: servicesData, isLoading } = useQuery({
-    queryKey: ["services"],
+  // ---- FETCH SERVICES ----
+  const { data, isLoading } = useQuery({
+    queryKey: ["services", selectedCategory],
     queryFn: async () => {
-      const response = await servicesAPI.getAll();
+      const params = selectedCategory !== "all" ? { category: selectedCategory } : {};
+      const response = await servicesAPI.getAll(params);
       return response.data;
     },
   });
 
-  const services: Service[] = servicesData?.services || [];
-  const categories = ["Tous", ...Array.from(new Set(services.map((s: Service) => s.category)))];
+  const services: Service[] = data?.services ?? [];
+  const categories = ["all", ...new Set(services.map(s => s.category))];
 
-  const filteredServices = services.filter((service) => {
-    const matchCategory = selectedCategory === "Tous" || service.category === selectedCategory;
-    const matchSearch = service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                       service.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCategory && matchSearch;
-  });
-
-  const handleTakeTicket = (service: Service) => {
+  // ---- TAKE TICKET ----
+  const handleTakeTicket = async (service: Service) => {
     if (service.status !== "ouvert") {
-      toast.error("Ce service est fermé");
+      toast.error("Ce service est actuellement fermé");
       return;
     }
+
     setSelectedService(service);
     setShowModal(true);
+
+    // IA Prediction
+    setLoadingPrediction(true);
+    try {
+      const response = await predictionsAPI.predict(service.id);
+      setPrediction(response.data);
+    } catch (err) {
+      console.error("Erreur prédiction:", err);
+    } finally {
+      setLoadingPrediction(false);
+    }
   };
 
+  // ---- SUBMIT ----
   const submitTicket = async () => {
     if (!selectedService) return;
 
@@ -56,211 +72,293 @@ export default function ServicesPage() {
       });
 
       toast.success(`Ticket ${response.data.ticket.ticket_number} créé !`);
+
       setShowModal(false);
       setTicketForm({ name: "", phone: "", notes: "" });
+      setPrediction(null);
+
       window.location.href = `/ticket/${response.data.ticket.id}`;
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Erreur");
+      toast.error(error.response?.data?.detail || "Erreur lors de la création");
     }
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FFF8E7] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#FF8C00] border-t-transparent" />
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#FFF8E7]">
-      {/* Header */}
-      <header className="bg-white border-b border-[#FF8C00] sticky top-0 z-40">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="text-gray-600 hover:text-gray-900">
-                <ChevronLeft className="w-6 h-6" />
-              </Link>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-[#FF8C00] to-[#FF6F00] rounded-xl flex items-center justify-center">
-                  <span className="text-xl">⚡</span>
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold text-gray-900">ViteViteApp</h1>
-                  <p className="text-xs text-gray-500">Espace Citoyen</p>
-                </div>
-              </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* HEADER */}
+      <header className="bg-white border-b sticky top-0 z-40">
+        <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center space-x-2">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+              ⚡
             </div>
+            <span className="text-xl font-black">ViteviteApp</span>
+          </Link>
+
+          <div className="flex items-center space-x-4">
+            <Link href="/dashboard" className="text-gray-700 hover:text-black">
+              Mes tickets
+            </Link>
+            <Link
+              href="/marketplace"
+              className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg font-semibold"
+            >
+              🛍️ Marketplace
+            </Link>
           </div>
-        </div>
+        </nav>
       </header>
 
+      {/* PAGE CONTENT */}
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Services disponibles</h1>
-
-        {/* Search */}
-        <div className="mb-6">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Rechercher un service..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8C00] focus:border-transparent"
-            />
-          </div>
+        {/* TITLE */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl md:text-5xl font-black">Services disponibles</h1>
+          <p className="text-xl text-gray-600">Choisissez un service et prenez un ticket</p>
         </div>
 
-        {/* Categories */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {categories.map((cat) => (
+        {/* CATEGORIES */}
+        <div className="flex flex-wrap gap-2 mb-8 justify-center">
+          {categories.map(cat => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-5 py-2 rounded-full font-semibold transition-all ${
+              className={`px-6 py-2 rounded-lg font-semibold transition ${
                 selectedCategory === cat
-                  ? "bg-[#FF8C00] text-white shadow-md"
-                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                  ? "bg-primary text-black"
+                  : "bg-white text-gray-700 hover:bg-gray-100"
               }`}
             >
-              {cat}
+              {cat === "all" ? "Tous" : cat}
             </button>
           ))}
         </div>
 
-        {/* Services Grid */}
+        {/* SERVICES GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredServices.map((service: Service) => (
-            <ServiceCard
-              key={service.id}
-              service={service}
-              onTakeTicket={() => handleTakeTicket(service)}
-            />
+          {services.map(service => (
+            <ServiceCard key={service.id} service={service} onTakeTicket={() => handleTakeTicket(service)} />
           ))}
         </div>
+
+        {services.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-2xl font-bold">Aucun service trouvé</h3>
+            <p className="text-gray-600">Essayez une autre catégorie</p>
+          </div>
+        )}
       </div>
 
-      {/* Modal */}
+      {/* MODAL */}
       {showModal && selectedService && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-4">Prendre un ticket</h2>
-            
-            <div className="bg-[#FFF8E7] rounded-lg p-4 mb-6">
-              <h3 className="font-bold text-lg mb-2">{selectedService.name}</h3>
-              <div className="text-sm text-gray-600 space-y-2">
-                <div className="flex items-center">
-                  <Users className="w-4 h-4 mr-2" />
-                  <span>{selectedService.current_queue_size} personnes en attente</span>
-                </div>
-                <div className="flex items-center">
-                  <Clock className="w-4 h-4 mr-2" />
-                  <span>~{selectedService.estimated_wait_time} min d'attente</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4 mb-6">
-              <input
-                type="text"
-                placeholder="Votre nom"
-                value={ticketForm.name}
-                onChange={(e) => setTicketForm({ ...ticketForm, name: e.target.value })}
-                className="input-field"
-              />
-              <input
-                type="tel"
-                placeholder="+225 XX XX XX XX XX"
-                value={ticketForm.phone}
-                onChange={(e) => setTicketForm({ ...ticketForm, phone: e.target.value })}
-                className="input-field"
-              />
-              <textarea
-                placeholder="Notes (optionnel)"
-                rows={3}
-                value={ticketForm.notes}
-                onChange={(e) => setTicketForm({ ...ticketForm, notes: e.target.value })}
-                className="input-field"
-              />
-            </div>
-
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowModal(false)}
-                className="flex-1 btn-secondary"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={submitTicket}
-                className="flex-1 btn-primary"
-              >
-                Confirmer
-              </button>
-            </div>
-          </div>
-        </div>
+        <TicketModal
+          selectedService={selectedService}
+          setShowModal={setShowModal}
+          ticketForm={ticketForm}
+          setTicketForm={setTicketForm}
+          prediction={prediction}
+          loadingPrediction={loadingPrediction}
+          submitTicket={submitTicket}
+        />
       )}
-
-      <ChatBotPro />
     </div>
   );
 }
 
-function ServiceCard({ service, onTakeTicket }: { service: Service; onTakeTicket: () => void }) {
-  const statusColors: Record<string, string> = {
-    ouvert: "bg-green-100 text-green-800",
-    fermé: "bg-red-100 text-red-800",
-    en_pause: "bg-yellow-100 text-yellow-800",
+// ---------------------------------------------
+//              SERVICE CARD
+// ---------------------------------------------
+function ServiceCard({
+  service,
+  onTakeTicket,
+}: {
+  service: Service;
+  onTakeTicket: () => void;
+}) {
+  const affluenceColors = {
+    faible: "bg-green-100 text-green-800 border-green-300",
+    modérée: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    élevée: "bg-orange-100 text-orange-800 border-orange-300",
+    très_élevée: "bg-red-100 text-red-800 border-red-300",
   };
 
+  const statusColors = {
+    ouvert: "bg-green-500",
+    fermé: "bg-red-500",
+    en_pause: "bg-yellow-500",
+  };
+
+  const isOpen = service.status === "ouvert";
+
   return (
-    <div className="card p-6 hover:shadow-lg transition-all">
+    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl p-6 relative group">
+      <div className={`absolute top-0 right-0 w-3 h-3 ${statusColors[service.status]}`} />
+
+      {/* ICON + NAME */}
       <div className="flex items-start justify-between mb-4">
-        <div>
-          <span className={`badge-status ${statusColors[service.status]} mb-2`}>
-            {service.status === "ouvert" ? "Ouvert" : "Fermé"}
-          </span>
-          <h3 className="font-bold text-lg mb-1">{service.name}</h3>
-          <p className="text-sm text-gray-600">{service.category}</p>
+        <div className="flex items-center space-x-3 flex-1">
+          <div className="text-4xl">{service.icon || "🏢"}</div>
+          <div>
+            <h3 className="font-bold text-lg">{service.name}</h3>
+            <p className="text-sm text-gray-600">{service.category}</p>
+          </div>
         </div>
       </div>
 
-      <p className="text-sm text-gray-600 mb-4 line-clamp-2">{service.description}</p>
+      {/* AFFLUENCE */}
+      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${affluenceColors[service.affluence_level]}`}>
+        <TrendingUp className="w-3 h-3 mr-1" />
+        Affluence: {service.affluence_level}
+      </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-[#FFF8E7] rounded-lg p-3">
-          <Users className="w-5 h-5 text-[#FF8C00] mb-1" />
-          <div className="text-lg font-bold">{service.current_queue_size}</div>
-          <div className="text-xs text-gray-600">personnes</div>
+      {/* STATS */}
+      <div className="grid grid-cols-2 gap-3 my-4">
+        <div className="bg-gray-50 rounded-lg p-3">
+          <Users className="w-4 h-4 text-gray-500" />
+          <div className="font-bold text-lg">{service.current_queue_size}</div>
         </div>
-        <div className="bg-[#FFF8E7] rounded-lg p-3">
-          <Clock className="w-5 h-5 text-[#FF8C00] mb-1" />
-          <div className="text-lg font-bold">{service.estimated_wait_time}</div>
-          <div className="text-xs text-gray-600">minutes</div>
+        <div className="bg-gray-50 rounded-lg p-3">
+          <Clock className="w-4 h-4 text-gray-500" />
+          <div className="font-bold text-lg">{service.estimated_wait_time} min</div>
         </div>
       </div>
 
+      {/* LOCATION */}
       {service.location && (
-        <div className="flex items-start text-xs text-gray-600 mb-4">
-          <MapPin className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" />
-          <span className="line-clamp-2">{service.location.address}</span>
+        <div className="flex items-start space-x-2 text-sm text-gray-600 mb-4">
+          <MapPin className="w-4 h-4" />
+          <span>{service.location.address}</span>
         </div>
       )}
 
+      {/* BUTTON */}
       <button
         onClick={onTakeTicket}
-        disabled={service.status !== "ouvert"}
-        className={`w-full py-3 rounded-lg font-bold transition-all ${
-          service.status === "ouvert"
-            ? "bg-[#FF8C00] hover:bg-[#FF6F00] text-white"
-            : "bg-gray-200 text-gray-500 cursor-not-allowed"
+        disabled={!isOpen}
+        className={`w-full py-3 rounded-xl font-bold flex items-center justify-center ${
+          isOpen ? "bg-primary text-black hover:bg-primary-dark" : "bg-gray-200 text-gray-500"
         }`}
       >
-        {service.status === "ouvert" ? "🎫 Prendre un ticket" : "Service fermé"}
+        {isOpen ? "Prendre un ticket" : "Service fermé"}
+        {isOpen && <ArrowRight className="w-5 h-5 ml-2" />}
       </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------
+//              TICKET MODAL
+// ---------------------------------------------
+function TicketModal({
+  selectedService,
+  setShowModal,
+  ticketForm,
+  setTicketForm,
+  prediction,
+  loadingPrediction,
+  submitTicket,
+}: {
+  selectedService: Service;
+  setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+  ticketForm: { name: string; phone: string; notes: string };
+  setTicketForm: React.Dispatch<React.SetStateAction<{ name: string; phone: string; notes: string }>>;
+  prediction: any;
+  loadingPrediction: boolean;
+  submitTicket: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black opacity-40" onClick={() => setShowModal(false)} />
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-xl mx-4 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-xl font-bold">Prendre un ticket - {selectedService.name}</h2>
+            <p className="text-sm text-gray-600">{selectedService.category}</p>
+          </div>
+          <button
+            onClick={() => setShowModal(false)}
+            className="text-gray-500 hover:text-gray-700"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <label className="text-sm font-semibold block mb-1">Nom (facultatif)</label>
+            <input
+              value={ticketForm.name}
+              onChange={(e) => setTicketForm({ ...ticketForm, name: e.target.value })}
+              className="w-full border rounded-lg px-3 py-2"
+              placeholder="Votre nom"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-semibold block mb-1">Téléphone (facultatif)</label>
+            <input
+              value={ticketForm.phone}
+              onChange={(e) => setTicketForm({ ...ticketForm, phone: e.target.value })}
+              className="w-full border rounded-lg px-3 py-2"
+              placeholder="06XXXXXXXX"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-semibold block mb-1">Notes</label>
+            <textarea
+              value={ticketForm.notes}
+              onChange={(e) => setTicketForm({ ...ticketForm, notes: e.target.value })}
+              className="w-full border rounded-lg px-3 py-2"
+              rows={3}
+              placeholder="Informations supplémentaires"
+            />
+          </div>
+
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2 text-sm text-gray-700">
+                <Sparkles className="w-4 h-4" />
+                <span className="font-semibold">Prédiction IA</span>
+              </div>
+              {loadingPrediction && <div className="text-sm text-gray-500">Chargement...</div>}
+            </div>
+            {!loadingPrediction && prediction && (
+              <div className="text-sm text-gray-600">
+                {prediction.message || JSON.stringify(prediction)}
+              </div>
+            )}
+            {!loadingPrediction && !prediction && (
+              <div className="text-sm text-gray-500">Aucune prédiction disponible</div>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6 flex items-center space-x-3">
+          <button
+            onClick={submitTicket}
+            className="flex-1 py-3 bg-primary text-black rounded-lg font-bold"
+          >
+            Confirmer et prendre un ticket
+          </button>
+          <button
+            onClick={() => setShowModal(false)}
+            className="py-3 px-4 bg-gray-200 text-gray-700 rounded-lg font-semibold"
+          >
+            Annuler
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

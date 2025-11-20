@@ -1,6 +1,6 @@
 """
 ViteviteApp - Database Configuration
-SQLAlchemy 2.0 avec AsyncIO pour PostgreSQL
+SQLAlchemy 2.0 avec AsyncIO pour SQLite (par défaut)
 """
 
 from typing import AsyncGenerator
@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession,
     create_async_engine,
     async_sessionmaker,
-    AsyncEngine
+    AsyncEngine,
 )
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.pool import NullPool
@@ -22,22 +22,29 @@ logger = logging.getLogger(__name__)
 Base = declarative_base()
 
 # ========== ENGINE ==========
-if settings.is_development:
+
+# Forcer SQLite si DATABASE_URL n'est pas PostgreSQL
+DATABASE_URL = settings.DATABASE_URL
+
+if DATABASE_URL.startswith("sqlite"):
+    # SQLite = pas de pool
     engine: AsyncEngine = create_async_engine(
-        settings.DATABASE_URL,
-        echo=settings.DEBUG,  # Log SQL queries en dev
+        DATABASE_URL,
+        echo=settings.DEBUG,
         future=True,
-        pool_pre_ping=True,  # Vérifie connexions avant usage
-        poolclass=NullPool,  # No pool en dev pour hot reload
+        connect_args={"check_same_thread": False},
+        poolclass=NullPool,
     )
+
 else:
+    # PostgreSQL (optionnel - mais désactivé tant que tu n'es pas prêt)
     engine: AsyncEngine = create_async_engine(
-        settings.DATABASE_URL,
-        echo=settings.DEBUG,  # Log SQL queries en dev
+        DATABASE_URL,
+        echo=settings.DEBUG,
         future=True,
-        pool_pre_ping=True,  # Vérifie connexions avant usage
-        # En prod, pas de NullPool => pool par défaut
+        pool_pre_ping=True,
     )
+
 
 # ========== SESSION FACTORY ==========
 AsyncSessionLocal = async_sessionmaker(
@@ -49,19 +56,11 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 
-# ========== DEPENDENCY ==========
+# ========== DEPENDENCY FASTAPI ==========
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """
-    Dependency pour obtenir une session DB
-    Usage dans FastAPI:
-        @app.get("/endpoint")
-        async def endpoint(db: AsyncSession = Depends(get_db)):
-            ...
-    """
     async with AsyncSessionLocal() as session:
         try:
             yield session
-            await session.commit()
         except Exception as e:
             await session.rollback()
             logger.error(f"Database session error: {e}")
@@ -70,45 +69,36 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
-# ========== INIT DB ==========
+# ========== INIT DB (DEV ONLY) ==========
 async def init_db() -> None:
     """
     Initialise la base de données (crée les tables)
-    À utiliser uniquement en dev ou pour tests
-    En production, utiliser Alembic migrations
+    À utiliser uniquement en dev ou pour tests.
     """
     async with engine.begin() as conn:
-        # Import tous les models pour que SQLAlchemy les connaisse
         from app.models import user, service, ticket  # noqa
-        
+
         if settings.is_development:
-            # Drop et recrée en dev
             await conn.run_sync(Base.metadata.drop_all)
             logger.warning("🗑️  Tables dropped (dev mode)")
-        
+
         await conn.run_sync(Base.metadata.create_all)
         logger.info("✅ Database tables created")
 
 
+# ========== CLOSE DB ==========
 async def close_db() -> None:
-    """Ferme proprement la connexion DB"""
     await engine.dispose()
     logger.info("🔒 Database connection closed")
 
 
 # ========== HEALTH CHECK ==========
 async def check_db_connection() -> bool:
-    """
-    Vérifie que la connexion DB est active
-    
-    Returns:
-        True si connexion OK
-    """
     from sqlalchemy import text
 
     try:
         async with AsyncSessionLocal() as session:
-            await session.execute(text("SELECT 1"))  # <-- text() autour de "SELECT 1"
+            await session.execute(text("SELECT 1"))
             return True
     except Exception as e:
         logger.error(f"Database health check failed: {e}")
@@ -117,15 +107,6 @@ async def check_db_connection() -> bool:
 
 # ========== TRANSACTION HELPER ==========
 class transaction:
-    """
-    Context manager pour transactions manuelles
-    
-    Usage:
-        async with transaction(db) as tx:
-            # operations
-            await tx.commit()  # ou rollback automatique si erreur
-    """
-    
     def __init__(self, db: AsyncSession):
         self.db = db
     

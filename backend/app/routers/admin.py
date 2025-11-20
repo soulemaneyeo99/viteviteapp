@@ -4,6 +4,11 @@ from app.database import db
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
+def admin_required(current_user: User = Depends(get_current_user)):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Accès interdit")
+    return current_user
+
 @router.get("/stats", response_model=AdminStats)
 async def get_statistics():
     """Récupère les statistiques globales du système"""

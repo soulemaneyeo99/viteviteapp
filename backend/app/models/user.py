@@ -3,7 +3,7 @@ ViteviteApp - User Model
 Gestion des utilisateurs avec authentification
 """
 
-from sqlalchemy import Column, String, Boolean, Enum as SQLEnum
+from sqlalchemy import Column, String, Boolean, Enum as SQLEnum, Integer
 from sqlalchemy.orm import relationship
 import enum
 
@@ -12,11 +12,9 @@ from app.models.base import BaseModel, generate_uuid
 
 
 class UserRole(str, enum.Enum):
-    """Rôles utilisateurs"""
-    USER = "user"           # Utilisateur standard
-    ADMIN = "admin"         # Administrateur
-    SUPER_ADMIN = "super"   # Super administrateur
-
+    ADMIN = "admin"
+    USER = "user"
+    SUPER_ADMIN = "super_admin"
 
 class User(Base, BaseModel):
     """Model User - Utilisateurs de l'application"""
