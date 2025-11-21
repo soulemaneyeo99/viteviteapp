@@ -8,29 +8,53 @@ const config = {
   theme: {
     extend: {
       colors: {
-        // Palette officielle ViteviteApp
+        // Palette officielle ViteviteApp (Pro Design)
         primary: {
-          DEFAULT: "#FFD43B",
-          dark: "#FFC107",
-          light: "#FFE57F",
+          DEFAULT: "#FF8C00", // Orange principal
+          dark: "#FF6F00",    // Orange foncé (hover/active)
+          light: "#FFB74D",   // Orange clair
+          50: "#FFF8E1",
+          100: "#FFECB3",
+          200: "#FFE082",
+          300: "#FFD54F",
+          400: "#FFCA28",
+          500: "#FFC107",
+          600: "#FFB300",
+          700: "#FFA000",
+          800: "#FF8F00",
+          900: "#FF6F00",
         },
         secondary: {
-          DEFAULT: "#000000",
-          light: "#1F2937",
+          DEFAULT: "#10B981", // Vert (Success/Open)
+          light: "#D1FAE5",
         },
-        background: "#FFFFFF",
-        foreground: "#000000",
-        
-        // shadcn/ui compatibility
+        background: "#F3F4F6", // Gris clair (Light Gray)
+        foreground: "#111827", // Gris foncé (Dark Gray)
+
+        // shadcn/ui compatibility & Functional Colors
         border: "#E5E7EB",
-        input: "#E5E7EB",
-        ring: "#FFD43B",
-        
+        input: "#F9FAFB", // Very light gray for inputs
+        ring: "#FF8C00",
+
         // Status colors
-        success: "#10B981",
-        warning: "#F59E0B",
-        error: "#EF4444",
-        info: "#3B82F6",
+        success: "#10B981", // Green
+        warning: "#F59E0B", // Amber
+        error: "#EF4444",   // Red
+        info: "#8B5CF6",    // Purple (Stats)
+
+        // Custom grays for text
+        gray: {
+          50: "#F9FAFB",
+          100: "#F3F4F6",
+          200: "#E5E7EB",
+          300: "#D1D5DB",
+          400: "#9CA3AF",
+          500: "#6B7280",
+          600: "#4B5563",
+          700: "#374151",
+          800: "#1F2937",
+          900: "#111827",
+        },
       },
       borderRadius: {
         lg: "0.75rem",

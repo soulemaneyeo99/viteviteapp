@@ -126,11 +126,7 @@ async def error_handling_middleware(request: Request, call_next):
 
 
 # ========== ROUTERS ==========
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
-app.include_router(services.router, prefix="/api/v1/services", tags=["Services"])
-app.include_router(tickets.router, prefix="/api/v1/tickets", tags=["Tickets"])
-app.include_router(predictions.router, prefix="/api/v1/predictions", tags=["Predictions"])
-app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
+# Routers are now included via api_router below to avoid duplicates
 
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 

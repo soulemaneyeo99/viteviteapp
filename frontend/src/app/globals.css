@@ -6,33 +6,33 @@
   :root {
     --primary: #FF8C00;
     --primary-dark: #FF6F00;
-    --secondary: #FFD43B;
-    --background: #FFF8E7;
+    --secondary: #10B981;
+    --background: #F3F4F6;
   }
   
   body {
-    @apply bg-[#FFF8E7] text-gray-900;
+    @apply bg-background text-foreground;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-[#FF8C00] hover:bg-[#FF6F00] text-white font-semibold px-6 py-3 rounded-lg transition-all;
+    @apply bg-gradient-to-r from-primary to-primary-dark text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95;
   }
   
   .btn-secondary {
-    @apply bg-white border-2 border-[#FF8C00] text-[#FF8C00] hover:bg-[#FF8C00] hover:text-white font-semibold px-6 py-3 rounded-lg transition-all;
+    @apply bg-white border-2 border-primary/20 text-primary-dark hover:border-primary hover:bg-primary-50 font-bold px-6 py-3 rounded-xl transition-all;
   }
   
   .input-field {
-    @apply w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8C00] focus:border-transparent;
+    @apply w-full px-4 py-3.5 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-400 text-gray-900;
   }
   
   .card {
-    @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-100;
+    @apply bg-white rounded-3xl shadow-custom-lg border border-gray-100 p-6;
   }
   
   .badge-status {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold;
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide;
   }
 }
