@@ -64,6 +64,13 @@ export default function UserNavbar() {
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-8">
                         <Link
+                            href="/urgences"
+                            className="text-sm font-bold text-red-600 hover:text-red-700 transition-colors flex items-center gap-1"
+                        >
+                            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                            Urgences
+                        </Link>
+                        <Link
                             href="/services"
                             className={`text-sm font-medium transition-colors ${isActive('/services') ? 'text-orange-600' : 'text-slate-600 hover:text-slate-900'
                                 }`}
@@ -137,6 +144,14 @@ export default function UserNavbar() {
             {isMenuOpen && (
                 <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-slate-100 shadow-xl animate-in slide-in-from-top-5 duration-200">
                     <div className="p-4 space-y-2">
+                        <Link
+                            href="/urgences"
+                            onClick={() => setIsMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+                        >
+                            <span className="text-lg">🚨</span>
+                            Urgences
+                        </Link>
                         <Link
                             href="/services"
                             onClick={() => setIsMenuOpen(false)}

@@ -3,7 +3,7 @@ ViteviteApp - API Router v1
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, services, tickets, predictions, admin
+from app.api.v1.endpoints import auth, services, tickets, predictions, admin, chat
 
 api_router = APIRouter()
 
@@ -12,6 +12,7 @@ api_router.include_router(services.router, prefix="/services", tags=["services"]
 api_router.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
 api_router.include_router(predictions.router, prefix="/predictions", tags=["predictions"])
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
+api_router.include_router(chat.router, prefix="/chat", tags=["chat"])
 
 
 @api_router.get("/health")

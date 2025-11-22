@@ -96,4 +96,8 @@ export const predictionsAPI = {
   predict: (serviceId: string) => api.post(`/predictions/${serviceId}`),
 };
 
+export const chatAPI = {
+  sendMessage: (message: string, history?: any[]) => api.post("/chat", { message, history }),
+};
+
 export default api;

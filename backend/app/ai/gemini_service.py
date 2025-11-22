@@ -11,17 +11,19 @@ import json
 from app.models import AffluenceLevel
 import logging
 
+from app.core.config import settings
+
 logger = logging.getLogger(__name__)
 
 class GeminiService:
     def __init__(self):
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = settings.GEMINI_API_KEY
         if api_key:
             try:
                 genai.configure(api_key=api_key)
                 # ✅ CORRECTION: Utilisation du bon modèle Gemini Flash
                 self.model = genai.GenerativeModel(
-                    'gemini-2.0-flash-exp',  # ✅ Version correcte
+                    'gemini-flash-latest',  # ✅ Version valide
                     generation_config={
                         'temperature': 0.7,
                         'top_p': 0.8,

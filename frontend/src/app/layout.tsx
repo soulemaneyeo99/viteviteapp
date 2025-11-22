@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "sonner";
+import ChatWidget from '@/components/ai/ChatWidget';
 import UserNavbar from "@/components/UserNavbar";
 
 const inter = Inter({
@@ -33,7 +34,8 @@ export default function RootLayout({
         <Providers>
           <UserNavbar />
           {children}
-          <Toaster position="top-right" richColors />
+          <ChatWidget />
+          <Toaster position="top-center" richColors />
         </Providers>
       </body>
     </html>

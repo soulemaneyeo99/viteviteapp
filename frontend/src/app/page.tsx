@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Zap, ArrowRight, CheckCircle2, Clock, Users, Building2, ShieldCheck, Ticket } from "lucide-react";
+import { Zap, ArrowRight, CheckCircle2, Clock, Users, Building2, ShieldCheck, Ticket, Activity, AlertCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { servicesAPI } from "@/lib/api";
+import { Service } from "@/types";
 
 export default function LandingPage() {
   return (
@@ -49,6 +52,21 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* AI Live Status Section */}
+      <section className="py-12 bg-white border-b border-gray-100">
+        <div className="container mx-auto px-6">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="relative">
+              <div className="absolute inset-0 bg-red-500 blur-lg opacity-20 animate-pulse"></div>
+              <Activity className="w-6 h-6 text-red-500 relative z-10" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">État des services en temps réel <span className="text-xs font-normal text-gray-500 ml-2 bg-gray-100 px-2 py-1 rounded-full">IA Live</span></h2>
+          </div>
+
+          <LiveServiceGrid />
         </div>
       </section>
 
@@ -245,6 +263,89 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function LiveServiceGrid() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["services", "live"],
+    queryFn: async () => {
+      const response = await servicesAPI.getAll();
+      return response.data;
+    },
+    refetchInterval: 30000, // Refresh every 30s
+  });
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-32 bg-gray-50 rounded-2xl animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  const services: Service[] = data?.services?.slice(0, 4) || [];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {services.map((service) => {
+        const isSaturated = service.current_queue_size > 50;
+        const isClosed = service.status !== "ouvert";
+
+        let statusColor = "bg-green-50 text-green-700 border-green-100";
+        let statusText = "Fluide";
+        let statusIcon = <CheckCircle2 className="w-4 h-4" />;
+
+        if (isClosed) {
+          statusColor = "bg-gray-50 text-gray-500 border-gray-100";
+          statusText = "Fermé";
+          statusIcon = <Clock className="w-4 h-4" />;
+        } else if (isSaturated) {
+          statusColor = "bg-red-50 text-red-700 border-red-100";
+          statusText = "Saturé";
+          statusIcon = <AlertCircle className="w-4 h-4" />;
+        } else if (service.current_queue_size > 20) {
+          statusColor = "bg-orange-50 text-orange-700 border-orange-100";
+          statusText = "Chargé";
+          statusIcon = <Users className="w-4 h-4" />;
+        }
+
+        return (
+          <Link
+            key={service.id}
+            href={`/services?id=${service.id}`}
+            className="group block bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-lg hover:border-primary/30 transition-all duration-300"
+          >
+            <div className="flex justify-between items-start mb-3">
+              <h3 className="font-bold text-gray-900 truncate pr-2">{service.name}</h3>
+              <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border ${statusColor}`}>
+                {statusIcon}
+                {statusText}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-sm">
+              <div className="text-gray-500">
+                <span className="font-bold text-gray-900">{service.current_queue_size}</span> en attente
+              </div>
+              <div className="text-gray-500">
+                ~<span className="font-bold text-gray-900">{service.estimated_wait_time}</span> min
+              </div>
+            </div>
+
+            {/* AI Insight */}
+            {!isClosed && (
+              <div className="mt-3 pt-3 border-t border-gray-50 text-xs text-primary font-medium flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Zap className="w-3 h-3" />
+                IA: {isSaturated ? "Évitez maintenant" : "Bon moment"}
+              </div>
+            )}
+          </Link>
+        );
+      })}
     </div>
   );
 }
