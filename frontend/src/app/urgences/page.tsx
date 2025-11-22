@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { servicesAPI } from "@/lib/api";
+import { servicesAPI, aiAPI } from "@/lib/api";
 import { Service } from "@/types";
 import {
     Ambulance,
@@ -33,7 +33,7 @@ export default function UrgencesPage() {
         },
     });
 
-    const services: Service[] = data?.services?.filter(s => s.category === "Santé" || s.category === "Hôpital") || [];
+    const services: Service[] = data?.services?.filter((s: Service) => s.category === "Santé" || s.category === "Hôpital") || [];
 
     // Mock hospitals if none found (for demo)
     const hospitals = services.length > 0 ? services : [
@@ -69,21 +69,76 @@ export default function UrgencesPage() {
         }
     ];
 
-    const handleTriage = () => {
+    const handleTriage = async () => {
         if (!symptoms.trim()) return;
 
         setIsAnalyzing(true);
-        setTimeout(() => {
-            setIsAnalyzing(false);
-            // Simple mock logic
-            if (symptoms.toLowerCase().includes("coeur") || symptoms.toLowerCase().includes("poitrine")) {
-                setTriageResult("URGENCE VITALE POSSIBLE. Dirigez-vous immédiatement vers le CHU de Cocody (Cardiologie).");
-            } else if (symptoms.toLowerCase().includes("tête") || symptoms.toLowerCase().includes("fièvre")) {
-                setTriageResult("Consultation générale recommandée. La Clinique Pisam a le moins d'attente (15 min).");
-            } else {
-                setTriageResult("Basé sur vos symptômes, nous recommandons l'Hôpital Mère-Enfant.");
+        try {
+            // Call AI triage service
+            const response = await aiAPI.medicalTriage(symptoms, undefined, true);
+            const triageData = response.data.data;
+
+            // Format result message
+            let resultMessage = ``;
+
+            // Urgency level with emoji
+            const urgencyEmojis: Record<string, string> = {
+                "urgence_vitale": "🚨",
+                "urgente": "⚠️",
+                "normale": "ℹ️",
+                "non_urgente": "✅"
+            };
+
+            const urgencyLabels: Record<string, string> = {
+                "urgence_vitale": "URGENCE VITALE",
+                "urgente": "URGENCE",
+                "normale": "CONSULTATION NORMALE",
+                "non_urgente": "NON-URGENT"
+            };
+
+            const emoji = urgencyEmojis[triageData.urgency_level] || "ℹ️";
+            const label = urgencyLabels[triageData.urgency_level] || triageData.urgency_level;
+
+            resultMessage += `${emoji} **${label}**\n\n`;
+            resultMessage += `**Action requise:** ${triageData.action_required}\n\n`;
+
+            if (triageData.recommended_hospital) {
+                resultMessage += `**Hôpital recommandé:** ${triageData.recommended_hospital.name}\n`;
+                resultMessage += `*${triageData.recommended_hospital.reason}*\n\n`;
             }
-        }, 1500);
+
+            if (triageData.primary_concern) {
+                resultMessage += `**Préoccupation principale:** ${triageData.primary_concern}\n\n`;
+            }
+
+            if (triageData.advice) {
+                resultMessage += `💡 ${triageData.advice}\n\n`;
+            }
+
+            resultMessage += `\n⚠️ ${triageData.disclaimer}`;
+
+            setTriageResult(resultMessage);
+
+            // If urgence vitale, show alert
+            if (triageData.urgency_level === "urgence_vitale") {
+                toast.error("URGENCE VITALE DÉTECTÉE - Appelez le SAMU (185) immédiatement !", {
+                    duration: 10000
+                });
+            }
+
+        } catch (error) {
+            console.error("Erreur triage:", error);
+            // Fallback to simple logic
+            if (symptoms.toLowerCase().includes("coeur") || symptoms.toLowerCase().includes("poitrine")) {
+                setTriageResult("🚨 URGENCE VITALE POSSIBLE. Dirigez-vous immédiatement vers le CHU de Cocody (Cardiologie) ou appelez le SAMU (185).");
+            } else if (symptoms.toLowerCase().includes("tête") || symptoms.toLowerCase().includes("fièvre")) {
+                setTriageResult("⚠️ Consultation générale recommandée. La Clinique Pisam a le moins d'attente (15 min).");
+            } else {
+                setTriageResult("ℹ️ Basé sur vos symptômes, nous recommandons une consultation médicale. L'Hôpital Mère-Enfant est disponible.");
+            }
+        } finally {
+            setIsAnalyzing(false);
+        }
     };
 
     return (
@@ -201,7 +256,7 @@ export default function UrgencesPage() {
                                         <div className="text-center">
                                             <div className="text-xs font-bold text-slate-400 uppercase mb-1">Attente</div>
                                             <div className={`text-2xl font-black ${hospital.estimated_wait_time < 30 ? "text-green-600" :
-                                                    hospital.estimated_wait_time < 60 ? "text-orange-500" : "text-red-600"
+                                                hospital.estimated_wait_time < 60 ? "text-orange-500" : "text-red-600"
                                                 }`}>
                                                 {hospital.estimated_wait_time} <span className="text-sm font-medium text-slate-400">min</span>
                                             </div>
