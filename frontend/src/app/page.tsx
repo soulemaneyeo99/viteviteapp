@@ -6,32 +6,6 @@ import { Zap, ArrowRight, CheckCircle2, Clock, Users, Building2, ShieldCheck, Ti
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white font-sans">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
-        <nav className="container mx-auto px-6 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-              <Zap className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-bold text-gray-900 tracking-tight">ViteviteApp</span>
-          </Link>
-          <div className="flex items-center space-x-6">
-            <Link
-              href="/auth"
-              className="text-sm font-bold text-gray-600 hover:text-gray-900 transition-colors hidden md:block"
-            >
-              Connexion
-            </Link>
-            <Link
-              href="/services"
-              className="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-            >
-              Prendre un ticket
-            </Link>
-          </div>
-        </nav>
-      </header>
-
       {/* Hero */}
       <section className="relative overflow-hidden bg-[#FFF8E7] pt-20 pb-32">
         {/* Background Elements */}

@@ -3,8 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "sonner";
+import UserNavbar from "@/components/UserNavbar";
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
 });
@@ -30,6 +31,7 @@ export default function RootLayout({
     <html lang="fr" className={inter.variable}>
       <body className="antialiased bg-gray-50">
         <Providers>
+          <UserNavbar />
           {children}
           <Toaster position="top-right" richColors />
         </Providers>

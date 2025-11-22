@@ -54,28 +54,8 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b shadow-sm sticky top-0 z-40">
-        <nav className="container mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-              <span className="text-lg sm:text-xl text-white">⚡</span>
-            </div>
-            <span className="text-lg sm:text-xl font-black text-gray-900 tracking-tight">ViteViteApp</span>
-          </Link>
-          <div className="flex items-center space-x-3 sm:space-x-4">
-            <Link
-              href="/services"
-              className="px-3 sm:px-5 py-2 sm:py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark transition-all shadow-sm hover:shadow-md text-sm sm:text-base flex items-center gap-2"
-            >
-              <span className="hidden sm:inline">Nouveau ticket</span>
-              <span className="sm:hidden">Nouveau</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </nav>
-      </header>
-
-      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
+      {/* Header */}
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pt-24 max-w-7xl">
         {/* Welcome Section */}
         <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

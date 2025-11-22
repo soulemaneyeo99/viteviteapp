@@ -114,36 +114,9 @@ export default function ServicesPage() {
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       {/* HEADER */}
-      <header className="bg-white border-b sticky top-0 z-40 shadow-sm">
-        <nav className="container mx-auto px-4 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-              <span className="text-xl text-white">⚡</span>
-            </div>
-            <span className="text-xl font-black text-gray-900 tracking-tight">ViteViteApp</span>
-          </Link>
-
-          <div className="flex items-center space-x-4">
-            <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
-              Mes tickets
-            </Link>
-            <Link
-              href="/marketplace"
-              className="hidden md:flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-xl font-bold hover:bg-purple-100 transition-colors"
-            >
-              <span>🛍️</span>
-              <span>Marketplace</span>
-            </Link>
-            <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border-2 border-white shadow-sm">
-              {/* Placeholder avatar */}
-              <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400"></div>
-            </div>
-          </div>
-        </nav>
-      </header>
-
       {/* PAGE CONTENT */}
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      {/* PAGE CONTENT */}
+      <div className="container mx-auto px-4 py-8 pt-24 max-w-7xl">
         {/* TITLE & SEARCH */}
         <div className="mb-10 space-y-6">
           <div>

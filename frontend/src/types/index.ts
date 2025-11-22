@@ -53,7 +53,7 @@ export interface Service {
   updated_at: string;
 }
 
-export type TicketStatus = "en_attente" | "appelé" | "en_service" | "terminé" | "annulé";
+export type TicketStatus = "en_attente" | "appelé" | "en_service" | "terminé" | "annulé" | "refusé";
 
 export interface Ticket {
   id: string;
