@@ -18,6 +18,8 @@ import {
   Droplet,
   Activity,
   CreditCard,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";

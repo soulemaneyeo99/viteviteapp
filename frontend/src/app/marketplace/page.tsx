@@ -162,42 +162,43 @@ export default function ViteviteMarketplace() {
 
   // Chargement des produits
   useEffect(() => {
-    loadProducts();
-  }, []);
+    const loadProducts = async (): Promise<void> => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const response = await fetch(`${API_URL}/api/marketplace/products`);
 
-  const loadProducts = async (): Promise<void> => {
-    try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${API_URL}/api/marketplace/products`);
-      
-      if (response.ok) {
-        const data: Product[] = await response.json();
-        setProducts(data);
-      } else {
+        if (response.ok) {
+          const data: Product[] = await response.json();
+          setProducts(data);
+        } else {
+          // Fallback vers produits statiques
+          setProducts(staticProducts);
+        }
+      } catch (error) {
+        console.error('Erreur chargement produits:', error);
         // Fallback vers produits statiques
         setProducts(staticProducts);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Erreur chargement produits:', error);
-      // Fallback vers produits statiques
-      setProducts(staticProducts);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    loadProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Filtrage des produits
   const filteredProducts: Product[] = products.filter((p: Product) => {
     const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         p.seller.toLowerCase().includes(searchQuery.toLowerCase());
+      p.seller.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
   // Ajout au panier
   const addToCart = (product: Product): void => {
     const existing = cart.find((item: CartItem) => item.id === product.id);
-    
+
     if (existing) {
       setCart(cart.map((item: CartItem) =>
         item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
@@ -320,11 +321,10 @@ export default function ViteviteMarketplace() {
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-6 py-3 rounded-xl font-semibold whitespace-nowrap transition-all ${
-                    selectedCategory === cat.id
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className={`px-6 py-3 rounded-xl font-semibold whitespace-nowrap transition-all ${selectedCategory === cat.id
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                 >
                   <span className="mr-2">{cat.icon}</span>
                   {cat.name}
@@ -362,7 +362,7 @@ export default function ViteviteMarketplace() {
               <span className="hidden sm:inline">Plus de filtres</span>
             </button>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product: Product) => (
               <ProductCard key={product.id} product={product} addToCart={addToCart} />
@@ -428,9 +428,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart, featured 
     : product.price;
 
   return (
-    <div className={`bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 ${
-      featured ? 'ring-4 ring-yellow-400' : ''
-    }`}>
+    <div className={`bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 ${featured ? 'ring-4 ring-yellow-400' : ''
+      }`}>
       {/* Image and badges */}
       <div className="relative bg-gradient-to-br from-purple-100 to-pink-100 p-8 flex items-center justify-center">
         <div className="text-6xl sm:text-7xl">{product.image}</div>
@@ -445,7 +444,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart, featured 
             VEDETTE
           </div>
         )}
-        <button 
+        <button
           className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-lg hover:bg-red-50 transition-all"
           aria-label="Ajouter aux favoris"
         >
@@ -490,9 +489,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart, featured 
 
         {/* Stock */}
         <div className="flex items-center justify-between text-xs">
-          <span className={`font-semibold ${
-            product.stock > 50 ? 'text-green-600' : 'text-orange-600'
-          }`}>
+          <span className={`font-semibold ${product.stock > 50 ? 'text-green-600' : 'text-orange-600'
+            }`}>
             {product.stock > 50 ? '✅ En stock' : `⚠️ ${product.stock} restants`}
           </span>
         </div>

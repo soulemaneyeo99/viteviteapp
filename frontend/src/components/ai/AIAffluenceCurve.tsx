@@ -57,7 +57,7 @@ export default function AIAffluenceCurve({ serviceId }: AIAffluenceCurveProps) {
                 <div className="flex items-end justify-between gap-2 h-48">
                     {hourlyData.map((item, index) => {
                         const heightPercent = (item.level / maxLevel) * 100;
-                        const isPeak = peakHours.some((peak) => item.hour.startsWith(peak.split("-")[0]));
+                        const isPeak = peakHours.some((peak: string) => item.hour.startsWith(peak.split("-")[0]));
                         const isBest = bestTimeToday && item.hour.startsWith(bestTimeToday.split("-")[0]);
 
                         return (
@@ -66,10 +66,10 @@ export default function AIAffluenceCurve({ serviceId }: AIAffluenceCurveProps) {
                                 <div className="w-full flex flex-col justify-end h-full">
                                     <div
                                         className={`w-full rounded-t-lg transition-all duration-300 group-hover:opacity-80 ${isBest
-                                                ? "bg-gradient-to-t from-green-400 to-green-600"
-                                                : isPeak
-                                                    ? "bg-gradient-to-t from-red-400 to-red-600"
-                                                    : "bg-gradient-to-t from-blue-400 to-blue-600"
+                                            ? "bg-gradient-to-t from-green-400 to-green-600"
+                                            : isPeak
+                                                ? "bg-gradient-to-t from-red-400 to-red-600"
+                                                : "bg-gradient-to-t from-blue-400 to-blue-600"
                                             }`}
                                         style={{ height: `${heightPercent}%` }}
                                     >
