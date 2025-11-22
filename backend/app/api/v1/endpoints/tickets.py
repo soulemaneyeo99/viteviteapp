@@ -51,7 +51,7 @@ async def create_ticket(
         user_id=current_user.id,
         ticket_number=ticket_number,
         position_in_queue=position,
-        status=TicketStatus.WAITING,
+        status=TicketStatus.PENDING_VALIDATION,  # Nouveau: nécessite validation admin
         user_name=ticket_data.user_name or current_user.full_name,
         user_phone=ticket_data.user_phone or current_user.phone,
         estimated_wait_time=service.estimated_wait_time,
@@ -94,10 +94,13 @@ async def get_my_tickets(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Récupère les tickets de l'utilisateur connecté"""
+    """Récupère les tickets de l'utilisateur connecté (sauf ceux en attente de validation)"""
     
     result = await db.execute(
-        select(Ticket).where(Ticket.user_id == current_user.id).order_by(Ticket.created_at.desc())
+        select(Ticket)
+        .where(Ticket.user_id == current_user.id)
+        .where(Ticket.status != TicketStatus.PENDING_VALIDATION)  # Filtrer les tickets non validés
+        .order_by(Ticket.created_at.desc())
     )
     tickets = result.scalars().all()
     
@@ -269,4 +272,68 @@ async def get_today_stats(
         "completed_tickets": completed_tickets,
         "average_wait_time": 25,
         "services_open": services_open
+    }
+
+
+@router.get("/pending-validation")
+async def get_pending_tickets(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Récupère tous les tickets en attente de validation (admin only)"""
+    
+    result = await db.execute(
+        select(Ticket)
+        .where(Ticket.status == TicketStatus.PENDING_VALIDATION)
+        .order_by(Ticket.created_at.asc())
+    )
+    tickets = result.scalars().all()
+    
+    return {
+        "success": True,
+        "total": len(tickets),
+        "tickets": [TicketPublic.model_validate(t) for t in tickets]
+    }
+
+
+@router.post("/{ticket_id}/validate")
+async def validate_ticket(
+    ticket_id: str,
+    action: str,  # "confirm" ou "reject"
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Valider ou rejeter un ticket (admin only)"""
+    
+    result = await db.execute(select(Ticket).where(Ticket.id == ticket_id))
+    ticket = result.scalar_one_or_none()
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket non trouvé")
+    
+    if ticket.status != TicketStatus.PENDING_VALIDATION:
+        raise HTTPException(status_code=400, detail="Ce ticket n'est pas en attente de validation")
+    
+    if action == "confirm":
+        ticket.status = TicketStatus.WAITING
+        message = "Ticket confirmé et ajouté à la file d'attente"
+    elif action == "reject":
+        ticket.status = TicketStatus.REJECTED
+        ticket.completed_at = datetime.utcnow().isoformat()
+        # Mettre à jour le service
+        service_result = await db.execute(select(Service).where(Service.id == ticket.service_id))
+        service = service_result.scalar_one_or_none()
+        if service:
+            service.current_queue_size = max(0, service.current_queue_size - 1)
+        message = "Ticket refusé"
+    else:
+        raise HTTPException(status_code=400, detail="Action invalide. Utilisez 'confirm' ou 'reject'")
+    
+    await db.commit()
+    await db.refresh(ticket)
+    
+    return {
+        "success": True,
+        "message": message,
+        "ticket": TicketPublic.model_validate(ticket)
     }

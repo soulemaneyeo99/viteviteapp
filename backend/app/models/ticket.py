@@ -14,12 +14,14 @@ from app.models.base import BaseModel, generate_uuid
 
 class TicketStatus(str, enum.Enum):
     """Statuts de ticket"""
+    PENDING_VALIDATION = "en_attente_validation"  # Nouveau: en attente de validation admin
     WAITING = "en_attente"
     CALLED = "appelé"
     SERVING = "en_service"
     COMPLETED = "terminé"
     CANCELLED = "annulé"
     NO_SHOW = "absent"
+    REJECTED = "refusé"  # Nouveau: refusé par admin
 
 
 class Ticket(Base, BaseModel):

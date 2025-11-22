@@ -99,6 +99,25 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Rejected Tickets Notification */}
+        {tickets.filter((t) => t.status === "refusé").length > 0 && (
+          <div className="mb-6 p-4 sm:p-5 bg-red-50 border-2 border-red-200 rounded-2xl">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-red-500 rounded-xl flex-shrink-0">
+                <XCircle className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="font-bold text-red-900 mb-1">
+                  {tickets.filter((t) => t.status === "refusé").length} ticket(s) refusé(s)
+                </div>
+                <div className="text-sm text-red-700">
+                  Vos demandes n'ont pas été acceptées par l'administration. Veuillez vérifier les informations et réessayer.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
           <StatCard
@@ -261,6 +280,25 @@ function TicketRow({ ticket }: { ticket: Ticket }) {
     en_service: "⚙️",
     terminé: "✅",
     annulé: "❌",
+    refusé: "🚫",
+  };
+
+  const statusColors: Record<string, string> = {
+    en_attente: "text-yellow-600",
+    appelé: "text-green-600",
+    en_service: "text-blue-600",
+    terminé: "text-gray-600",
+    annulé: "text-gray-400",
+    refusé: "text-red-600",
+  };
+
+  const statusLabels: Record<string, string> = {
+    en_attente: "En attente",
+    appelé: "Appelé",
+    en_service: "En service",
+    terminé: "Terminé",
+    annulé: "Annulé",
+    refusé: "Refusé",
   };
 
   return (
@@ -274,12 +312,17 @@ function TicketRow({ ticket }: { ticket: Ticket }) {
           <div className="font-bold text-gray-900 group-hover:text-primary transition-colors">
             {ticket.ticket_number}
           </div>
-          <div className="text-xs sm:text-sm text-gray-500 mt-0.5">
-            {new Date(ticket.created_at).toLocaleDateString("fr-FR", {
-              day: "numeric",
-              month: "long",
-              year: "numeric"
-            })}
+          <div className="text-xs sm:text-sm text-gray-500 mt-0.5 flex items-center gap-2">
+            <span>
+              {new Date(ticket.created_at).toLocaleDateString("fr-FR", {
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+              })}
+            </span>
+            <span className={`font-bold ${statusColors[ticket.status]}`}>
+              • {statusLabels[ticket.status]}
+            </span>
           </div>
         </div>
       </div>

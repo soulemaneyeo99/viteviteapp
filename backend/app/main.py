@@ -54,6 +54,13 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("✅ Connexion DB établie")
     
+    # Auto-seed de la base de données (production-ready)
+    try:
+        from app.core.auto_seed import auto_seed_database
+        await auto_seed_database()
+    except Exception as e:
+        logger.warning(f"⚠️ Erreur lors du seeding automatique: {e}")
+    
     logger.info(f"✅ ViteviteApp API démarrée ({settings.ENVIRONMENT})")
     
     yield
