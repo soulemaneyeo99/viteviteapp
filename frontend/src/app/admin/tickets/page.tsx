@@ -13,7 +13,9 @@ import {
   Bell,
   MoreVertical,
   Play,
-  AlertCircle
+  AlertCircle,
+  Plus,
+  X
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -26,6 +28,8 @@ export default function QueueManagement() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createdTicket, setCreatedTicket] = useState<any>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -58,7 +62,7 @@ export default function QueueManagement() {
     },
   });
 
-  const services = servicesData || [];
+  const services = servicesData?.services || servicesData || [];
 
   // Fetch Tickets for Selected Service
   const { data: ticketsData, isLoading: isLoadingTickets } = useQuery({
@@ -160,6 +164,42 @@ export default function QueueManagement() {
 
   const handleValidate = (ticketId: string, action: string) => {
     validateMutation.mutate({ ticketId, action });
+  };
+
+  // Create Ticket Mutation
+  const createTicketMutation = useMutation({
+    mutationFn: async (data: { service_id: string; user_name: string; user_phone: string; notes?: string }) => {
+      const response = await axios.post(
+        `${API_URL}/api/v1/admin/create-ticket`,
+        null,
+        {
+          params: data,
+          headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+        }
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-tickets"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      setCreatedTicket(data.ticket);
+      setShowCreateModal(false);
+      toast.success("Ticket créé avec succès");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.detail || "Erreur lors de la création du ticket");
+    }
+  });
+
+  const handleCreateTicket = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    createTicketMutation.mutate({
+      service_id: formData.get("service_id") as string,
+      user_name: formData.get("user_name") as string,
+      user_phone: formData.get("user_phone") as string,
+      notes: formData.get("notes") as string || undefined,
+    });
   };
 
   return (
@@ -320,6 +360,13 @@ export default function QueueManagement() {
                     </div>
                     <div className="flex space-x-2">
                       <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-bold shadow-lg shadow-blue-200 transition-all active:scale-95"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Créer un ticket
+                      </button>
+                      <button
                         onClick={handleCallNext}
                         disabled={callNextMutation.isPending}
                         className="flex items-center px-4 py-2 bg-[#FF8C00] hover:bg-[#FF7D00] text-white rounded-lg font-bold shadow-lg shadow-orange-200 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -424,6 +471,155 @@ export default function QueueManagement() {
           </div>
         </div>
       </div>
+
+      {/* Create Ticket Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Créer un ticket</h2>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateTicket} className="space-y-4">
+              {/* Service Selection */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Service *
+                </label>
+                <select
+                  name="service_id"
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary transition-colors"
+                >
+                  <option value="">Sélectionner un service</option>
+                  {services.map((service: any) => (
+                    <option key={service.id} value={service.id}>
+                      {service.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* User Name */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Nom complet *
+                </label>
+                <input
+                  type="text"
+                  name="user_name"
+                  required
+                  placeholder="Ex: Jean Kouassi"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+
+              {/* User Phone */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Téléphone *
+                </label>
+                <input
+                  type="tel"
+                  name="user_phone"
+                  required
+                  placeholder="Ex: +225 07 12 34 56 78"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Notes (optionnel)
+                </label>
+                <textarea
+                  name="notes"
+                  rows={3}
+                  placeholder="Ex: Personne âgée, prioritaire"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary transition-colors resize-none"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={createTicketMutation.isPending}
+                  className="flex-1 px-4 py-3 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {createTicketMutation.isPending ? "Création..." : "Créer le ticket"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {createdTicket && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Ticket créé !</h2>
+              <p className="text-gray-600 mb-6">Le ticket a été créé avec succès</p>
+
+              <div className="bg-gray-50 rounded-2xl p-6 mb-6 space-y-3">
+                <div className="text-center">
+                  <div className="text-5xl font-black text-primary mb-2">
+                    {createdTicket.ticket_number}
+                  </div>
+                  <div className="text-sm text-gray-500">Numéro de ticket</div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-gray-900">
+                      #{createdTicket.position_in_queue}
+                    </div>
+                    <div className="text-xs text-gray-500">Position</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-gray-900">
+                      {createdTicket.estimated_wait_time} min
+                    </div>
+                    <div className="text-xs text-gray-500">Attente estimée</div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-200 text-left">
+                  <div className="text-sm text-gray-600 mb-1">Client</div>
+                  <div className="font-bold text-gray-900">{createdTicket.user_name}</div>
+                  <div className="text-sm text-gray-500">{createdTicket.user_phone}</div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setCreatedTicket(null)}
+                className="w-full px-4 py-3 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-colors"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

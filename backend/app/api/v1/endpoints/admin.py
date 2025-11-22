@@ -323,3 +323,235 @@ async def delete_service_admin(
     await db.commit()
     
     return {"success": True, "message": "Service supprimé"}
+
+
+# ========== CREATE TICKET FOR WALK-IN CUSTOMERS ==========
+@router.post("/create-ticket")
+async def create_ticket_for_user(
+    service_id: str,
+    user_name: str,
+    user_phone: str,
+    notes: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
+):
+    """
+    Créer un ticket pour une personne qui se présente physiquement (sans compte)
+    Utile pour les personnes âgées ou sans smartphone
+    """
+    from app.models.ticket import TicketStatus
+    
+    # Vérifier que le service existe
+    stmt = select(Service).where(Service.id == service_id)
+    result = await db.execute(stmt)
+    service = result.scalar_one_or_none()
+    
+    if not service:
+        raise HTTPException(status_code=404, detail="Service non trouvé")
+    
+    if service.status != "ouvert":
+        raise HTTPException(status_code=400, detail="Service fermé")
+    
+    # Compter les tickets actifs pour calculer la position
+    count_result = await db.execute(
+        select(func.count(Ticket.id))
+        .where(Ticket.service_id == service.id)
+        .where(Ticket.status.in_([TicketStatus.WAITING, TicketStatus.CALLED, TicketStatus.SERVING]))
+    )
+    position = count_result.scalar() + 1
+    
+    # Générer le numéro de ticket
+    ticket_number = f"N-{position:03d}"
+    
+    # Créer le ticket (sans user_id pour walk-in)
+    new_ticket = Ticket(
+        service_id=service.id,
+        user_id=None,  # Pas de compte utilisateur pour walk-in
+        ticket_number=ticket_number,
+        position_in_queue=position,
+        status=TicketStatus.WAITING,  # Directement en attente (pas de validation pour admin)
+        user_name=user_name,
+        user_phone=user_phone,
+        estimated_wait_time=service.estimated_wait_time * position,
+        notes=notes
+    )
+    
+    db.add(new_ticket)
+    
+    # Mettre à jour le service
+    service.current_queue_size += 1
+    
+    await db.commit()
+    await db.refresh(new_ticket)
+    
+    return {
+        "success": True,
+        "message": "Ticket créé avec succès",
+        "ticket": {
+            "id": str(new_ticket.id),
+            "ticket_number": new_ticket.ticket_number,
+            "service_id": str(new_ticket.service_id),
+            "service_name": service.name,
+            "user_name": new_ticket.user_name,
+            "user_phone": new_ticket.user_phone,
+            "position_in_queue": new_ticket.position_in_queue,
+            "estimated_wait_time": new_ticket.estimated_wait_time,
+            "status": new_ticket.status,
+            "notes": new_ticket.notes,
+            "created_at": new_ticket.created_at.isoformat()
+        }
+    }
+
+
+# ========== SEED SERVICES (PRODUCTION) ==========
+@router.post("/seed-services")
+async def seed_services_endpoint(
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
+):
+    """
+    Endpoint pour créer tous les services d'un coup (à utiliser une seule fois en production)
+    """
+    from app.models.service import ServiceStatus, AffluenceLevel
+    
+    # Vérifier si des services existent déjà
+    result = await db.execute(select(Service))
+    existing_services = result.scalars().all()
+    
+    if len(existing_services) > 0:
+        return {
+            "success": True,
+            "message": f"Base de données déjà seedée ({len(existing_services)} services existants)",
+            "services_count": len(existing_services)
+        }
+    
+    # Liste des services à créer
+    services_data = [
+        {
+            "name": "Mairie de Cocody - État Civil",
+            "slug": "mairie-cocody-etat-civil",
+            "category": "Administration",
+            "description": "Service d'état civil pour les déclarations de naissance, décès et mariages.",
+            "icon": "building",
+            "status": ServiceStatus.OPEN,
+            "affluence_level": AffluenceLevel.HIGH,
+            "estimated_wait_time": 45,
+            "current_queue_size": 23,
+            "opening_hours": "07:30 - 16:30",
+            "location": {"lat": 5.3599, "lng": -4.0083, "address": "Boulevard de France, Cocody, Abidjan"},
+            "required_documents": [{"name": "Pièce d'identité", "required": True}, {"name": "Extrait de naissance", "required": True}]
+        },
+        {
+            "name": "Préfecture d'Abidjan - Cartes d'identité",
+            "slug": "prefecture-abidjan-cni",
+            "category": "Documents officiels",
+            "description": "Renouvellement et retrait de CNI.",
+            "icon": "id-card",
+            "status": ServiceStatus.OPEN,
+            "affluence_level": AffluenceLevel.VERY_HIGH,
+            "estimated_wait_time": 120,
+            "current_queue_size": 156,
+            "opening_hours": "08:00 - 17:00",
+            "location": {"lat": 5.3200, "lng": -4.0200, "address": "Plateau, Abidjan"},
+            "required_documents": [{"name": "Ancienne CNI", "required": False}, {"name": "Extrait de naissance", "required": True}]
+        },
+        {
+            "name": "CNPS - Affiliation",
+            "slug": "cnps-affiliation",
+            "category": "Sécurité sociale",
+            "description": "Affiliation à la Caisse Nationale de Prévoyance Sociale.",
+            "icon": "shield",
+            "status": ServiceStatus.OPEN,
+            "affluence_level": AffluenceLevel.MODERATE,
+            "estimated_wait_time": 30,
+            "current_queue_size": 12,
+            "opening_hours": "08:00 - 15:00",
+            "location": {"lat": 5.3400, "lng": -4.0100, "address": "Avenue Lamblin, Plateau, Abidjan"},
+            "required_documents": [{"name": "Contrat de travail", "required": True}, {"name": "Pièce d'identité", "required": True}]
+        },
+        {
+            "name": "Hôpital Général d'Abobo - Consultations",
+            "slug": "hopital-abobo-consultations",
+            "category": "Santé",
+            "description": "Consultations médicales générales.",
+            "icon": "heart",
+            "status": ServiceStatus.OPEN,
+            "affluence_level": AffluenceLevel.HIGH,
+            "estimated_wait_time": 60,
+            "current_queue_size": 45,
+            "opening_hours": "07:00 - 18:00",
+            "location": {"lat": 5.4200, "lng": -4.0300, "address": "Abobo, Abidjan"},
+            "required_documents": [{"name": "Carnet de santé", "required": False}, {"name": "Carte d'assurance", "required": False}]
+        },
+        {
+            "name": "Banque Atlantique - Ouverture de compte",
+            "slug": "banque-atlantique-compte",
+            "category": "Banque",
+            "description": "Ouverture de compte bancaire personnel.",
+            "icon": "credit-card",
+            "status": ServiceStatus.OPEN,
+            "affluence_level": AffluenceLevel.LOW,
+            "estimated_wait_time": 15,
+            "current_queue_size": 5,
+            "opening_hours": "08:00 - 17:00",
+            "location": {"lat": 5.3250, "lng": -4.0150, "address": "Boulevard Clozel, Plateau, Abidjan"},
+            "required_documents": [{"name": "Pièce d'identité", "required": True}, {"name": "Justificatif de domicile", "required": True}]
+        },
+        {
+            "name": "CIE - Branchement électrique",
+            "slug": "cie-branchement",
+            "category": "Énergie",
+            "description": "Demande de nouveau branchement électrique.",
+            "icon": "zap",
+            "status": ServiceStatus.OPEN,
+            "affluence_level": AffluenceLevel.MODERATE,
+            "estimated_wait_time": 40,
+            "current_queue_size": 18,
+            "opening_hours": "07:30 - 16:00",
+            "location": {"lat": 5.3300, "lng": -4.0250, "address": "Avenue Christiani, Treichville, Abidjan"},
+            "required_documents": [{"name": "Plan de localisation", "required": True}, {"name": "Pièce d'identité", "required": True}]
+        },
+        {
+            "name": "SODECI - Abonnement eau",
+            "slug": "sodeci-abonnement",
+            "category": "Eau",
+            "description": "Nouvel abonnement pour l'eau potable.",
+            "icon": "droplet",
+            "status": ServiceStatus.OPEN,
+            "affluence_level": AffluenceLevel.LOW,
+            "estimated_wait_time": 25,
+            "current_queue_size": 8,
+            "opening_hours": "08:00 - 16:30",
+            "location": {"lat": 5.3350, "lng": -4.0180, "address": "Rue du Commerce, Plateau, Abidjan"},
+            "required_documents": [{"name": "Titre de propriété ou bail", "required": True}, {"name": "Pièce d'identité", "required": True}]
+        },
+        {
+            "name": "Tribunal de Première Instance - Casier judiciaire",
+            "slug": "tribunal-casier-judiciaire",
+            "category": "Justice",
+            "description": "Demande de casier judiciaire.",
+            "icon": "file-text",
+            "status": ServiceStatus.OPEN,
+            "affluence_level": AffluenceLevel.MODERATE,
+            "estimated_wait_time": 35,
+            "current_queue_size": 14,
+            "opening_hours": "08:00 - 15:00",
+            "location": {"lat": 5.3280, "lng": -4.0220, "address": "Boulevard Angoulvant, Plateau, Abidjan"},
+            "required_documents": [{"name": "Pièce d'identité", "required": True}, {"name": "Timbre fiscal", "required": True}]
+        }
+    ]
+    
+    # Créer les services
+    created_count = 0
+    for service_data in services_data:
+        service = Service(**service_data)
+        db.add(service)
+        created_count += 1
+    
+    await db.commit()
+    
+    return {
+        "success": True,
+        "message": f"{created_count} services créés avec succès",
+        "services_count": created_count
+    }

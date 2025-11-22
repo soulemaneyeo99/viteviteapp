@@ -48,13 +48,13 @@ async def create_ticket(
     # Créer le ticket
     new_ticket = Ticket(
         service_id=service.id,
-        user_id=current_user.id,
+        user_id=str(current_user.id),  # Convertir UUID en string pour SQLite
         ticket_number=ticket_number,
         position_in_queue=position,
         status=TicketStatus.PENDING_VALIDATION,  # Nouveau: nécessite validation admin
         user_name=ticket_data.user_name or current_user.full_name,
         user_phone=ticket_data.user_phone or current_user.phone,
-        estimated_wait_time=service.estimated_wait_time,
+        estimated_wait_time=service.estimated_wait_time * position,  # Calculer le temps d'attente
         notes=ticket_data.notes
     )
     

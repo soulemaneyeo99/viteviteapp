@@ -26,9 +26,11 @@ async def auto_seed_database():
             result = await session.execute(select(Service))
             existing_services = result.scalars().all()
             
-            if len(existing_services) > 0:
-                logger.info(f"✅ Base de données déjà seedée ({len(existing_services)} services)")
-                return
+            # if len(existing_services) > 0:
+            #     logger.info(f"✅ Base de données déjà seedée ({len(existing_services)} services)")
+            #     return
+            
+            logger.info("📝 Vérification des services par défaut...")
             
             logger.info("📝 Aucun service trouvé, seeding en cours...")
             
@@ -69,7 +71,7 @@ async def auto_seed_database():
                     "description": "Affiliation à la Caisse Nationale de Prévoyance Sociale.",
                     "icon": "shield",
                     "status": ServiceStatus.OPEN,
-                    "affluence_level": AffluenceLevel.MEDIUM,
+                    "affluence_level": AffluenceLevel.MODERATE,
                     "estimated_wait_time": 30,
                     "current_queue_size": 12,
                     "opening_hours": "08:00 - 15:00",
@@ -111,7 +113,7 @@ async def auto_seed_database():
                     "description": "Demande de nouveau branchement électrique.",
                     "icon": "zap",
                     "status": ServiceStatus.OPEN,
-                    "affluence_level": AffluenceLevel.MEDIUM,
+                    "affluence_level": AffluenceLevel.MODERATE,
                     "estimated_wait_time": 40,
                     "current_queue_size": 18,
                     "opening_hours": "07:30 - 16:00",
@@ -139,7 +141,7 @@ async def auto_seed_database():
                     "description": "Demande de casier judiciaire.",
                     "icon": "file-text",
                     "status": ServiceStatus.OPEN,
-                    "affluence_level": AffluenceLevel.MEDIUM,
+                    "affluence_level": AffluenceLevel.MODERATE,
                     "estimated_wait_time": 35,
                     "current_queue_size": 14,
                     "opening_hours": "08:00 - 15:00",
@@ -148,13 +150,30 @@ async def auto_seed_database():
                 }
             ]
             
-            # Créer les services
+            # Créer les services s'ils n'existent pas
+            services_created = 0
             for service_data in services_data:
+                # Vérifier si le service existe déjà par son slug
+                stmt = select(Service).where(Service.slug == service_data['slug'])
+                result = await session.execute(stmt)
+                existing = result.scalar_one_or_none()
+                
+                if existing:
+                    # logger.info(f"ℹ️ Service existant: {service_data['name']}")
+                    continue
+                
+                # Créer le service
                 service = Service(**service_data)
                 session.add(service)
+                services_created += 1
+                logger.info(f"➕ Service ajouté: {service_data['name']}")
             
-            await session.commit()
-            logger.info(f"✅ {len(services_data)} services créés avec succès")
+            if services_created > 0:
+                await session.commit()
+                logger.info(f"✅ {services_created} nouveaux services créés")
+            else:
+                logger.info("✅ Tous les services par défaut sont présents")
+                
             break  # Sortir de la boucle après la première session
             
     except Exception as e:

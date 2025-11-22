@@ -1,7 +1,8 @@
 'use client';
 
 import { Ticket, Service, TicketStatus } from '@/lib/types';
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface TicketDisplayProps {
   ticket: Ticket;
@@ -12,8 +13,8 @@ interface TicketDisplayProps {
   compact?: boolean;
 }
 
-export default function TicketDisplay({ 
-  ticket, 
+export default function TicketDisplay({
+  ticket,
   service,
   showActions = true,
   onCancel,
@@ -83,7 +84,7 @@ export default function TicketDisplay({
 
   const statusInfo = getStatusInfo(ticket.status);
   const createdDate = new Date(ticket.created_at);
-  const waitTime = ticket.called_at 
+  const waitTime = ticket.called_at
     ? Math.round((new Date(ticket.called_at).getTime() - createdDate.getTime()) / 60000)
     : null;
 
@@ -142,11 +143,10 @@ export default function TicketDisplay({
   return (
     <div className="space-y-4">
       {/* Ticket principal */}
-      <div 
+      <div
         ref={ticketRef}
-        className={`border-4 rounded-2xl overflow-hidden ${statusInfo.color} ${
-          statusInfo.pulse ? 'animate-pulse-slow' : ''
-        }`}
+        className={`border-4 rounded-2xl overflow-hidden ${statusInfo.color} ${statusInfo.pulse ? 'animate-pulse-slow' : ''
+          }`}
       >
         {/* Header coloré */}
         <div className="bg-gradient-to-r from-[#FFD43B] to-[#FFC107] p-6 text-center">
@@ -245,16 +245,18 @@ export default function TicketDisplay({
             )}
           </div>
 
-          {/* QR Code placeholder */}
+          {/* QR Code */}
           <div className="mt-6 text-center">
-            <div className="inline-block bg-gray-100 p-4 rounded-lg">
-              <div className="w-32 h-32 bg-white border-2 border-gray-300 rounded flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-3xl mb-1">📱</div>
-                  <div className="text-xs text-gray-500">QR Code</div>
-                </div>
+            <div className="inline-block bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+              <div className="bg-white p-2 rounded-lg">
+                <QRCodeSVG
+                  value={typeof window !== 'undefined' ? window.location.href : ''}
+                  size={128}
+                  level="H"
+                  includeMargin={false}
+                />
               </div>
-              <p className="text-xs text-gray-600 mt-2">Scannez pour suivre</p>
+              <p className="text-xs font-medium text-gray-500 mt-3 uppercase tracking-wide">Scannez pour suivre</p>
             </div>
           </div>
         </div>
@@ -276,7 +278,7 @@ export default function TicketDisplay({
             <span>🖨️</span>
             <span>Imprimer</span>
           </button>
-          
+
           <button
             onClick={handleShare}
             className="flex items-center justify-center space-x-2 bg-white border-2 border-gray-300 text-gray-900 px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition"
@@ -284,7 +286,7 @@ export default function TicketDisplay({
             <span>📤</span>
             <span>Partager</span>
           </button>
-          
+
           {onCancel && ticket.status === TicketStatus.WAITING && (
             <button
               onClick={onCancel}

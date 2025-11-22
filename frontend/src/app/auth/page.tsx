@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authAPI } from "@/lib/api";
+import { authManager } from "@/lib/auth";
 import { toast } from "sonner";
 import { User, Mail, Phone, Lock, Eye, EyeOff, UserCircle2, ShieldCheck } from "lucide-react";
 
@@ -12,6 +13,7 @@ export default function AuthPage() {
   const [accountType, setAccountType] = useState<"citoyen" | "admin">("citoyen");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   const [form, setForm] = useState({
     full_name: "",
@@ -19,6 +21,18 @@ export default function AuthPage() {
     phone: "",
     password: "",
   });
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (authManager.isAuthenticated()) {
+      const role = authManager.getUserRole();
+      if (role === "admin" || role === "super") {
+        router.push("/admin");
+      } else {
+        router.push("/services");
+      }
+    }
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,8 +48,16 @@ export default function AuthPage() {
           role: accountType,
         });
 
-        localStorage.setItem("access_token", response.data.tokens.access_token);
-        localStorage.setItem("refresh_token", response.data.tokens.refresh_token);
+        // Use authManager to save tokens
+        authManager.saveAuth(
+          response.data.tokens,
+          {
+            email: response.data.user.email,
+            role: response.data.user.role,
+            full_name: response.data.user.full_name,
+          },
+          rememberMe
+        );
 
         toast.success("Compte créé avec succès !");
 
@@ -50,8 +72,16 @@ export default function AuthPage() {
           password: form.password,
         });
 
-        localStorage.setItem("access_token", response.data.tokens.access_token);
-        localStorage.setItem("refresh_token", response.data.tokens.refresh_token);
+        // Use authManager to save tokens
+        authManager.saveAuth(
+          response.data.tokens,
+          {
+            email: response.data.user.email,
+            role: response.data.user.role,
+            full_name: response.data.user.full_name,
+          },
+          rememberMe
+        );
 
         toast.success("Connexion réussie !");
 
@@ -63,9 +93,17 @@ export default function AuthPage() {
       }
     } catch (error: any) {
       console.error("Auth error:", error);
-      let message = mode === "register" ? "Erreur lors de la création" : "Erreur lors de la connexion";
 
-      if (error.response?.data?.detail) {
+      // Improved error messages
+      let message = mode === "register" ? "Erreur lors de la création du compte" : "Erreur de connexion";
+
+      if (error.response?.status === 401) {
+        message = "Email ou mot de passe incorrect. Vérifiez vos identifiants.";
+      } else if (error.response?.status === 404) {
+        message = "Compte introuvable. Créez un compte d'abord.";
+      } else if (error.response?.status === 409) {
+        message = "Un compte existe déjà avec cet email.";
+      } else if (error.response?.data?.detail) {
         const detail = error.response.data.detail;
         if (typeof detail === "string") {
           message = detail;
@@ -78,7 +116,6 @@ export default function AuthPage() {
         message = error.message;
       }
 
-      console.error("Error message:", message);
       toast.error(message);
     } finally {
       setLoading(false);
@@ -244,6 +281,22 @@ export default function AuthPage() {
                       </div>
                     </button>
                   </div>
+                </div>
+              )}
+
+              {/* Remember Me Checkbox (Login only) */}
+              {mode === "login" && (
+                <div className="flex items-center gap-2 px-1">
+                  <input
+                    type="checkbox"
+                    id="remember-me"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-2"
+                  />
+                  <label htmlFor="remember-me" className="text-sm text-gray-600 cursor-pointer select-none">
+                    Se souvenir de moi (7 jours)
+                  </label>
                 </div>
               )}
 
