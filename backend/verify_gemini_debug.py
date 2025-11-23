@@ -1,20 +1,29 @@
+import google.generativeai as genai
 import os
-import sys
 from dotenv import load_dotenv
-
-# Add backend to path
-sys.path.append(os.getcwd())
 
 load_dotenv()
 
-key = os.getenv("GEMINI_API_KEY")
-print(f"GEMINI_API_KEY present: {'Yes' if key else 'No'}")
-if key:
-    print(f"Key length: {len(key)}")
-    print(f"Key starts with: {key[:4]}...")
+api_key = os.getenv("GEMINI_API_KEY")
+print(f"API Key found: {bool(api_key)}")
 
-try:
-    from app.ai.gemini_service import gemini_service
-    print(f"Gemini Service Enabled: {gemini_service.enabled}")
-except Exception as e:
-    print(f"Error importing service: {e}")
+if api_key:
+    genai.configure(api_key=api_key)
+    try:
+        print("Listing models...")
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                print(m.name)
+        
+        print("\nTesting gemini-1.5-flash...")
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content("Hello")
+        print(f"Response: {response.text}")
+        
+        print("\nTesting gemini-flash-latest...")
+        model = genai.GenerativeModel('gemini-flash-latest')
+        response = model.generate_content("Hello")
+        print(f"Response: {response.text}")
+
+    except Exception as e:
+        print(f"Error: {e}")

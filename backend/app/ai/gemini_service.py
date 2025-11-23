@@ -21,9 +21,9 @@ class GeminiService:
         if api_key:
             try:
                 genai.configure(api_key=api_key)
-                # ✅ CORRECTION: Utilisation du bon modèle Gemini Flash
+                # ✅ CORRECTION: Utilisation du modèle Gemini 2.0 Flash (disponible)
                 self.model = genai.GenerativeModel(
-                    'gemini-flash-latest',  # ✅ Version valide
+                    'gemini-2.0-flash',
                     generation_config={
                         'temperature': 0.7,
                         'top_p': 0.8,

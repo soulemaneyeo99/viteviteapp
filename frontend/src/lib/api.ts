@@ -97,7 +97,8 @@ export const predictionsAPI = {
 };
 
 export const chatAPI = {
-  sendMessage: (message: string, history?: any[]) => api.post("/chat", { message, history }),
+  sendMessage: (message: string, history?: any[], context?: any) =>
+    api.post("/chat", { message, history, context }),
 };
 
 export const aiAPI = {
@@ -132,7 +133,10 @@ export const aiAPI = {
 };
 
 export const mapsAPI = {
-  getDirections: (origin: { lat: number; lng: number }, destination: { lat: number; lng: number }, mode = "driving") =>
+  getNearbyServices: (lat: number, lng: number, type: string = 'all') =>
+    api.get(`/maps/nearby?lat=${lat}&lng=${lng}&type=${type}`),
+
+  getDirections: (origin: string, destination: string, mode: string = 'driving') =>
     api.post("/maps/directions", { origin, destination, mode }),
 
   findNearby: (userLocation: { lat: number; lng: number }, maxDistanceKm = 10, category?: string, limit = 10) =>
@@ -156,5 +160,22 @@ export const mapsAPI = {
   healthCheck: () => api.get("/maps/health"),
 };
 
+export const pharmacyAPI = {
+  getAll: (params?: any) => api.get("/pharmacies", { params }),
+  getStock: (pharmacyId: number, params?: any) => api.get(`/pharmacies/${pharmacyId}/stock`, { params }),
+  getAlternatives: (medicine: string, dosage: string, context?: string) =>
+    api.get(`/pharmacies/medicines/alternatives?medicine_name=${medicine}&dosage=${dosage}&context=${context || ''}`),
+  createOrder: (data: any) => api.post("/pharmacies/orders", data),
+};
+
+export const transportAPI = {
+  getCompanies: () => api.get("/transport/companies"),
+  searchDepartures: (origin: string, destination: string, date?: string) =>
+    api.get("/transport/departures", { params: { origin, destination, date } }),
+  createBooking: (data: any) => api.post("/transport/bookings", data),
+  getSotraLines: () => api.get("/transport/sotra/lines"),
+  getLineRealtime: (lineId: number) => api.get(`/transport/sotra/lines/${lineId}/realtime`),
+  getStopArrivals: (stopId: number) => api.get(`/transport/sotra/stops/${stopId}/arrivals`),
+};
 
 export default api;
