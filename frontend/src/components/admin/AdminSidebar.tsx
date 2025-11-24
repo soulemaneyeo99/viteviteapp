@@ -18,6 +18,8 @@ export default function AdminSidebar({ isOpen, onClose }: { isOpen: boolean; onC
 
     const menuItems = [
         { path: '/admin', icon: LayoutDashboard, label: 'Tableau de bord' },
+        { path: '/admin/counters', icon: Ticket, label: 'Guichets' },
+        { path: '/admin/queue', icon: Users, label: 'Files d\'attente' },
         { path: '/admin/tickets', icon: Ticket, label: 'Tickets' },
         { path: '/admin/users', icon: Users, label: 'Utilisateurs' },
         { path: '/admin/analytics', icon: BarChart3, label: 'Analytiques' },

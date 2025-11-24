@@ -3,13 +3,14 @@ ViteviteApp - Ticket Model
 Gestion des tickets virtuels
 """
 
-from sqlalchemy import Column, String, Integer, Enum as SQLEnum, ForeignKey
+from sqlalchemy import Column, String, Integer, Enum as SQLEnum, ForeignKey, Boolean, JSON, Float
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
 
 from app.core.database import Base
 from app.models.base import BaseModel, generate_uuid
+
 
 
 class TicketStatus(str, enum.Enum):
@@ -35,6 +36,7 @@ class Ticket(Base, BaseModel):
     # ========== FOREIGN KEYS ==========
     service_id = Column(String, ForeignKey("services.id", ondelete="CASCADE"), nullable=False, index=True)
     user_id = Column(String, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    counter_id = Column(String, ForeignKey("counters.id", ondelete="SET NULL"), nullable=True, index=True)
     
     # ========== TICKET INFO ==========
     ticket_number = Column(String(20), nullable=False, index=True)  # Format: N-001
@@ -53,6 +55,25 @@ class Ticket(Base, BaseModel):
     started_at = Column(String, nullable=True)  # ISO timestamp
     completed_at = Column(String, nullable=True)  # ISO timestamp
     
+    # ========== PAYMENT (for paid services) ==========
+    is_paid = Column(Boolean, default=False, nullable=False)
+    payment_status = Column(String(20), default="pending", nullable=False)  # pending, paid, refunded
+    payment_amount = Column(Float, default=0.0, nullable=False)
+    payment_method = Column(String(50), nullable=True)  # cash, mobile_money, card
+    
+    # ========== DOCUMENT VALIDATION ==========
+    documents_validated = Column(Boolean, default=False, nullable=False)
+    missing_documents = Column(JSON, default=list, nullable=False)  # Liste des documents manquants
+    validation_status = Column(String(20), default="pending", nullable=False)  # valid, invalid, incomplete, pending
+    validated_at = Column(String, nullable=True)  # ISO timestamp
+    validated_by = Column(String, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)  # Agent qui a validé
+    
+    # ========== ANTI-ABUSE SYSTEM ==========
+    no_show_count = Column(Integer, default=0, nullable=False)
+    is_blacklisted = Column(Boolean, default=False, nullable=False)
+    blacklist_until = Column(String, nullable=True)  # ISO timestamp
+    blacklist_reason = Column(String(500), nullable=True)
+    
     # ========== METADATA ==========
     notes = Column(String(500), nullable=True)
     qr_code = Column(String(255), nullable=True)  # URL ou path vers QR code
@@ -60,6 +81,8 @@ class Ticket(Base, BaseModel):
     # ========== RELATIONSHIPS ==========
     service = relationship("Service", back_populates="tickets")
     user = relationship("User", back_populates="tickets")
+    counter = relationship("Counter", foreign_keys=[counter_id])
+    validator = relationship("User", foreign_keys=[validated_by])
 
     # ========== PROPERTIES ==========
     @property

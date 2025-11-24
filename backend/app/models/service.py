@@ -66,8 +66,14 @@ class Service(Base, BaseModel):
     total_tickets_served = Column(Integer, default=0, nullable=False)
     rating = Column(Integer, default=0, nullable=True)  # 0-5
     
+    # ========== COUNTERS ==========
+    total_counters = Column(Integer, default=0, nullable=False)
+    active_counters = Column(Integer, default=0, nullable=False)
+    
     # ========== RELATIONSHIPS ==========
     tickets = relationship("Ticket", back_populates="service", cascade="all, delete")
+    counters = relationship("Counter", back_populates="service", cascade="all, delete")
+    config = relationship("ServiceConfig", back_populates="service", uselist=False, cascade="all, delete")
     
     # ========== PROPERTIES ==========
     @property

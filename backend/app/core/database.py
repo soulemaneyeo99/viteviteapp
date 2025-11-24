@@ -76,7 +76,7 @@ async def init_db() -> None:
     À utiliser uniquement en dev ou pour tests.
     """
     async with engine.begin() as conn:
-        from app.models import user, service, ticket  # noqa
+        from app.models import user, service, ticket, counter, service_config, notification, analytics  # noqa
 
         if settings.is_development:
             await conn.run_sync(Base.metadata.drop_all)
