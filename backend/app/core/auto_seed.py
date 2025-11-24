@@ -7,7 +7,7 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.service import Service, ServiceStatus, AffluenceLevel
-from app.core.database import get_db
+from app.core.database import AsyncSessionLocal
 
 logger = logging.getLogger(__name__)
 
@@ -20,17 +20,15 @@ async def auto_seed_database():
     try:
         logger.info("🌱 Vérification du seeding de la base de données...")
         
-        # Créer une session
-        async for session in get_db():
+        # Créer une session directement
+        async with AsyncSessionLocal() as session:
             # Vérifier si des services existent déjà
             result = await session.execute(select(Service))
             existing_services = result.scalars().all()
             
-            # if len(existing_services) > 0:
-            #     logger.info(f"✅ Base de données déjà seedée ({len(existing_services)} services)")
-            #     return
-            
-            logger.info("📝 Vérification des services par défaut...")
+            if len(existing_services) > 0:
+                logger.info(f"✅ Base de données déjà seedée ({len(existing_services)} services)")
+                return
             
             logger.info("📝 Aucun service trouvé, seeding en cours...")
             
@@ -159,7 +157,6 @@ async def auto_seed_database():
                 existing = result.scalar_one_or_none()
                 
                 if existing:
-                    # logger.info(f"ℹ️ Service existant: {service_data['name']}")
                     continue
                 
                 # Créer le service
@@ -174,8 +171,7 @@ async def auto_seed_database():
             else:
                 logger.info("✅ Tous les services par défaut sont présents")
                 
-            break  # Sortir de la boucle après la première session
-            
     except Exception as e:
         logger.error(f"❌ Erreur lors du seeding: {e}")
-        raise
+        # Ne pas raise l'exception pour ne pas bloquer le démarrage
+        logger.warning("⚠️ L'application continuera sans seeding automatique")
