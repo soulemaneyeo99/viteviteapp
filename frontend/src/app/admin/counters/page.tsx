@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tantml:parameter>
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { Plus, Power, PowerOff, UserPlus, Trash2, BarChart3 } from 'lucide-react';
@@ -271,8 +271,8 @@ export default function CountersPage() {
                                                 onClick={() => handleToggleStatus(counter)}
                                                 disabled={!counter.agent_id && counter.status === 'fermé'}
                                                 className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${counter.status === 'ouvert'
-                                                        ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                                                        : 'bg-green-50 text-green-600 hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed'
+                                                    ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                                                    : 'bg-green-50 text-green-600 hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed'
                                                     }`}
                                             >
                                                 {counter.status === 'ouvert' ? 'Fermer' : 'Ouvrir'}
