@@ -3,7 +3,7 @@ ViteviteApp - Notification Model
 Système de notifications pour communiquer avec les usagers
 """
 
-from sqlalchemy import Column, String, Enum as SQLEnum, ForeignKey, JSON, Boolean
+from sqlalchemy import Column, String, Integer, Enum as SQLEnum, ForeignKey, JSON, Boolean
 from sqlalchemy.orm import relationship
 import enum
 
