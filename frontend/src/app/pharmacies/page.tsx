@@ -47,7 +47,7 @@ export default function PharmaciesPage() {
         <div className="min-h-screen bg-slate-50 pb-20 font-sans">
             {/* Header Pro */}
             <div className="relative bg-emerald-900 text-white pt-32 pb-20 px-6 overflow-hidden">
-                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "url('/grid.svg')" }}></div>
+                <img src="/grid.svg" alt="" className="absolute inset-0 w-full h-full object-cover opacity-10" />
                 <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-emerald-500/20 to-transparent pointer-events-none" />
 
                 <div className="max-w-6xl mx-auto relative z-10">
