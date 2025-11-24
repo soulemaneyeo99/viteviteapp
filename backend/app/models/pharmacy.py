@@ -92,7 +92,7 @@ class Order(Base):
     __tablename__ = "orders"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True) # Nullable pour guest checkout si besoin
+    user_id = Column(String, ForeignKey("users.id"), nullable=True) # Nullable pour guest checkout si besoin
     pharmacy_id = Column(Integer, ForeignKey("pharmacies.id"))
     
     status = Column(Enum(OrderStatus), default=OrderStatus.PENDING)
