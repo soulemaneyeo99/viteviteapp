@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Search, MapPin, Clock, Filter, ArrowRight, Phone, Navigation, Sparkles, Pill, AlertTriangle } from 'lucide-react';
 import { pharmacyAPI } from '@/lib/api';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Pharmacy {
     id: number;
@@ -47,7 +48,13 @@ export default function PharmaciesPage() {
         <div className="min-h-screen bg-slate-50 pb-20 font-sans">
             {/* Header Pro */}
             <div className="relative bg-emerald-900 text-white pt-32 pb-20 px-6 overflow-hidden">
-                <img src="/grid.svg" alt="" className="absolute inset-0 w-full h-full object-cover opacity-10" />
+                <Image
+                    src="/grid.svg"
+                    alt="Background Grid"
+                    fill
+                    className="object-cover opacity-10"
+                    priority
+                />
                 <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-emerald-500/20 to-transparent pointer-events-none" />
 
                 <div className="max-w-6xl mx-auto relative z-10">
