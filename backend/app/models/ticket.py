@@ -80,7 +80,7 @@ class Ticket(Base, BaseModel):
     
     # ========== RELATIONSHIPS ==========
     service = relationship("Service", back_populates="tickets")
-    user = relationship("User", back_populates="tickets")
+    user = relationship("User", foreign_keys=[user_id], back_populates="tickets")
     counter = relationship("Counter", foreign_keys=[counter_id])
     validator = relationship("User", foreign_keys=[validated_by])
 
