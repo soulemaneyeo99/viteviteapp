@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Search, MapPin, Clock, Filter, ArrowRight, Phone, Navigation, Sparkles, Pill, AlertTriangle } from 'lucide-react';
 import { pharmacyAPI } from '@/lib/api';
 import Link from 'next/link';
-import Image from 'next/image';
 
 interface Pharmacy {
     id: number;
@@ -48,12 +47,10 @@ export default function PharmaciesPage() {
         <div className="min-h-screen bg-slate-50 pb-20 font-sans">
             {/* Header Pro */}
             <div className="relative bg-emerald-900 text-white pt-32 pb-20 px-6 overflow-hidden">
-                <Image
+                <img
                     src="/grid.svg"
-                    alt="Background Grid"
-                    fill
-                    className="object-cover opacity-10"
-                    priority
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover opacity-10"
                 />
                 <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-emerald-500/20 to-transparent pointer-events-none" />
 
@@ -111,7 +108,7 @@ export default function PharmaciesPage() {
                                 <div>
                                     <h3 className="font-bold text-lg mb-1">Recommandation IA</h3>
                                     <p className="text-indigo-100 text-sm leading-relaxed max-w-xl">
-                                        Basé sur votre position et l'heure actuelle, la <span className="font-bold text-white">Pharmacie des Lagunes</span> est le meilleur choix (Stock disponible, < 5 min d'attente).
+                                        Basé sur votre position et l'heure actuelle, la <span className="font-bold text-white">Pharmacie des Lagunes</span> est le meilleur choix (Stock disponible, &lt; 5 min d'attente).
                                     </p>
                                 </div>
                             </div>
