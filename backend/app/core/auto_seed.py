@@ -170,7 +170,14 @@ async def auto_seed_database():
                 logger.info(f"✅ {services_created} nouveaux services créés")
             else:
                 logger.info("✅ Tous les services par défaut sont présents")
-                
+        
+        # Seed Pharmacies
+        try:
+            from app.core.seed_pharmacies import seed_pharmacies
+            await seed_pharmacies()
+        except Exception as e:
+            logger.error(f"❌ Erreur seeding pharmacies: {e}")
+
     except Exception as e:
         logger.error(f"❌ Erreur lors du seeding: {e}")
         # Ne pas raise l'exception pour ne pas bloquer le démarrage
