@@ -300,6 +300,19 @@ function ServiceCard({
         </div>
       )}
 
+      {/* AI Insight (New) */}
+      <div className="mb-6 bg-purple-50 rounded-xl p-3 border border-purple-100 flex items-start gap-2">
+        <Sparkles className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+        <div>
+          <p className="text-xs font-bold text-purple-900">IA Insight</p>
+          <p className="text-xs text-purple-700 leading-snug">
+            {service.current_queue_size > 20
+              ? "Pic d'affluence détecté. Revenez vers 15h."
+              : "Moment idéal ! Peu d'attente prévue."}
+          </p>
+        </div>
+      </div>
+
       {/* Action Button */}
       <button
         onClick={onTakeTicket}
