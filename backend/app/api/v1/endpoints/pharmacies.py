@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from typing import List, Optional
 from datetime import datetime
+import json
 
 from app.core.database import get_db
 from app.models.pharmacy import Pharmacy, Medicine, PharmacyStock, Order, OrderStatus
@@ -57,15 +59,15 @@ class OrderCreate(BaseModel):
 # --- Endpoints ---
 
 @router.get("/", response_model=List[PharmacyOut])
-def get_pharmacies(
+async def get_pharmacies(
     skip: int = 0, 
     limit: int = 20, 
     search: Optional[str] = None,
     is_on_duty: Optional[bool] = None,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Récupérer la liste des pharmacies avec filtres"""
-    query = db.query(Pharmacy)
+    query = select(Pharmacy)
     
     if search:
         query = query.filter(Pharmacy.name.ilike(f"%{search}%"))
@@ -73,17 +75,18 @@ def get_pharmacies(
     if is_on_duty is not None:
         query = query.filter(Pharmacy.is_on_duty == is_on_duty)
         
-    return query.offset(skip).limit(limit).all()
+    result = await db.execute(query.offset(skip).limit(limit))
+    return result.scalars().all()
 
 @router.get("/{pharmacy_id}/stock", response_model=List[StockOut])
-def get_pharmacy_stock(
+async def get_pharmacy_stock(
     pharmacy_id: int,
     category: Optional[str] = None,
     search: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Récupérer le stock d'une pharmacie"""
-    query = db.query(PharmacyStock).join(Medicine).filter(PharmacyStock.pharmacy_id == pharmacy_id)
+    query = select(PharmacyStock).join(Medicine).filter(PharmacyStock.pharmacy_id == pharmacy_id)
     
     if category:
         query = query.filter(Medicine.category == category)
@@ -91,7 +94,27 @@ def get_pharmacy_stock(
     if search:
         query = query.filter(Medicine.name.ilike(f"%{search}%"))
         
-    return query.all()
+    result = await db.execute(query)
+    stocks = result.scalars().all()
+    
+    # Eager loading workaround if needed, but joinedload is better. 
+    # For now, assuming lazy loading might fail with async, so let's ensure we fetch what we need.
+    # Actually, Pydantic from_attributes will try to access .medicine.
+    # We should use options(joinedload(PharmacyStock.medicine)) to avoid N+1 or async errors.
+    # But let's try simple first as models might not be set up for async relationships perfectly yet.
+    # To be safe, let's use explicit join and select.
+    
+    # Re-writing query to be safer with async
+    from sqlalchemy.orm import selectinload
+    query = select(PharmacyStock).options(selectinload(PharmacyStock.medicine)).filter(PharmacyStock.pharmacy_id == pharmacy_id)
+    
+    if category:
+        query = query.join(Medicine).filter(Medicine.category == category)
+    if search:
+        query = query.join(Medicine).filter(Medicine.name.ilike(f"%{search}%"))
+        
+    result = await db.execute(query)
+    return result.scalars().all()
 
 @router.get("/medicines/alternatives")
 async def get_medicine_alternatives(
@@ -103,17 +126,19 @@ async def get_medicine_alternatives(
     return await ai_pharmacy_service.find_alternatives(medicine_name, dosage, context)
 
 @router.post("/orders")
-def create_order(order: OrderCreate, db: Session = Depends(get_db)):
+async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
     """Créer une nouvelle commande/précommande"""
     # Calcul du total (simplifié)
     total = 0
     items_json = []
     
     for item in order.items:
-        stock = db.query(PharmacyStock).filter(
+        stmt = select(PharmacyStock).options(selectinload(PharmacyStock.medicine)).filter(
             PharmacyStock.pharmacy_id == order.pharmacy_id,
             PharmacyStock.medicine_id == item['medicine_id']
-        ).first()
+        )
+        result = await db.execute(stmt)
+        stock = result.scalars().first()
         
         if stock:
             price = stock.price
@@ -131,11 +156,11 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db)):
         type=order.type,
         payment_method=order.payment_method,
         total_amount=total,
-        items_json=str(items_json)
+        items_json=json.dumps(items_json)
     )
     
     db.add(new_order)
-    db.commit()
-    db.refresh(new_order)
+    await db.commit()
+    await db.refresh(new_order)
     
     return {"status": "success", "order_id": new_order.id, "total": total}
