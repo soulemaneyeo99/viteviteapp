@@ -25,8 +25,10 @@ class User(Base):
     is_verified = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # Relationships
     tickets = relationship(
-    "Ticket",
-    back_populates="user",  # doit correspondre à Ticket.user
-    cascade="all, delete-orphan"
-)
+        "Ticket",
+        foreign_keys="[Ticket.user_id]",  # Spécifier explicitement la clé étrangère
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
