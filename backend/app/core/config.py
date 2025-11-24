@@ -41,10 +41,12 @@ class Settings(BaseSettings):
     # ---------------------------------------------------------
     # CORS
     CORS_ORIGINS_RAW: Optional[str] = None
+    ALLOW_ALL_ORIGINS: bool = False  # Autoriser toutes les origines (dev/test uniquement)
     CORS_ORIGINS_DEFAULT: List[str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "https://viteviteapp.vercel.app"
+        "https://viteviteapp.vercel.app",
+        "https://viteviteapp.onrender.com",
     ]
 
     # ---------------------------------------------------------
@@ -142,6 +144,10 @@ class Settings(BaseSettings):
     @property
     def CORS_ORIGINS(self) -> List[str]:
         """Gère trois formats possibles : liste brute, string séparée, JSON."""
+        # Si ALLOW_ALL_ORIGINS est activé, autoriser toutes les origines
+        if self.ALLOW_ALL_ORIGINS:
+            return ["*"]
+        
         raw = self.CORS_ORIGINS_RAW
 
         if not raw:
