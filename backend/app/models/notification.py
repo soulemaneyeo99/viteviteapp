@@ -82,13 +82,13 @@ class Notification(Base, BaseModel):
     # Format: ["user_id_1", "user_id_2", ...]
     read_by = Column(JSON, default=list, nullable=False)
     
-    # ========== METADATA (JSON) ==========
+    # ========== EXTRA DATA (JSON) ==========
     # Format: {
     #   "template_id": "peak_hours_alert",
     #   "action_url": "/services/123",
     #   "priority": "high"
     # }
-    metadata = Column(JSON, default=dict, nullable=False)
+    extra_data = Column(JSON, default=dict, nullable=False)
     
     # ========== RELATIONSHIPS ==========
     service = relationship("Service", foreign_keys=[service_id])

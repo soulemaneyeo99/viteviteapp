@@ -43,7 +43,7 @@ class NotificationCreate(BaseModel):
     channels: List[str] = [NotificationChannelEnum.PUSH]
     is_scheduled: bool = False
     scheduled_at: Optional[str] = None
-    metadata: Dict = {}
+    extra_data: Dict = {}
 
 
 class NotificationBroadcast(BaseModel):
@@ -95,7 +95,7 @@ class NotificationResponse(BaseModel):
     total_read: int
     total_failed: int
     read_by: List[str]
-    metadata: Dict
+    extra_data: Dict
     created_at: str
     updated_at: str
 
