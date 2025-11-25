@@ -187,7 +187,7 @@ export default function LandingPage() {
       </section>
 
       {/* AI Recommendations */}
-      <section className="px-6 py-16 bg-gradient-to-br from-violet-50 to-purple-50">
+      <section className="px-6 py-16 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="max-w-6xl mx-auto">
           <div className="bg-gradient-to-br from-yellow-600 via-amber-600 to-yellow-700 rounded-3xl p-8 text-white shadow-2xl">
             <div className="bg-white/10 backdrop-blur-md rounded-[1.4rem] p-8">
