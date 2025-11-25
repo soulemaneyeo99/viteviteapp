@@ -195,4 +195,24 @@ export const administrationsAPI = {
   delete: (id: string) => api.delete(`/administrations/${id}`),
 };
 
+export const adminDashboardAPI = {
+  getOverview: (serviceId?: string) =>
+    api.get("/admin/dashboard/overview", { params: { service_id: serviceId } }),
+
+  createWalkInTicket: (data: { service_id: string; user_name?: string; user_phone?: string; notes?: string; priority?: number }) =>
+    api.post("/admin/dashboard/walk-in", data),
+
+  callNextTicket: (counterId: string) =>
+    api.post(`/admin/dashboard/call-next/${counterId}`),
+
+  completeTicket: (ticketId: string, notes?: string, serviceDuration?: number) =>
+    api.post("/admin/dashboard/complete", { ticket_id: ticketId, notes, service_duration: serviceDuration }),
+
+  getDailyStats: (serviceId?: string, date?: string) =>
+    api.get("/admin/dashboard/stats/daily", { params: { service_id: serviceId, date } }),
+
+  getAgentPerformance: (date?: string) =>
+    api.get("/admin/dashboard/agents/performance", { params: { date } }),
+};
+
 export default api;
