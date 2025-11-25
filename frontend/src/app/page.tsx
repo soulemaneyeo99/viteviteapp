@@ -88,7 +88,7 @@ export default function LandingPage() {
           {/* Main Title */}
           <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight leading-[1.1]">
             Fini les files d'attente.<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500">
               Prenez votre ticket en ligne.
             </span>
           </h1>
@@ -100,7 +100,7 @@ export default function LandingPage() {
           {/* Search Bar */}
           <div className="max-w-2xl">
             <form onSubmit={handleSearch} className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/30 to-amber-500/30 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative flex items-center bg-white p-2 rounded-2xl shadow-2xl border border-white/20">
                 <Search className="w-6 h-6 text-gray-400 ml-4" />
                 <input
@@ -110,7 +110,7 @@ export default function LandingPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <button type="submit" className="bg-gradient-to-r from-blue-600 to-violet-600 text-white px-8 py-3 rounded-xl font-bold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2">
+                <button type="submit" className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-8 py-3 rounded-xl font-bold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2">
                   <span>Rechercher</span>
                   <ArrowRight className="w-5 h-5" />
                 </button>
@@ -189,7 +189,7 @@ export default function LandingPage() {
       {/* AI Recommendations */}
       <section className="px-6 py-16 bg-gradient-to-br from-violet-50 to-purple-50">
         <div className="max-w-6xl mx-auto">
-          <div className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-3xl p-1 shadow-xl">
+          <div className="bg-gradient-to-br from-yellow-600 via-amber-600 to-yellow-700 rounded-3xl p-8 text-white shadow-2xl">
             <div className="bg-white/10 backdrop-blur-md rounded-[1.4rem] p-8">
               <div className="flex items-start gap-4 mb-6">
                 <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
@@ -197,7 +197,7 @@ export default function LandingPage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-2xl font-black text-white mb-2">Recommandations IA</h3>
-                  <p className="text-violet-100">Basées sur votre localisation et l'heure actuelle</p>
+                  <p className="text-yellow-100">Basées sur votre localisation et l'heure actuelle</p>
                 </div>
               </div>
 
@@ -232,15 +232,15 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div>
-              <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600 mb-2">15h</div>
+              <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 to-amber-600 mb-2">15h</div>
               <p className="text-gray-600 font-medium">économisées par mois en moyenne</p>
             </div>
             <div>
-              <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">5000+</div>
+              <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-600 to-gray-700 mb-2">5000+</div>
               <p className="text-gray-600 font-medium">citoyens utilisent ViteviteApp</p>
             </div>
             <div>
-              <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 mb-2">50+</div>
+              <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-amber-500 mb-2">50+</div>
               <p className="text-gray-600 font-medium">services disponibles</p>
             </div>
           </div>
