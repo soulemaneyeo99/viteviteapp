@@ -30,7 +30,7 @@ export default function LandingPage() {
       name: "Administrations",
       icon: Building2,
       description: "Mairies, Préfectures, CNPS, Impôts...",
-      color: "from-blue-600 to-indigo-600",
+      color: "from-yellow-500 to-amber-500",
       href: "/administrations",
       count: "12 services"
     },
@@ -39,7 +39,7 @@ export default function LandingPage() {
       name: "Hôpitaux",
       icon: Hospital,
       description: "Urgences, Consultations, Analyses...",
-      color: "from-red-600 to-pink-600",
+      color: "from-gray-700 to-gray-800",
       href: "/urgences",
       count: "8 services"
     },
@@ -48,7 +48,7 @@ export default function LandingPage() {
       name: "Pharmacies",
       icon: Pill,
       description: "Pharmacies de garde, Médicaments...",
-      color: "from-emerald-600 to-green-600",
+      color: "from-yellow-600 to-yellow-700",
       href: "/pharmacies",
       count: "24 pharmacies"
     },
@@ -57,7 +57,7 @@ export default function LandingPage() {
       name: "Transport",
       icon: Bus,
       description: "SOTRA, Interurbain, Réservations...",
-      color: "from-orange-600 to-amber-600",
+      color: "from-gray-600 to-gray-700",
       href: "/transport",
       count: "15 lignes"
     }
@@ -67,7 +67,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-slate-50 text-gray-900 font-sans">
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white pt-32 pb-24 px-6 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white pt-32 pb-24 px-6 overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{

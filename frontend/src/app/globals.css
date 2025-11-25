@@ -4,14 +4,25 @@
 
 @layer base {
   :root {
-    --primary: #FF8C00;
-    --primary-dark: #FF6F00;
-    --secondary: #10B981;
-    --background: #F3F4F6;
+    /* Official Brand Colors - Yellow, White, Gray */
+    --primary: #FDB913;
+    /* Vibrant Yellow */
+    --primary-dark: #F59E0B;
+    /* Darker Yellow/Amber */
+    --primary-light: #FEF3C7;
+    /* Light Yellow */
+    --secondary: #6B7280;
+    /* Medium Gray */
+    --accent: #111827;
+    /* Dark Gray/Almost Black */
+    --background: #F9FAFB;
+    /* Light Gray Background */
+    --surface: #FFFFFF;
+    /* White */
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-gray-900;
   }
 }
 
@@ -42,12 +53,12 @@
 
   0%,
   100% {
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
     transform: scale(1);
   }
 
   50% {
-    box-shadow: 0 0 30px rgba(139, 92, 246, 0.8);
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.8);
     transform: scale(1.05);
   }
 }

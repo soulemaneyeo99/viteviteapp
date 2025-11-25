@@ -83,7 +83,7 @@ export default function ServiceDetailPage() {
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
             {/* Hero */}
-            <div className="relative bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 text-white pt-32 pb-16 px-6 overflow-hidden">
+            <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white pt-32 pb-16 px-6 overflow-hidden">
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute inset-0" style={{
                         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -154,7 +154,7 @@ export default function ServiceDetailPage() {
             {/* Main Content */}
             <div className="max-w-6xl mx-auto px-6 -mt-8 relative z-20">
                 {/* AI Prediction Chart */}
-                <div className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-3xl p-1 shadow-xl mb-8">
+                <div className="bg-gradient-to-r from-yellow-500 to-amber-500 rounded-3xl p-1 shadow-xl mb-8">
                     <div className="bg-white/10 backdrop-blur-md rounded-[1.4rem] p-8">
                         <div className="flex items-start gap-4 mb-6">
                             <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
@@ -267,7 +267,7 @@ export default function ServiceDetailPage() {
                     {/* Right Column - Actions */}
                     <div className="space-y-6">
                         {/* Digital Ticket */}
-                        <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-3xl p-8 text-white shadow-xl">
+                        <div className="bg-gradient-to-br from-yellow-500 to-amber-500 rounded-3xl p-8 text-white shadow-xl">
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
                                     <Zap className="w-6 h-6 text-yellow-300" />
@@ -331,7 +331,7 @@ export default function ServiceDetailPage() {
             {showTicketModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
-                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+                        <div className="bg-gradient-to-r from-yellow-500 to-amber-500 p-6 text-white">
                             <h2 className="text-2xl font-black">
                                 {reservationType === 'digital' ? 'Ticket Digital' : 'Confirmation'}
                             </h2>
@@ -384,7 +384,7 @@ export default function ServiceDetailPage() {
                                 </button>
                                 <button
                                     onClick={handleTakeTicket}
-                                    className="flex-[2] py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-lg transition-all"
+                                    className="flex-[2] py-4 bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-bold rounded-xl hover:shadow-lg transition-all"
                                 >
                                     Confirmer
                                 </button>

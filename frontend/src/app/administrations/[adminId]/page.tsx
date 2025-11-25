@@ -34,7 +34,7 @@ export default function AdministrationDetailPage() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
                     <p className="text-gray-500 font-medium">Chargement...</p>
                 </div>
             </div>
@@ -48,7 +48,7 @@ export default function AdministrationDetailPage() {
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
             {/* Hero Section */}
-            <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white pt-32 pb-16 px-6 overflow-hidden">
+            <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white pt-32 pb-16 px-6 overflow-hidden">
                 {/* Background Image */}
                 {administration?.main_image_url && (
                     <div className="absolute inset-0 opacity-20">
@@ -75,7 +75,7 @@ export default function AdministrationDetailPage() {
                         <div className="flex-1">
                             {/* Type Badge */}
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 border border-white/20 rounded-full mb-4 backdrop-blur-sm">
-                                <Building2 className="w-4 h-4 text-blue-300" />
+                                <Building2 className="w-4 h-4 text-yellow-400" />
                                 <span className="text-xs font-bold text-white/90 uppercase tracking-wide">{administration?.type}</span>
                             </div>
 
@@ -156,9 +156,9 @@ export default function AdministrationDetailPage() {
                             <h2 className="text-2xl font-black text-gray-900 mb-2">Services disponibles</h2>
                             <p className="text-gray-500">Sélectionnez le service dont vous avez besoin</p>
                         </div>
-                        <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-xl">
-                            <Activity className="w-5 h-5 text-blue-600" />
-                            <span className="text-sm font-bold text-blue-900">{services.length} services</span>
+                        <div className="flex items-center gap-2 px-4 py-2 bg-yellow-50 rounded-xl">
+                            <Activity className="w-5 h-5 text-yellow-600" />
+                            <span className="text-sm font-bold text-yellow-900">{services.length} services</span>
                         </div>
                     </div>
 
@@ -170,11 +170,11 @@ export default function AdministrationDetailPage() {
                                 <Link
                                     key={service.id}
                                     href={`/administrations/${administrationId}/services/${service.id}`}
-                                    className="group bg-gray-50 hover:bg-blue-50 rounded-2xl p-6 border-2 border-transparent hover:border-blue-200 transition-all"
+                                    className="group bg-gray-50 hover:bg-yellow-50 rounded-2xl p-6 border-2 border-transparent hover:border-yellow-200 transition-all"
                                 >
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex-1">
-                                            <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-700 mb-1 transition-colors">
+                                            <h3 className="font-bold text-lg text-gray-900 group-hover:text-yellow-700 mb-1 transition-colors">
                                                 {service.name}
                                             </h3>
                                             {service.description && (
@@ -230,7 +230,7 @@ export default function AdministrationDetailPage() {
                                                 </div>
                                             )}
                                         </div>
-                                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-yellow-600 group-hover:translate-x-1 transition-all" />
                                     </div>
                                 </Link>
                             );
@@ -244,11 +244,11 @@ export default function AdministrationDetailPage() {
                     {administration?.location && (
                         <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
                             <h3 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
-                                <MapPin className="w-6 h-6 text-blue-600" />
+                                <MapPin className="w-6 h-6 text-yellow-600" />
                                 Localisation
                             </h3>
                             <p className="text-gray-600 mb-4">{administration.location.address}</p>
-                            <button className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors">
+                            <button className="inline-flex items-center gap-2 px-6 py-3 bg-yellow-500 text-white font-bold rounded-xl hover:bg-yellow-600 transition-colors">
                                 <Navigation className="w-5 h-5" />
                                 Obtenir l'itinéraire
                             </button>
@@ -258,7 +258,7 @@ export default function AdministrationDetailPage() {
                     {/* Operating Hours */}
                     <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
                         <h3 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
-                            <Clock className="w-6 h-6 text-blue-600" />
+                            <Clock className="w-6 h-6 text-yellow-600" />
                             Horaires d'ouverture
                         </h3>
                         {administration?.operating_hours ? (

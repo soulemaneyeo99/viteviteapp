@@ -63,7 +63,7 @@ export default function AdministrationsPage() {
     return (
         <div className="min-h-screen bg-slate-50 pb-20 font-sans">
             {/* Header */}
-            <div className="relative bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 text-white pt-32 pb-20 px-6 overflow-hidden">
+            <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white pt-32 pb-20 px-6 overflow-hidden">
                 {/* Pattern Background */}
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute inset-0" style={{
@@ -106,8 +106,8 @@ export default function AdministrationsPage() {
                         <button
                             onClick={() => setShowOpenOnly(!showOpenOnly)}
                             className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-bold transition-all whitespace-nowrap ${showOpenOnly
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                                    : 'bg-white border-2 border-gray-100 text-gray-600 hover:border-blue-200 hover:bg-blue-50/50'
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                                : 'bg-white border-2 border-gray-100 text-gray-600 hover:border-blue-200 hover:bg-blue-50/50'
                                 }`}
                         >
                             <Filter className={`w-5 h-5 ${showOpenOnly ? 'animate-pulse' : ''}`} />
@@ -122,8 +122,8 @@ export default function AdministrationsPage() {
                                 key={type}
                                 onClick={() => setSelectedType(type)}
                                 className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all ${selectedType === type
-                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                             >
                                 {typeLabels[type]}
@@ -162,7 +162,7 @@ export default function AdministrationsPage() {
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
+                                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-yellow-50 to-amber-50">
                                             <Building2 className="w-16 h-16 text-blue-200" />
                                         </div>
                                     )}
