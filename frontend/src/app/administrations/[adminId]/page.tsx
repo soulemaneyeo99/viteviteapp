@@ -11,7 +11,7 @@ import Link from 'next/link';
 
 export default function AdministrationDetailPage() {
     const params = useParams();
-    const administrationId = params.id as string;
+    const administrationId = params.adminId as string;
 
     const { data: adminData, isLoading: adminLoading } = useQuery({
         queryKey: ['administration', administrationId],
