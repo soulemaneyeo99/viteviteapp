@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from app.core.database import get_db
 from app.models import Administration, Service
-from app.core.auth import get_current_user, get_current_admin_user
+from app.api.v1.deps import get_current_admin
 from app.models.user import User
 
 router = APIRouter()
@@ -200,7 +200,7 @@ async def get_administration_queue_status(
 async def create_administration(
     data: AdministrationCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user)
+    current_user: User = Depends(get_current_admin)
 ):
     """
     Crée une nouvelle administration (admin only)
@@ -240,7 +240,7 @@ async def update_administration(
     administration_id: str,
     data: AdministrationUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user)
+    current_user: User = Depends(get_current_admin)
 ):
     """
     Met à jour une administration (admin only)
@@ -269,7 +269,7 @@ async def update_administration(
 async def delete_administration(
     administration_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user)
+    current_user: User = Depends(get_current_admin)
 ):
     """
     Supprime une administration (admin only)
