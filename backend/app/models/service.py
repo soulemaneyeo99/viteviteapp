@@ -40,6 +40,7 @@ class Service(Base, BaseModel):
     category = Column(String(100), nullable=False, index=True)
     description = Column(String(1000), nullable=True)
     icon = Column(String(50), default="building", nullable=False)
+    image_url = Column(String(500), nullable=True)  # URL de l'image réaliste
     
     # ========== STATUS ==========
     status = Column(SQLEnum(ServiceStatus), default=ServiceStatus.OPEN, nullable=False, index=True)
@@ -60,6 +61,25 @@ class Service(Base, BaseModel):
     # ========== DOCUMENTS REQUIRED (JSON) ==========
     # Format: [{"name": "Pièce d'identité", "required": true, "description": "..."}]
     required_documents = Column(JSON, default=list, nullable=False)
+    
+    # ========== ADMINISTRATION FEATURES ==========
+    # Format: [{"id": "cni", "name": "Carte Nationale d'Identité", "description": "...", "fees": 5000}]
+    sub_services = Column(JSON, default=list, nullable=False)
+    
+    # Format: {"base": 5000, "express": 10000, "currency": "FCFA"}
+    fees = Column(JSON, nullable=True)
+    
+    # Format: [{"type": "panne_machine", "description": "...", "reported_at": "..."}]
+    problems_reported = Column(JSON, default=list, nullable=False)
+    
+    # Format: [{"hour": "14:00-15:30", "score": 0.9, "reason": "Faible affluence"}]
+    best_visit_times = Column(JSON, default=list, nullable=False)
+    
+    # Format: [{"counter_id": 1, "status": "active", "current_ticket": "A042", "agent_name": "..."}]
+    active_counters_detail = Column(JSON, default=list, nullable=False)
+    
+    # Numéro de ticket actuellement servi (ex: "A042")
+    current_ticket_number = Column(String(20), nullable=True)
     
     # ========== METADATA ==========
     average_service_time = Column(Integer, default=10, nullable=False)  # En minutes

@@ -78,6 +78,17 @@ class Ticket(Base, BaseModel):
     notes = Column(String(500), nullable=True)
     qr_code = Column(String(255), nullable=True)  # URL ou path vers QR code
     
+    # ========== DIGITAL RESERVATION ==========
+    reservation_type = Column(String(20), default="on_site", nullable=False)  # digital, on_site
+    # Format: {"sms": true, "push": true, "email": false, "notify_3_ahead": true, "notify_turn": true}
+    notification_preferences = Column(JSON, default=dict, nullable=False)
+    estimated_turn_time = Column(String, nullable=True)  # ISO timestamp - heure estimée du passage
+    counter_assigned = Column(String(50), nullable=True)  # Numéro du guichet assigné (ex: "Guichet 2")
+    
+    # ========== POST-SERVICE FEEDBACK ==========
+    service_rating = Column(Integer, nullable=True)  # 1-5 étoiles
+    service_feedback = Column(String(1000), nullable=True)  # Commentaire du citoyen
+    
     # ========== RELATIONSHIPS ==========
     service = relationship("Service", back_populates="tickets")
     user = relationship("User", foreign_keys=[user_id], back_populates="tickets")

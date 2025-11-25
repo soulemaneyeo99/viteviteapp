@@ -178,4 +178,21 @@ export const transportAPI = {
   getStopArrivals: (stopId: number) => api.get(`/transport/sotra/stops/${stopId}/arrivals`),
 };
 
+export const administrationsAPI = {
+  getAll: (params?: { type?: string; is_open?: boolean; search?: string; limit?: number; offset?: number }) =>
+    api.get("/administrations", { params }),
+
+  getById: (id: string) => api.get(`/administrations/${id}`),
+
+  getServices: (id: string) => api.get(`/administrations/${id}/services`),
+
+  getQueueStatus: (id: string) => api.get(`/administrations/${id}/queue-status`),
+
+  create: (data: any) => api.post("/administrations", data),
+
+  update: (id: string, data: any) => api.put(`/administrations/${id}`, data),
+
+  delete: (id: string) => api.delete(`/administrations/${id}`),
+};
+
 export default api;

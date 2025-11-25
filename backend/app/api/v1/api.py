@@ -21,6 +21,7 @@ from app.api.v1.endpoints import (
     service_config,
     notifications,
     analytics,
+    administrations,
 )
 api_router = APIRouter()
 api_router.include_router(services.router, prefix="/services", tags=["services"])
@@ -40,6 +41,7 @@ api_router.include_router(verification.router, prefix="/verification", tags=["ve
 api_router.include_router(service_config.router, prefix="/config", tags=["service-config"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
 api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
+api_router.include_router(administrations.router, prefix="/administrations", tags=["administrations"])
 
 
 @api_router.get("/health")

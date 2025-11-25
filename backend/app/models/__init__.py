@@ -26,6 +26,7 @@ from app.models.counter import Counter, CounterStatus, PriorityType
 from app.models.service_config import ServiceConfig
 from app.models.notification import Notification, NotificationType, NotificationTarget, NotificationChannel
 from app.models.analytics import Analytics
+from app.models.administration import Administration
 
 __all__ = [
     "BaseModel",
@@ -58,4 +59,5 @@ __all__ = [
     "NotificationTarget",
     "NotificationChannel",
     "Analytics",
+    "Administration",
 ]
