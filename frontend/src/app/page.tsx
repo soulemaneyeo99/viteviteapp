@@ -66,12 +66,12 @@ export default function LandingPage() {
           {/* Tagline - The Core Message */}
           <h1 className="text-4xl md:text-6xl font-medium text-slate-900 mb-8 tracking-tight leading-tight">
             Gagnez du temps<br />
-            <span className="text-yellow-500">évitez les files</span>
+            <span className="text-primary">évitez les files</span>
           </h1>
 
           {/* Search Bar - The Primary Action */}
           <div className="max-w-2xl mx-auto mb-16 relative group">
-            <div className="absolute inset-0 bg-yellow-400 rounded-full blur-2xl opacity-10 group-hover:opacity-20 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-primary-400 rounded-full blur-2xl opacity-10 group-hover:opacity-20 transition-opacity duration-500"></div>
             <form onSubmit={handleSearch} className="relative flex items-center bg-white p-2 rounded-full shadow-xl border border-slate-100 transition-shadow hover:shadow-2xl">
               <div className="pl-6 pr-4 text-slate-400">
                 <Search className="w-6 h-6" />
@@ -83,7 +83,7 @@ export default function LandingPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button type="submit" className="bg-yellow-500 text-white px-8 py-4 rounded-full font-medium hover:bg-yellow-600 transition-all flex items-center gap-2">
+              <button type="submit" className="bg-primary text-white px-8 py-4 rounded-full font-medium hover:bg-primary-dark transition-all flex items-center gap-2">
                 Rechercher
               </button>
             </form>
@@ -92,15 +92,15 @@ export default function LandingPage() {
           {/* Trust Indicators - Subtle */}
           <div className="flex flex-wrap justify-center gap-8 text-sm font-medium text-slate-500">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-yellow-500" />
+              <ShieldCheck className="w-5 h-5 text-primary" />
               <span>Officiel & Sécurisé</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-yellow-500" />
+              <Clock className="w-5 h-5 text-primary" />
               <span>Temps réel</span>
             </div>
             <div className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-yellow-500" />
+              <MapPin className="w-5 h-5 text-primary" />
               <span>Partout à Abidjan</span>
             </div>
           </div>
@@ -109,7 +109,7 @@ export default function LandingPage() {
 
         {/* Background Decorative Elements - Very Subtle */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-          <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-yellow-50 rounded-full blur-3xl opacity-60"></div>
+          <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary-50 rounded-full blur-3xl opacity-60"></div>
           <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-slate-50 rounded-full blur-3xl opacity-60"></div>
         </div>
       </section>
@@ -122,12 +122,12 @@ export default function LandingPage() {
               <Link
                 key={category.id}
                 href={category.href}
-                className="group flex flex-col items-center p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-yellow-200 transition-all text-center"
+                className="group flex flex-col items-center p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-primary-200 transition-all text-center"
               >
-                <div className="w-16 h-16 mb-4 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-yellow-50 transition-colors">
-                  <category.icon className="w-8 h-8 text-slate-400 group-hover:text-yellow-600 transition-colors" />
+                <div className="w-16 h-16 mb-4 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-primary-50 transition-colors">
+                  <category.icon className="w-8 h-8 text-slate-400 group-hover:text-primary-600 transition-colors" />
                 </div>
-                <h3 className="text-lg font-medium text-slate-900 group-hover:text-yellow-700 transition-colors">{category.name}</h3>
+                <h3 className="text-lg font-medium text-slate-900 group-hover:text-primary-700 transition-colors">{category.name}</h3>
               </Link>
             ))}
           </div>
@@ -145,7 +145,7 @@ export default function LandingPage() {
           <LiveQueueStatus />
 
           <div className="text-center mt-12">
-            <Link href="/services" className="inline-flex items-center gap-2 text-yellow-600 font-medium hover:text-yellow-700 hover:underline underline-offset-4">
+            <Link href="/services" className="inline-flex items-center gap-2 text-primary-600 font-medium hover:text-primary-700 hover:underline underline-offset-4">
               Voir tous les services <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -191,19 +191,19 @@ function LiveQueueStatus() {
         <Link
           key={service.id}
           href={`/services?id=${service.id}`}
-          className="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-xl hover:shadow-md hover:border-yellow-200 transition-all group"
+          className="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-xl hover:shadow-md hover:border-primary-200 transition-all group"
         >
           <div className="flex items-center gap-4">
             <div className={`w-2 h-2 rounded-full ${service.status === 'ouvert' ? 'bg-green-500' : 'bg-red-500'}`}></div>
             <div>
-              <h4 className="font-medium text-slate-900 group-hover:text-yellow-600 transition-colors">{service.name}</h4>
+              <h4 className="font-medium text-slate-900 group-hover:text-primary-600 transition-colors">{service.name}</h4>
               <div className="flex items-center gap-3 mt-1 text-sm text-slate-500">
                 <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {service.current_queue_size}</span>
                 <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {service.estimated_wait_time} min</span>
               </div>
             </div>
           </div>
-          <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-yellow-500 transition-colors" />
+          <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-primary-500 transition-colors" />
         </Link>
       ))}
     </div>
