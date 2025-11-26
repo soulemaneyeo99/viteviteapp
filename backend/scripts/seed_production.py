@@ -53,26 +53,15 @@ async def create_tables():
 
 async def seed_services():
     """Seed services data"""
-    logger.info("\n🌱 Seeding services...")
+    logger.info("\n🌱 Seeding services (FULL)...")
     try:
-        from app.models.service import Service
+        # Import and run seed_services_full
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+        from seed_services_full import seed_services_full as run_seed_services
         
-        async with AsyncSessionLocal() as db:
-            # Check if services already exist
-            result = await db.execute(select(Service))
-            existing = result.scalars().first()
-            
-            if existing:
-                logger.info("⚠️  Services already exist. Skipping.")
-                return True
-            
-            # Import and run seed_data
-            sys.path.insert(0, str(Path(__file__).parent.parent))
-            from seed_data import seed_services as run_seed_services
-            
-            await run_seed_services()
-            logger.info("✅ Services seeded successfully")
-            return True
+        await run_seed_services()
+        logger.info("✅ Services seeded successfully")
+        return True
             
     except Exception as e:
         logger.error(f"❌ Error seeding services: {e}")
