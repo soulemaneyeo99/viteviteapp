@@ -32,11 +32,18 @@ export default function ServiceControlCenter() {
     const { data: statsData } = useQuery({
         queryKey: ["service-stats", serviceId],
         queryFn: async () => {
-            const response = await axios.get(`${API_URL}/api/v1/admin/dashboard/stats`, {
-                params: { service_id: serviceId },
-                headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
-            });
-            return response.data;
+            try {
+                const response = await axios.get(`${API_URL}/api/v1/admin/dashboard/stats`, {
+                    params: { service_id: serviceId },
+                    headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+                });
+                return response.data;
+            } catch (error: any) {
+                if (error.response?.status === 401 || error.response?.status === 403) {
+                    window.location.href = "/auth";
+                }
+                throw error;
+            }
         },
         refetchInterval: 10000,
     });
@@ -90,8 +97,8 @@ export default function ServiceControlCenter() {
                             key={item.label}
                             href={item.href}
                             className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${item.active
-                                    ? "bg-primary text-white shadow-lg shadow-primary/20"
-                                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                                ? "bg-primary text-white shadow-lg shadow-primary/20"
+                                : "text-slate-400 hover:bg-slate-800 hover:text-white"
                                 }`}
                         >
                             <item.icon className="w-5 h-5" />
@@ -126,6 +133,16 @@ export default function ServiceControlCenter() {
                         </div>
 
                         <div className="flex items-center space-x-4">
+                            {/* View Public Page */}
+                            <Link
+                                href={`/administrations/${service?.administration_id || 'admin'}/services/${serviceId}`}
+                                target="_blank"
+                                className="flex items-center space-x-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                            >
+                                <Activity className="w-4 h-4" />
+                                <span>Voir Public</span>
+                            </Link>
+
                             {/* Search */}
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -175,8 +192,8 @@ export default function ServiceControlCenter() {
                                 <div
                                     key={index}
                                     className={`flex items-center space-x-3 p-4 rounded-xl border-2 ${alert.type === "surcharge"
-                                            ? "bg-red-50 border-red-200 text-red-800"
-                                            : "bg-yellow-50 border-yellow-200 text-yellow-800"
+                                        ? "bg-red-50 border-red-200 text-red-800"
+                                        : "bg-yellow-50 border-yellow-200 text-yellow-800"
                                         }`}
                                 >
                                     <AlertTriangle className="w-5 h-5 flex-shrink-0" />
