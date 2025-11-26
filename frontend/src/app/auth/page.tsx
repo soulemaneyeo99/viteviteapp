@@ -72,6 +72,9 @@ export default function AuthPage() {
           password: form.password,
         });
 
+        console.log("Login response:", response.data);
+        console.log("User role from response:", response.data.user.role);
+
         // Use authManager to save tokens
         authManager.saveAuth(
           response.data.tokens,
@@ -83,11 +86,17 @@ export default function AuthPage() {
           rememberMe
         );
 
+        // Verify role was saved
+        const savedRole = authManager.getUserRole();
+        console.log("Saved role from authManager:", savedRole);
+
         toast.success("Connexion réussie !");
 
         if (response.data.user.role === "admin" || response.data.user.role === "super") {
+          console.log("Redirecting to /admin");
           router.push("/admin");
         } else {
+          console.log("Redirecting to /services");
           router.push("/services");
         }
       }
