@@ -33,15 +33,6 @@ async def get_prediction(service_id: str, db: AsyncSession = Depends(get_db)):
     
     prediction = await ml_service.predict_wait_time(service_dict)
     
-    return {
-        "success": True,
-        "service_id": service.id,
-        "service_name": service.name,
-        "predicted_wait_time": prediction["predicted_wait_time"],
-        "confidence": prediction["confidence"],
-        "recommendation": prediction["recommendation"],
-        "best_time_to_visit": prediction["best_time_to_visit"],
-        "method": prediction["method"],
     wait_time = prediction['predicted_wait_time']
     formatted_time = f"{wait_time} min"
     if wait_time >= 60:
