@@ -61,8 +61,8 @@ export default function AdminDashboard() {
             <div className="mb-8 space-y-3">
               {alerts.map((alert: any, i: number) => (
                 <div key={i} className={`p-4 rounded-xl border flex items-center justify-between ${alert.level === 'high'
-                    ? 'bg-red-50 border-red-200 text-red-800'
-                    : 'bg-yellow-50 border-yellow-200 text-yellow-800'
+                  ? 'bg-red-50 border-red-200 text-red-800'
+                  : 'bg-yellow-50 border-yellow-200 text-yellow-800'
                   }`}>
                   <div className="flex items-center gap-3">
                     <AlertTriangle className="w-5 h-5" />
@@ -79,7 +79,7 @@ export default function AdminDashboard() {
           )}
 
           {/* Stats Grid (Step A) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <StatCard
               title="En attente"
               value={stats.waiting_count}
@@ -108,53 +108,11 @@ export default function AdminDashboard() {
               color="purple"
               trend={{ value: 0, label: "connectés", isPositive: true }}
             />
-            <StatCard
-              title="Temps / Dossier"
-              value={`${stats.avg_processing_time} min`}
-              icon={<Activity className="w-6 h-6" />}
-              color="indigo"
-              trend={{ value: 0, label: "moyen", isPositive: true }}
-            />
           </div>
 
-          {/* Recent Activity & Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Chart / Table Area */}
-            <div className="lg:col-span-2 space-y-8">
-              <RecentTicketsTable />
-            </div>
-
-            {/* Side Widgets (e.g., Service Status) */}
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-                <h3 className="font-bold text-slate-900 mb-4">État des services</h3>
-                <div className="space-y-4">
-                  {servicesStatus.map((service: any) => (
-                    <div key={service.id} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${service.status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-gray-300'
-                          }`}></div>
-                        <span className="text-sm font-medium text-slate-700">{service.name}</span>
-                      </div>
-                      <span className="text-xs text-slate-400">
-                        {service.queue_size > 0 ? `${service.queue_size} en attente` : 'Calme'}
-                      </span>
-                    </div>
-                  ))}
-                  {servicesStatus.length === 0 && (
-                    <p className="text-sm text-gray-400 italic">Aucun service actif</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-6 text-white">
-                <h3 className="font-bold mb-2">Besoin d'aide ?</h3>
-                <p className="text-sm text-slate-400 mb-4">Consultez la documentation administrateur pour plus de détails.</p>
-                <button className="w-full py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors">
-                  Documentation
-                </button>
-              </div>
-            </div>
+          {/* Recent Activity Only - Cleaner Layout */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+            <RecentTicketsTable />
           </div>
         </main>
       </div>
