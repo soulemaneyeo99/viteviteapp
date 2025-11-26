@@ -35,6 +35,7 @@ class Ticket(Base, BaseModel):
     
     # ========== FOREIGN KEYS ==========
     service_id = Column(String, ForeignKey("services.id", ondelete="CASCADE"), nullable=False, index=True)
+    sub_service_id = Column(String, nullable=True)  # ID du sous-service (ex: "cni", "passeport")
     user_id = Column(String, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
     counter_id = Column(String, ForeignKey("counters.id", ondelete="SET NULL"), nullable=True, index=True)
     

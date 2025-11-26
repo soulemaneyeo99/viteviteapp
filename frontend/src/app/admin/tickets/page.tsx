@@ -154,7 +154,7 @@ export default function QueueManagement() {
 
   // Create Ticket Mutation
   const createTicketMutation = useMutation({
-    mutationFn: async (data: { service_id: string; user_name: string; user_phone: string; notes?: string }) => {
+    mutationFn: async (data: { service_id: string; sub_service_id?: string; user_name: string; user_phone: string; notes?: string }) => {
       const response = await ticketsAPI.createWalkIn(data);
       return response.data;
     },
@@ -175,6 +175,7 @@ export default function QueueManagement() {
     const formData = new FormData(e.currentTarget);
     createTicketMutation.mutate({
       service_id: formData.get("service_id") as string,
+      sub_service_id: formData.get("sub_service_id") as string || undefined, // Nouveau
       user_name: formData.get("user_name") as string,
       user_phone: formData.get("user_phone") as string,
       notes: formData.get("notes") as string || undefined,
@@ -475,6 +476,7 @@ export default function QueueManagement() {
                   name="service_id"
                   required
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary transition-colors"
+                  onChange={(e) => setSelectedService(e.target.value)} // Update selected service to show sub-services
                 >
                   <option value="">Sélectionner un service</option>
                   {services.map((service: any) => (
@@ -484,6 +486,27 @@ export default function QueueManagement() {
                   ))}
                 </select>
               </div>
+
+              {/* Sub-Service Selection (New Step B) */}
+              {selectedService && services.find((s: any) => s.id === selectedService)?.sub_services?.length > 0 && (
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Type d'opération *
+                  </label>
+                  <select
+                    name="sub_service_id"
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary transition-colors"
+                  >
+                    <option value="">Sélectionner une opération</option>
+                    {services.find((s: any) => s.id === selectedService)?.sub_services.map((sub: any) => (
+                      <option key={sub.id} value={sub.id}>
+                        {sub.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* User Name */}
               <div>

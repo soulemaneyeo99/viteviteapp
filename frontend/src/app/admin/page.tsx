@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { Users, Clock, TrendingUp, CheckCircle2 } from "lucide-react";
+import { Users, Clock, TrendingUp, CheckCircle2, AlertTriangle, Activity } from "lucide-react";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
@@ -24,10 +24,10 @@ export default function AdminDashboard() {
     }
   }, [router]);
 
-  const { data: statsData } = useQuery({
-    queryKey: ["admin-stats"],
+  const { data: dashboardData } = useQuery({
+    queryKey: ["admin-dashboard-stats"],
     queryFn: async () => {
-      const response = await axios.get(`${API_URL}/api/v1/tickets/stats/today`, {
+      const response = await axios.get(`${API_URL}/api/v1/admin/dashboard/stats`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
       });
       return response.data;
@@ -35,12 +35,16 @@ export default function AdminDashboard() {
     refetchInterval: 10000,
   });
 
-  const stats = statsData || {
-    total_tickets_today: 0,
-    active_tickets: 0,
-    completed_tickets: 0,
+  const stats = dashboardData?.overview || {
+    waiting_count: 0,
+    completed_today: 0,
     average_wait_time: 0,
+    active_agents: 0,
+    avg_processing_time: 0
   };
+
+  const alerts = dashboardData?.alerts || [];
+  const servicesStatus = dashboardData?.services_status || [];
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-inter">
@@ -49,38 +53,67 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <div className="flex-1 md:ml-64 transition-all duration-300">
-        <AdminHeader title="Tableau de bord" onMenuClick={() => setIsSidebarOpen(true)} />
+        <AdminHeader title="Centre de Contrôle" onMenuClick={() => setIsSidebarOpen(true)} />
 
         <main className="p-4 md:p-8">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Smart Alerts Section */}
+          {alerts.length > 0 && (
+            <div className="mb-8 space-y-3">
+              {alerts.map((alert: any, i: number) => (
+                <div key={i} className={`p-4 rounded-xl border flex items-center justify-between ${alert.level === 'high'
+                    ? 'bg-red-50 border-red-200 text-red-800'
+                    : 'bg-yellow-50 border-yellow-200 text-yellow-800'
+                  }`}>
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-5 h-5" />
+                    <span className="font-bold">{alert.message}</span>
+                  </div>
+                  {alert.action && (
+                    <button className="px-3 py-1 bg-white/50 hover:bg-white/80 rounded-lg text-sm font-bold transition-colors">
+                      {alert.action}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Stats Grid (Step A) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
             <StatCard
-              title="Tickets en attente"
-              value={stats.active_tickets}
+              title="En attente"
+              value={stats.waiting_count}
               icon={<Users className="w-6 h-6" />}
               color="orange"
-              trend={{ value: 12, label: "vs hier", isPositive: false }}
+              trend={{ value: 0, label: "personnes", isPositive: false }}
             />
             <StatCard
-              title="Temps d'attente moyen"
+              title="Traités ce jour"
+              value={stats.completed_today}
+              icon={<CheckCircle2 className="w-6 h-6" />}
+              color="green"
+              trend={{ value: 0, label: "dossiers", isPositive: true }}
+            />
+            <StatCard
+              title="Attente moyenne"
               value={`${stats.average_wait_time} min`}
               icon={<Clock className="w-6 h-6" />}
               color="blue"
-              trend={{ value: 5, label: "vs hier", isPositive: true }}
+              trend={{ value: 0, label: "estimé", isPositive: true }}
             />
             <StatCard
-              title="Tickets traités"
-              value={stats.total_tickets_today}
-              icon={<TrendingUp className="w-6 h-6" />}
+              title="Agents actifs"
+              value={stats.active_agents}
+              icon={<Users className="w-6 h-6" />}
               color="purple"
-              trend={{ value: 8, label: "vs hier", isPositive: true }}
+              trend={{ value: 0, label: "connectés", isPositive: true }}
             />
             <StatCard
-              title="Taux de satisfaction"
-              value="98%"
-              icon={<CheckCircle2 className="w-6 h-6" />}
-              color="green"
-              trend={{ value: 2, label: "vs hier", isPositive: true }}
+              title="Temps / Dossier"
+              value={`${stats.avg_processing_time} min`}
+              icon={<Activity className="w-6 h-6" />}
+              color="indigo"
+              trend={{ value: 0, label: "moyen", isPositive: true }}
             />
           </div>
 
@@ -96,15 +129,21 @@ export default function AdminDashboard() {
               <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
                 <h3 className="font-bold text-slate-900 mb-4">État des services</h3>
                 <div className="space-y-4">
-                  {['Mairie de Cocody', 'Préfecture Abidjan', 'CIE Plateau', 'SODECI Treichville'].map((service, i) => (
-                    <div key={i} className="flex items-center justify-between">
+                  {servicesStatus.map((service: any) => (
+                    <div key={service.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        <span className="text-sm font-medium text-slate-700">{service}</span>
+                        <div className={`w-2 h-2 rounded-full ${service.status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-gray-300'
+                          }`}></div>
+                        <span className="text-sm font-medium text-slate-700">{service.name}</span>
                       </div>
-                      <span className="text-xs text-slate-400">Opérationnel</span>
+                      <span className="text-xs text-slate-400">
+                        {service.queue_size > 0 ? `${service.queue_size} en attente` : 'Calme'}
+                      </span>
                     </div>
                   ))}
+                  {servicesStatus.length === 0 && (
+                    <p className="text-sm text-gray-400 italic">Aucun service actif</p>
+                  )}
                 </div>
               </div>
 

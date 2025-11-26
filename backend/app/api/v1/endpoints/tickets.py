@@ -45,16 +45,32 @@ async def create_ticket(
     # Générer le numéro de ticket
     ticket_number = f"N-{position:03d}"
     
+    # Calculer le temps d'attente avec SmartPredictionService
+    from app.services.smart_prediction import smart_prediction_service
+    
+    service_data = {
+        "id": service.id,
+        "name": service.name,
+        "type": service.category,
+        "total_queue_size": service.current_queue_size,
+        "total_active_counters": service.active_counters,
+        "is_open": service.status == "ouvert"
+    }
+    
+    prediction = smart_prediction_service.predict_wait_time(service_data)
+    estimated_wait_time = prediction["predicted_wait_time"]
+    
     # Créer le ticket
     new_ticket = Ticket(
         service_id=service.id,
+        sub_service_id=ticket_data.sub_service_id,  # Nouveau
         user_id=str(current_user.id),  # Convertir UUID en string pour SQLite
         ticket_number=ticket_number,
         position_in_queue=position,
         status=TicketStatus.PENDING_VALIDATION,  # Nouveau: nécessite validation admin
         user_name=ticket_data.user_name or current_user.full_name,
         user_phone=ticket_data.user_phone or current_user.phone,
-        estimated_wait_time=service.estimated_wait_time * position,  # Calculer le temps d'attente
+        estimated_wait_time=estimated_wait_time,  # Utiliser la prédiction intelligente
         notes=ticket_data.notes
     )
     

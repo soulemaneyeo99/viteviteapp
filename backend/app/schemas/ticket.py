@@ -14,6 +14,7 @@ from app.models.ticket import TicketStatus
 class TicketBase(BaseModel):
     """Base schema pour Ticket"""
     service_id: str
+    sub_service_id: Optional[str] = None  # Nouveau: ID du sous-service
     user_name: Optional[str] = Field(None, max_length=255)
     user_phone: Optional[str] = Field(None, pattern=r"^\+?225\d{10}$")
     notes: Optional[str] = Field(None, max_length=500)
