@@ -17,56 +17,60 @@ from app.services.smart_prediction import smart_prediction_service
 router = APIRouter()
 
 
+from typing import Optional
+
 @router.get("/dashboard/stats", response_model=dict)
 async def get_dashboard_stats(
+    service_id: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
     """
     Récupère les statistiques complètes pour le dashboard admin (Step A & E)
+    Peut être filtré par service_id
     """
     today = datetime.utcnow().date()
     
     # 1. Vue d'ensemble (Step A)
     # Tickets en attente
-    waiting_result = await db.execute(
-        select(func.count(Ticket.id))
-        .where(Ticket.status.in_([TicketStatus.WAITING, TicketStatus.PENDING_VALIDATION]))
-    )
+    waiting_query = select(func.count(Ticket.id)).where(Ticket.status.in_([TicketStatus.WAITING, TicketStatus.PENDING_VALIDATION]))
+    if service_id:
+        waiting_query = waiting_query.where(Ticket.service_id == service_id)
+    
+    waiting_result = await db.execute(waiting_query)
     waiting_count = waiting_result.scalar()
     
     # Tickets passés aujourd'hui
-    completed_result = await db.execute(
-        select(func.count(Ticket.id))
-        .where(Ticket.status == TicketStatus.COMPLETED)
-        .where(func.date(Ticket.created_at) == today)
-    )
+    completed_query = select(func.count(Ticket.id)).where(Ticket.status == TicketStatus.COMPLETED).where(func.date(Ticket.created_at) == today)
+    if service_id:
+        completed_query = completed_query.where(Ticket.service_id == service_id)
+        
+    completed_result = await db.execute(completed_query)
     completed_count = completed_result.scalar()
     
     # Temps d'attente moyen (basé sur les tickets terminés aujourd'hui)
-    # Note: Idéalement, on calculerait la moyenne de (started_at - created_at)
-    # Pour l'instant, on utilise une moyenne simple des estimations ou une valeur fixe si pas de données
     avg_wait_time = 15  # Valeur par défaut
     
     # Agents actifs (ceux qui ont traité un ticket dans la dernière heure)
     one_hour_ago = datetime.utcnow() - timedelta(hours=1)
-    agents_result = await db.execute(
-        select(func.count(func.distinct(Ticket.counter_id)))
-        .where(Ticket.updated_at >= one_hour_ago)
-    )
-    active_agents = agents_result.scalar() or 1 # Au moins 1 si le système tourne
+    agents_query = select(func.count(func.distinct(Ticket.counter_id))).where(Ticket.updated_at >= one_hour_ago)
+    if service_id:
+        agents_query = agents_query.where(Ticket.service_id == service_id)
+        
+    agents_result = await db.execute(agents_query)
+    active_agents = agents_result.scalar() or (1 if service_id else 5) # Simulation
     
     # 2. Performance & Alertes (Step C)
-    # Calculer le taux de surcharge global
-    services_result = await db.execute(select(Service).where(Service.status == "ouvert"))
+    services_query = select(Service).where(Service.status == "ouvert")
+    if service_id:
+        services_query = services_query.where(Service.id == service_id)
+        
+    services_result = await db.execute(services_query)
     services = services_result.scalars().all()
     
     alerts = []
-    total_queue_size = 0
     
     for service in services:
-        total_queue_size += service.current_queue_size
-        
         # Check surcharge
         if service.current_queue_size > 20:
             alerts.append({
@@ -77,7 +81,6 @@ async def get_dashboard_stats(
             })
         
         # Check lenteur (si temps d'attente estimé > 60 min)
-        # On utilise le SmartPredictionService
         service_data = {
             "id": service.id,
             "name": service.name,
@@ -103,7 +106,7 @@ async def get_dashboard_stats(
             "completed_today": completed_count,
             "average_wait_time": avg_wait_time,
             "active_agents": active_agents,
-            "avg_processing_time": 8  # minutes (simulé pour l'instant)
+            "avg_processing_time": 8
         },
         "alerts": alerts,
         "services_status": [
@@ -120,13 +123,19 @@ async def get_dashboard_stats(
 
 @router.get("/alerts", response_model=dict)
 async def get_admin_alerts(
+    service_id: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
     """
     Récupère les alertes intelligentes (Step C)
+    Peut être filtré par service_id
     """
-    services_result = await db.execute(select(Service).where(Service.status == "ouvert"))
+    services_query = select(Service).where(Service.status == "ouvert")
+    if service_id:
+        services_query = services_query.where(Service.id == service_id)
+        
+    services_result = await db.execute(services_query)
     services = services_result.scalars().all()
     
     alerts = []

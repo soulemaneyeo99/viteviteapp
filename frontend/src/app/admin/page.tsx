@@ -1,121 +1,133 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { Users, Clock, TrendingUp, CheckCircle2, AlertTriangle, Activity } from "lucide-react";
+import { servicesAPI } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import AdminHeader from "@/components/admin/AdminHeader";
-import StatCard from "@/components/admin/StatCard";
-import RecentTicketsTable from "@/components/admin/RecentTicketsTable";
+import { Building2, Users, Clock, TrendingUp, ArrowRight, Activity } from "lucide-react";
+import Link from "next/link";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-export default function AdminDashboard() {
+export default function AdminLandingPage() {
   const router = useRouter();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    const role = localStorage.getItem("user_role");
-    if (!token || role !== "admin") {
-      router.push("/login");
-    }
-  }, [router]);
-
-  const { data: dashboardData } = useQuery({
-    queryKey: ["admin-dashboard-stats"],
+  const { data: servicesData, isLoading } = useQuery({
+    queryKey: ["admin-services"],
     queryFn: async () => {
-      const response = await axios.get(`${API_URL}/api/v1/admin/dashboard/stats`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
-      });
+      const response = await servicesAPI.getAll();
       return response.data;
     },
-    refetchInterval: 10000,
   });
 
-  const stats = dashboardData?.overview || {
-    waiting_count: 0,
-    completed_today: 0,
-    average_wait_time: 0,
-    active_agents: 0,
-    avg_processing_time: 0
-  };
+  const services = servicesData?.services || [];
 
-  const alerts = dashboardData?.alerts || [];
-  const servicesStatus = dashboardData?.services_status || [];
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-inter">
-      {/* Sidebar */}
-      <AdminSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Link href="/" className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                <span className="text-xl text-white">⚡</span>
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900 leading-tight">ViteViteApp</h1>
+                <p className="text-xs text-gray-500 font-medium">Administration</p>
+              </div>
+            </Link>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 text-sm font-medium text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              <span>Système opérationnel</span>
+            </div>
+          </div>
+        </div>
+      </header>
 
       {/* Main Content */}
-      <div className="flex-1 md:ml-64 transition-all duration-300">
-        <AdminHeader title="Centre de Contrôle" onMenuClick={() => setIsSidebarOpen(true)} />
+      <main className="container mx-auto px-6 py-8">
+        <div className="mb-8">
+          <h2 className="text-3xl font-black text-gray-900 mb-2">Centre de Contrôle</h2>
+          <p className="text-gray-600">Sélectionnez un service pour accéder à son tableau de bord</p>
+        </div>
 
-        <main className="p-4 md:p-8">
-          {/* Smart Alerts Section */}
-          {alerts.length > 0 && (
-            <div className="mb-8 space-y-3">
-              {alerts.map((alert: any, i: number) => (
-                <div key={i} className={`p-4 rounded-xl border flex items-center justify-between ${alert.level === 'high'
-                  ? 'bg-red-50 border-red-200 text-red-800'
-                  : 'bg-yellow-50 border-yellow-200 text-yellow-800'
-                  }`}>
-                  <div className="flex items-center gap-3">
-                    <AlertTriangle className="w-5 h-5" />
-                    <span className="font-bold">{alert.message}</span>
+        {/* Services Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {services.map((service: any) => (
+            <button
+              key={service.id}
+              onClick={() => router.push(`/admin/services/${service.id}`)}
+              className="group bg-white rounded-2xl border-2 border-gray-100 hover:border-primary/30 p-6 text-left transition-all duration-200 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1"
+            >
+              {/* Service Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <Building2 className="w-6 h-6 text-primary" />
                   </div>
-                  {alert.action && (
-                    <button className="px-3 py-1 bg-white/50 hover:bg-white/80 rounded-lg text-sm font-bold transition-colors">
-                      {alert.action}
-                    </button>
-                  )}
+                  <div>
+                    <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">
+                      {service.name}
+                    </h3>
+                    <p className="text-xs text-gray-500 font-medium">{service.category}</p>
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+              </div>
 
-          {/* Stats Grid (Step A) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <StatCard
-              title="En attente"
-              value={stats.waiting_count}
-              icon={<Users className="w-6 h-6" />}
-              color="orange"
-              trend={{ value: 0, label: "personnes", isPositive: false }}
-            />
-            <StatCard
-              title="Traités ce jour"
-              value={stats.completed_today}
-              icon={<CheckCircle2 className="w-6 h-6" />}
-              color="green"
-              trend={{ value: 0, label: "dossiers", isPositive: true }}
-            />
-            <StatCard
-              title="Attente moyenne"
-              value={`${stats.average_wait_time} min`}
-              icon={<Clock className="w-6 h-6" />}
-              color="blue"
-              trend={{ value: 0, label: "estimé", isPositive: true }}
-            />
-            <StatCard
-              title="Agents actifs"
-              value={stats.active_agents}
-              icon={<Users className="w-6 h-6" />}
-              color="purple"
-              trend={{ value: 0, label: "connectés", isPositive: true }}
-            />
-          </div>
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <Users className="w-4 h-4 text-gray-400" />
+                    <span className="text-xs font-bold text-gray-500 uppercase">File</span>
+                  </div>
+                  <p className="text-2xl font-black text-gray-900">{service.current_queue_size || 0}</p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <Clock className="w-4 h-4 text-gray-400" />
+                    <span className="text-xs font-bold text-gray-500 uppercase">Attente</span>
+                  </div>
+                  <p className="text-2xl font-black text-gray-900">{service.average_wait_time || 0}<span className="text-sm text-gray-500 ml-1">min</span></p>
+                </div>
+              </div>
 
-          {/* Recent Activity Only - Cleaner Layout */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-            <RecentTicketsTable />
+              {/* Status Badge */}
+              <div className="flex items-center justify-between">
+                <div className={`inline-flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-bold ${service.status === "ouvert"
+                    ? "bg-green-50 text-green-700 border border-green-200"
+                    : "bg-red-50 text-red-700 border border-red-200"
+                  }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${service.status === "ouvert" ? "bg-green-500" : "bg-red-500"}`}></span>
+                  <span>{service.status === "ouvert" ? "Ouvert" : "Fermé"}</span>
+                </div>
+                <div className="flex items-center space-x-1 text-xs text-gray-500">
+                  <Activity className="w-3.5 h-3.5" />
+                  <span>{service.active_counters || 0} guichets</span>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {services.length === 0 && (
+          <div className="text-center py-12">
+            <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Aucun service disponible</h3>
+            <p className="text-gray-600">Les services apparaîtront ici une fois configurés</p>
           </div>
-        </main>
-      </div>
+        )}
+      </main>
     </div>
   );
 }

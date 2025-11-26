@@ -161,14 +161,30 @@ async def cancel_ticket(
     return {"success": True, "message": "Ticket annulé"}
 
 
+from typing import Optional
+
 @router.get("")
 async def get_all_tickets(
+    skip: int = 0,
+    limit: int = 100,
+    status: Optional[str] = None,
+    service_id: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    """Récupère tous les tickets (admin only)"""
+    """Récupère tous les tickets (admin only) avec filtres"""
     
-    result = await db.execute(select(Ticket).order_by(Ticket.created_at.desc()))
+    query = select(Ticket).order_by(Ticket.created_at.desc())
+    
+    if status:
+        query = query.where(Ticket.status == status)
+        
+    if service_id:
+        query = query.where(Ticket.service_id == service_id)
+        
+    query = query.offset(skip).limit(limit)
+    
+    result = await db.execute(query)
     tickets = result.scalars().all()
     
     return {
