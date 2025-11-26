@@ -85,6 +85,11 @@ export const ticketsAPI = {
 
   cancel: (id: string) => api.delete(`/tickets/${id}`),
 
+  validate: (id: string, data: { action: 'approve' | 'reject'; reason?: string }) =>
+    api.post(`/tickets/${id}/validate`, null, {
+      params: { action: data.action === 'approve' ? 'confirm' : 'reject' }
+    }),
+
   callNext: (serviceId: string) => api.post(`/tickets/call-next/${serviceId}`, {}),
 
   complete: (ticketId: string) => api.post(`/tickets/${ticketId}/complete`, {}),
@@ -92,25 +97,12 @@ export const ticketsAPI = {
   getTodayStats: () => api.get("/tickets/stats/today"),
 
   getAll: (params?: { skip?: number; limit?: number; status?: string; service_id?: string }) =>
-    api.get("/tickets", { params }), // Fixed: was /admin/tickets
+    api.get("/tickets", { params }),
 
   getPending: () => api.get("/tickets/pending-validation"),
 
   updateStatus: (ticketId: string, status: string) =>
-    api.put(`/tickets/${ticketId}/status`, { status }), // Adjusted if needed, or check backend
-
-  validate: (ticketId: string, action: string) =>
-    api.post(`/tickets/${ticketId}/validate`, {}, { params: { action } }),
-
-  createWalkIn: (data: { service_id: string; sub_service_id?: string; user_name: string; user_phone: string; notes?: string }) =>
-    api.post("/tickets", { ...data, status: "pending_validation" }), // Use standard create endpoint but maybe with specific status? 
-  // Actually, create_ticket in backend sets status to PENDING_VALIDATION by default.
-  // So we can just use the standard create endpoint or a specific one if we want to bypass validation?
-  // The previous code used /admin/create-ticket which doesn't exist.
-  // Let's use /tickets and let the backend handle it.
-  // Wait, the backend create_ticket sets status to PENDING_VALIDATION.
-  // If admin creates it, maybe it should be auto-validated?
-  // For now, let's point to /tickets.
+    api.put(`/tickets/${ticketId}/status`, { status }),
 };
 
 export const predictionsAPI = {

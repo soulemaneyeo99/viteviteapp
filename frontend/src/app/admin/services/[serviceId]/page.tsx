@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import CreateTicketModal from "@/components/admin/CreateTicketModal";
+import ValidateTicketModal from "@/components/admin/ValidateTicketModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -18,6 +20,9 @@ export default function ServiceControlCenter() {
     const router = useRouter();
     const serviceId = params.serviceId as string;
     const [searchQuery, setSearchQuery] = useState("");
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isValidateModalOpen, setIsValidateModalOpen] = useState(false);
+    const [selectedTicket, setSelectedTicket] = useState<any>(null);
 
     // Fetch service data
     const { data: serviceData } = useQuery({
@@ -156,7 +161,10 @@ export default function ServiceControlCenter() {
                             </div>
 
                             {/* New Ticket Button */}
-                            <button className="flex items-center space-x-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg font-bold text-sm transition-colors shadow-lg shadow-primary/20">
+                            <button
+                                onClick={() => setIsCreateModalOpen(true)}
+                                className="flex items-center space-x-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg font-bold text-sm transition-colors shadow-lg shadow-primary/20"
+                            >
                                 <Plus className="w-4 h-4" />
                                 <span>Nouveau Ticket</span>
                             </button>
@@ -314,9 +322,21 @@ export default function ServiceControlCenter() {
                                                     Il y a {ticket.estimated_wait_time} min
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <button className="text-gray-400 hover:text-gray-600 transition-colors">
-                                                        •••
-                                                    </button>
+                                                    {ticket.status === 'en_attente_validation' ? (
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedTicket(ticket);
+                                                                setIsValidateModalOpen(true);
+                                                            }}
+                                                            className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors"
+                                                        >
+                                                            Validation
+                                                        </button>
+                                                    ) : (
+                                                        <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                                                            •••
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))
@@ -327,6 +347,20 @@ export default function ServiceControlCenter() {
                     </div>
                 </main>
             </div>
+
+            {/* Modals */}
+            <CreateTicketModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+            />
+            <ValidateTicketModal
+                isOpen={isValidateModalOpen}
+                onClose={() => {
+                    setIsValidateModalOpen(false);
+                    setSelectedTicket(null);
+                }}
+                ticket={selectedTicket}
+            />
         </div>
     );
 }
