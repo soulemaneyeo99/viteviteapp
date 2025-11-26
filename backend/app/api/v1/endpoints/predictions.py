@@ -14,7 +14,7 @@ router = APIRouter()
 
 @router.post("/{service_id}")
 async def get_prediction(service_id: str, db: AsyncSession = Depends(get_db)):
-    """Prédiction IA du temps d'attente"""
+    """Prédiction IA du temps d'attente (Formatted)"""
     
     result = await db.execute(select(Service).where(Service.id == service_id))
     service = result.scalar_one_or_none()
