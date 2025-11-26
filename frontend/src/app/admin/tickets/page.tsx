@@ -131,7 +131,9 @@ export default function QueueManagement() {
   // Validation Mutation
   const validateMutation = useMutation({
     mutationFn: async ({ ticketId, action }: { ticketId: string; action: string }) => {
-      await ticketsAPI.validate(ticketId, action);
+      // Map 'confirm' to 'approve' for the new API signature
+      const apiAction = action === 'confirm' ? 'approve' : 'reject';
+      await ticketsAPI.validate(ticketId, { action: apiAction });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["pending-tickets"] });
