@@ -9,6 +9,7 @@ import {
     TrendingUp, Calendar
 } from 'lucide-react';
 import Link from 'next/link';
+import AffluenceChart from '@/components/charts/AffluenceChart';
 
 export default function AdministrationDetailPage() {
     const params = useParams();
@@ -197,6 +198,15 @@ export default function AdministrationDetailPage() {
                             </p>
                         </div>
                     </div>
+                </div>
+
+                {/* Global Affluence Chart - NEW */}
+                <div className="mb-8">
+                    <AffluenceChart
+                        type="global"
+                        title="Affluence Globale"
+                        subtitle="Moyenne de tous les services de l'administration"
+                    />
                 </div>
 
                 {/* Services Section */}

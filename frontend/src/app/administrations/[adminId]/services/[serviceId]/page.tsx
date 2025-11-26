@@ -9,8 +9,8 @@ import {
     Sparkles, TrendingDown, CheckCircle, ArrowRight, Zap, Calendar, Phone
 } from 'lucide-react';
 import Link from 'next/link';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { toast } from 'sonner';
+import AffluenceChart from '@/components/charts/AffluenceChart';
 
 export default function ServiceDetailPage() {
     const params = useParams();
@@ -172,24 +172,12 @@ export default function ServiceDetailPage() {
                             </div>
                         </div>
 
-                        <div className="h-48 w-full bg-white/10 rounded-2xl p-4 backdrop-blur-sm border border-white/10">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={crowdData}>
-                                    <defs>
-                                        <linearGradient id="colorWait" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#fbbf24" stopOpacity={0.8} />
-                                            <stop offset="95%" stopColor="#fbbf24" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <XAxis dataKey="time" stroke="#fff" fontSize={12} />
-                                    <YAxis stroke="#fff" fontSize={12} />
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '12px', color: '#fff' }}
-                                    />
-                                    <Area type="monotone" dataKey="wait" stroke="#fbbf24" strokeWidth={3} fillOpacity={1} fill="url(#colorWait)" />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </div>
+                        <AffluenceChart
+                            type="specific"
+                            title="Affluence du Service"
+                            subtitle="Données temps réel pour ce service spécifique"
+                            className="border-0 shadow-none"
+                        />
                     </div>
                 </div>
 
