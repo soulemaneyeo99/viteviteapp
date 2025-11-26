@@ -42,5 +42,23 @@ async def get_prediction(service_id: str, db: AsyncSession = Depends(get_db)):
         "recommendation": prediction["recommendation"],
         "best_time_to_visit": prediction["best_time_to_visit"],
         "method": prediction["method"],
-        "message": f"Temps d'attente estimé : {prediction['predicted_wait_time']} minutes. {prediction['recommendation']}"
+    wait_time = prediction['predicted_wait_time']
+    formatted_time = f"{wait_time} min"
+    if wait_time >= 60:
+        hours = wait_time // 60
+        mins = wait_time % 60
+        formatted_time = f"{hours}h" if mins == 0 else f"{hours}h {mins:02d}"
+
+    message = f"Temps d'attente estimé : {formatted_time}. {prediction['recommendation']}"
+
+    return {
+        "success": True,
+        "service_id": service.id,
+        "service_name": service.name,
+        "predicted_wait_time": prediction["predicted_wait_time"],
+        "confidence": prediction["confidence"],
+        "recommendation": prediction["recommendation"],
+        "best_time_to_visit": prediction["best_time_to_visit"],
+        "method": prediction["method"],
+        "message": message
     }

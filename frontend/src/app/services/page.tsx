@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { formatDuration } from "@/lib/utils";
 
 import dynamic from 'next/dynamic';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -287,7 +288,7 @@ function ServiceCard({
             <span className="text-xs font-semibold uppercase">Attente</span>
           </div>
           <div className="text-xl font-black text-gray-900">
-            {service.estimated_wait_time} <span className="text-xs font-normal text-gray-400">min</span>
+            {formatDuration(service.estimated_wait_time)}
           </div>
         </div>
       </div>
