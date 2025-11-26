@@ -7,8 +7,9 @@ from sqlalchemy import select
 from typing import Optional
 
 from app.core.database import get_db
-from app.models.service import Service
+from app.models.service import Service, ServiceStatus
 from app.schemas.service import ServicePublic, ServicesListResponse
+from app.services.smart_prediction import smart_prediction_service
 
 router = APIRouter()
 
@@ -49,7 +50,20 @@ async def get_service(service_id: str, db: AsyncSession = Depends(get_db)):
     if not service:
         raise HTTPException(status_code=404, detail="Service non trouvé")
     
+    # Prédiction intelligente
+    service_data = {
+        "id": service.id,
+        "name": service.name,
+        "type": service.category,
+        "total_queue_size": service.current_queue_size,
+        "total_active_counters": service.active_counters,
+        "is_open": service.status == ServiceStatus.OPEN
+    }
+    
+    prediction = smart_prediction_service.predict_wait_time(service_data)
+    
     return {
         "success": True,
-        "service": ServicePublic.model_validate(service)
+        "service": ServicePublic.model_validate(service),
+        "prediction": prediction
     }

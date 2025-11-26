@@ -166,6 +166,8 @@ async def get_administration_services(
     }
 
 
+from app.services.smart_prediction import smart_prediction_service
+
 @router.get("/{administration_id}/queue-status", response_model=dict)
 async def get_administration_queue_status(
     administration_id: str,
@@ -188,15 +190,29 @@ async def get_administration_queue_status(
     
     queue_details = []
     for service in services:
+        # Préparer les données pour la prédiction intelligente
+        service_data = {
+            "id": service.id,
+            "name": service.name,
+            "type": service.category,
+            "total_queue_size": service.current_queue_size,
+            "total_active_counters": service.active_counters,
+            "is_open": service.status.value == "ouvert"
+        }
+        
+        # Obtenir la prédiction
+        prediction = smart_prediction_service.predict_wait_time(service_data)
+        
         queue_details.append({
             "service_id": service.id,
             "service_name": service.name,
             "status": service.status.value,
             "queue_size": service.current_queue_size,
-            "wait_time": service.estimated_wait_time,
+            "wait_time": prediction["predicted_wait_time"], # Utiliser la prédiction intelligente
             "active_counters": service.active_counters,
             "current_ticket": service.current_ticket_number,
-            "counters_detail": service.active_counters_detail
+            "counters_detail": service.active_counters_detail,
+            "prediction": prediction # Ajouter les détails complets (recommandations, facteurs, etc.)
         })
     
     return {
