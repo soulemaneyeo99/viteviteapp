@@ -53,24 +53,24 @@ export default function CompanyPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 pb-20">
+        <div className="min-h-screen bg-white pb-20">
             {/* Header */}
-            <div className="bg-white border-b border-slate-200 pt-24 pb-6 px-4 sticky top-0 z-10">
+            <div className="bg-white border-b border-gray-200 pt-24 pb-6 px-4 sticky top-0 z-10">
                 <div className="max-w-4xl mx-auto">
-                    <Link href="/transport/interurban" className="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 mb-4 transition-colors">
+                    <Link href="/transport/interurban" className="inline-flex items-center gap-2 text-gray-500 hover:text-yellow-600 mb-4 transition-colors">
                         <ArrowLeft className="w-4 h-4" />
                         Retour aux compagnies
                     </Link>
 
                     <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-2xl">
+                        <div className="w-16 h-16 bg-yellow-500 rounded-xl flex items-center justify-center text-white font-bold text-2xl">
                             UTB
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-800">Union des Transports de Bouaké</h1>
-                            <div className="flex items-center gap-4 text-sm text-slate-500 mt-1">
+                            <h1 className="text-2xl font-bold text-gray-900">Union des Transports de Bouaké</h1>
+                            <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
                                 <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> Gare Adjamé</span>
-                                <span className="flex items-center gap-1 text-emerald-600 font-medium">
+                                <span className="flex items-center gap-1 text-green-600 font-medium">
                                     <Clock className="w-4 h-4" /> 3 départs aujourd'hui
                                 </span>
                             </div>
@@ -81,7 +81,7 @@ export default function CompanyPage() {
 
             {/* Departures List */}
             <div className="max-w-4xl mx-auto px-4 py-8">
-                <h2 className="font-bold text-lg text-slate-800 mb-6">Prochains départs disponibles</h2>
+                <h2 className="font-bold text-lg text-gray-900 mb-6">Prochains départs disponibles</h2>
 
                 <div className="space-y-4">
                     {loading ? (
@@ -90,49 +90,49 @@ export default function CompanyPage() {
                         ))
                     ) : (
                         departures.map((dep) => (
-                            <div key={dep.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:border-blue-300 transition-all group">
+                            <div key={dep.id} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:border-yellow-300 transition-all group">
                                 <div className="flex flex-col md:flex-row justify-between items-center gap-6">
 
                                     {/* Time & Route */}
                                     <div className="flex-1 w-full">
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-2xl font-bold text-slate-800">{formatTime(dep.departure_time)}</span>
-                                                <div className="h-px w-12 bg-slate-300 relative">
-                                                    <div className="absolute -top-1 right-0 w-2 h-2 bg-slate-300 rounded-full"></div>
+                                                <span className="text-2xl font-bold text-gray-900">{formatTime(dep.departure_time)}</span>
+                                                <div className="h-px w-12 bg-gray-300 relative">
+                                                    <div className="absolute -top-1 right-0 w-2 h-2 bg-gray-300 rounded-full"></div>
                                                 </div>
-                                                <span className="text-xl font-medium text-slate-500">{formatTime(dep.arrival_time)}</span>
+                                                <span className="text-xl font-medium text-gray-500">{formatTime(dep.arrival_time)}</span>
                                             </div>
-                                            <span className="text-sm font-medium text-slate-400 bg-slate-50 px-2 py-1 rounded">
+                                            <span className="text-sm font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded">
                                                 {getDuration(dep.departure_time, dep.arrival_time)}
                                             </span>
                                         </div>
 
                                         <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2 text-slate-600 font-medium">
+                                            <div className="flex items-center gap-2 text-gray-600 font-medium">
                                                 <span>{dep.origin}</span>
-                                                <ArrowLeft className="w-4 h-4 rotate-180 text-slate-300" />
+                                                <ArrowLeft className="w-4 h-4 rotate-180 text-gray-300" />
                                                 <span>{dep.destination}</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Info & Price */}
-                                    <div className="flex items-center justify-between w-full md:w-auto gap-8 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-8">
+                                    <div className="flex items-center justify-between w-full md:w-auto gap-8 border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-8">
                                         <div className="space-y-1">
                                             <div className="flex items-center gap-2">
-                                                <span className={`text-xs font-bold px-2 py-1 rounded uppercase ${dep.car_type === 'VIP' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
+                                                <span className={`text-xs font-bold px-2 py-1 rounded uppercase ${dep.car_type === 'VIP' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
                                                     }`}>
                                                     {dep.car_type}
                                                 </span>
                                                 {dep.car_type === 'VIP' && (
                                                     <div className="flex gap-1">
-                                                        <Wifi className="w-3 h-3 text-slate-400" />
-                                                        <Coffee className="w-3 h-3 text-slate-400" />
+                                                        <Wifi className="w-3 h-3 text-gray-400" />
+                                                        <Coffee className="w-3 h-3 text-gray-400" />
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="flex items-center gap-1 text-sm text-slate-500">
+                                            <div className="flex items-center gap-1 text-sm text-gray-500">
                                                 <Users className="w-4 h-4" />
                                                 <span className={dep.available_seats < 5 ? 'text-red-500 font-bold' : ''}>
                                                     {dep.available_seats} places
@@ -141,10 +141,10 @@ export default function CompanyPage() {
                                         </div>
 
                                         <div className="text-right">
-                                            <div className="text-xl font-bold text-blue-600">{dep.price.toLocaleString()} F</div>
+                                            <div className="text-xl font-bold text-yellow-600">{dep.price.toLocaleString()} F</div>
                                             <button
                                                 onClick={() => setSelectedDeparture(dep)}
-                                                className="mt-1 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm hover:shadow flex items-center gap-1"
+                                                className="mt-1 bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm hover:shadow flex items-center gap-1"
                                             >
                                                 Réserver <ChevronRight className="w-4 h-4" />
                                             </button>

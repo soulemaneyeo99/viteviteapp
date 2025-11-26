@@ -5,8 +5,11 @@ Gestion des administrations (mairies, préfectures, etc.)
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import select, func
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from pydantic import BaseModel
+from datetime import datetime
 
 from app.core.database import get_db
 from app.models import Administration, Service
@@ -58,8 +61,8 @@ class AdministrationResponse(AdministrationBase):
     total_active_counters: int
     rating: Optional[int]
     total_ratings: int
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -69,7 +72,7 @@ class AdministrationResponse(AdministrationBase):
 
 @router.get("/", response_model=dict)
 async def get_administrations(
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     type: Optional[str] = Query(None, description="Filter by type (mairie, prefecture, etc.)"),
     is_open: Optional[bool] = Query(None, description="Filter by open status"),
     search: Optional[str] = Query(None, description="Search by name"),
@@ -79,7 +82,7 @@ async def get_administrations(
     """
     Récupère la liste des administrations avec filtres
     """
-    query = db.query(Administration)
+    query = select(Administration)
     
     # Filtres
     if type:
@@ -90,27 +93,34 @@ async def get_administrations(
         query = query.filter(Administration.name.ilike(f"%{search}%"))
     
     # Pagination
-    total = query.count()
-    administrations = query.offset(offset).limit(limit).all()
+    # Count total
+    count_query = select(func.count()).select_from(query.subquery())
+    total_result = await db.execute(count_query)
+    total = total_result.scalar_one()
+
+    # Get items
+    result = await db.execute(query.offset(offset).limit(limit))
+    administrations = result.scalars().all()
     
     return {
         "success": True,
         "total": total,
         "limit": limit,
         "offset": offset,
-        "administrations": administrations
+        "administrations": [AdministrationResponse.model_validate(admin) for admin in administrations]
     }
 
 
 @router.get("/{administration_id}", response_model=dict)
 async def get_administration(
     administration_id: str,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Récupère les détails d'une administration
     """
-    administration = db.query(Administration).filter(Administration.id == administration_id).first()
+    result = await db.execute(select(Administration).filter(Administration.id == administration_id))
+    administration = result.scalars().first()
     
     if not administration:
         raise HTTPException(status_code=404, detail="Administration non trouvée")
@@ -118,7 +128,8 @@ async def get_administration(
     # Récupérer les services associés
     services = []
     if administration.service_ids:
-        services = db.query(Service).filter(Service.id.in_(administration.service_ids)).all()
+        services_result = await db.execute(select(Service).filter(Service.id.in_(administration.service_ids)))
+        services = services_result.scalars().all()
     
     return {
         "success": True,
@@ -130,19 +141,21 @@ async def get_administration(
 @router.get("/{administration_id}/services", response_model=dict)
 async def get_administration_services(
     administration_id: str,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Récupère tous les services d'une administration
     """
-    administration = db.query(Administration).filter(Administration.id == administration_id).first()
+    result = await db.execute(select(Administration).filter(Administration.id == administration_id))
+    administration = result.scalars().first()
     
     if not administration:
         raise HTTPException(status_code=404, detail="Administration non trouvée")
     
     services = []
     if administration.service_ids:
-        services = db.query(Service).filter(Service.id.in_(administration.service_ids)).all()
+        services_result = await db.execute(select(Service).filter(Service.id.in_(administration.service_ids)))
+        services = services_result.scalars().all()
     
     return {
         "success": True,
@@ -156,12 +169,13 @@ async def get_administration_services(
 @router.get("/{administration_id}/queue-status", response_model=dict)
 async def get_administration_queue_status(
     administration_id: str,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Récupère le statut en temps réel des files d'attente d'une administration
     """
-    administration = db.query(Administration).filter(Administration.id == administration_id).first()
+    result = await db.execute(select(Administration).filter(Administration.id == administration_id))
+    administration = result.scalars().first()
     
     if not administration:
         raise HTTPException(status_code=404, detail="Administration non trouvée")
@@ -169,7 +183,8 @@ async def get_administration_queue_status(
     # Récupérer les services avec leurs files d'attente
     services = []
     if administration.service_ids:
-        services = db.query(Service).filter(Service.id.in_(administration.service_ids)).all()
+        services_result = await db.execute(select(Service).filter(Service.id.in_(administration.service_ids)))
+        services = services_result.scalars().all()
     
     queue_details = []
     for service in services:
@@ -199,14 +214,15 @@ async def get_administration_queue_status(
 @router.post("/", response_model=dict)
 async def create_administration(
     data: AdministrationCreate,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
     """
     Crée une nouvelle administration (admin only)
     """
     # Vérifier si le slug existe déjà
-    existing = db.query(Administration).filter(Administration.slug == data.slug).first()
+    result = await db.execute(select(Administration).filter(Administration.slug == data.slug))
+    existing = result.scalars().first()
     if existing:
         raise HTTPException(status_code=400, detail="Une administration avec ce slug existe déjà")
     
@@ -225,8 +241,8 @@ async def create_administration(
     )
     
     db.add(administration)
-    db.commit()
-    db.refresh(administration)
+    await db.commit()
+    await db.refresh(administration)
     
     return {
         "success": True,
@@ -239,13 +255,14 @@ async def create_administration(
 async def update_administration(
     administration_id: str,
     data: AdministrationUpdate,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
     """
     Met à jour une administration (admin only)
     """
-    administration = db.query(Administration).filter(Administration.id == administration_id).first()
+    result = await db.execute(select(Administration).filter(Administration.id == administration_id))
+    administration = result.scalars().first()
     
     if not administration:
         raise HTTPException(status_code=404, detail="Administration non trouvée")
@@ -255,8 +272,8 @@ async def update_administration(
     for field, value in update_data.items():
         setattr(administration, field, value)
     
-    db.commit()
-    db.refresh(administration)
+    await db.commit()
+    await db.refresh(administration)
     
     return {
         "success": True,
@@ -268,19 +285,20 @@ async def update_administration(
 @router.delete("/{administration_id}", response_model=dict)
 async def delete_administration(
     administration_id: str,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
     """
     Supprime une administration (admin only)
     """
-    administration = db.query(Administration).filter(Administration.id == administration_id).first()
+    result = await db.execute(select(Administration).filter(Administration.id == administration_id))
+    administration = result.scalars().first()
     
     if not administration:
         raise HTTPException(status_code=404, detail="Administration non trouvée")
     
-    db.delete(administration)
-    db.commit()
+    await db.delete(administration)
+    await db.commit()
     
     return {
         "success": True,

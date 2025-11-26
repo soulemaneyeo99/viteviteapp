@@ -61,7 +61,7 @@ export default function AdministrationsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 pb-20 font-sans">
+        <div className="min-h-screen bg-gray-50 pb-20 font-sans">
             {/* Header */}
             <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white pt-32 pb-20 px-6 overflow-hidden">
                 {/* Pattern Background */}
@@ -73,14 +73,14 @@ export default function AdministrationsPage() {
 
                 <div className="max-w-6xl mx-auto relative z-10">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 border border-white/20 rounded-full mb-6 backdrop-blur-sm">
-                        <Building2 className="w-4 h-4 text-blue-300" />
+                        <Building2 className="w-4 h-4 text-yellow-400" />
                         <span className="text-xs font-bold text-white/90 uppercase tracking-wide">Services Administratifs</span>
                     </div>
 
                     <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tight">
-                        Administrations <span className="text-blue-400">& Services Publics</span>
+                        Administrations <span className="text-white">& Services Publics</span>
                     </h1>
-                    <p className="text-blue-100/80 text-xl max-w-2xl font-medium leading-relaxed">
+                    <p className="text-gray-300 text-xl max-w-2xl font-medium leading-relaxed">
                         Trouvez rapidement l'administration dont vous avez besoin. Files d'attente en temps réel, horaires, et services disponibles.
                     </p>
                 </div>
@@ -88,17 +88,17 @@ export default function AdministrationsPage() {
 
             {/* Search & Filters */}
             <div className="max-w-6xl mx-auto px-6 -mt-10 relative z-20">
-                <div className="bg-white rounded-3xl shadow-xl shadow-blue-900/5 p-4 md:p-6 border border-gray-100">
+                <div className="bg-white rounded-3xl shadow-xl shadow-gray-900/5 p-4 md:p-6 border border-gray-100">
                     <div className="flex flex-col md:flex-row gap-4">
                         {/* Search */}
                         <div className="relative flex-1 group">
-                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-blue-600 transition-colors" />
+                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-yellow-500 transition-colors" />
                             <input
                                 type="text"
                                 placeholder="Rechercher une administration..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-14 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all font-medium text-lg placeholder:text-gray-400"
+                                className="w-full pl-14 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-yellow-500/20 focus:bg-white transition-all font-medium text-lg placeholder:text-gray-400"
                             />
                         </div>
 
@@ -106,8 +106,8 @@ export default function AdministrationsPage() {
                         <button
                             onClick={() => setShowOpenOnly(!showOpenOnly)}
                             className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-bold transition-all whitespace-nowrap ${showOpenOnly
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                                : 'bg-white border-2 border-gray-100 text-gray-600 hover:border-blue-200 hover:bg-blue-50/50'
+                                ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/30'
+                                : 'bg-white border-2 border-gray-100 text-gray-600 hover:border-yellow-200 hover:bg-yellow-50/50'
                                 }`}
                         >
                             <Filter className={`w-5 h-5 ${showOpenOnly ? 'animate-pulse' : ''}`} />
@@ -122,7 +122,7 @@ export default function AdministrationsPage() {
                                 key={type}
                                 onClick={() => setSelectedType(type)}
                                 className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all ${selectedType === type
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
+                                    ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/25'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                             >
@@ -151,7 +151,7 @@ export default function AdministrationsPage() {
                             <Link
                                 href={`/administrations/${admin.id}`}
                                 key={admin.id}
-                                className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:shadow-blue-900/5 hover:-translate-y-1 transition-all duration-300"
+                                className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:shadow-gray-900/5 hover:-translate-y-1 transition-all duration-300"
                             >
                                 {/* Image */}
                                 <div className="relative h-48 bg-gray-100 overflow-hidden">
@@ -163,7 +163,7 @@ export default function AdministrationsPage() {
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-yellow-50 to-amber-50">
-                                            <Building2 className="w-16 h-16 text-blue-200" />
+                                            <Building2 className="w-16 h-16 text-yellow-200" />
                                         </div>
                                     )}
 
@@ -188,7 +188,7 @@ export default function AdministrationsPage() {
 
                                 {/* Content */}
                                 <div className="p-6">
-                                    <h3 className="font-bold text-xl text-gray-900 mb-2 group-hover:text-blue-700 transition-colors">
+                                    <h3 className="font-bold text-xl text-gray-900 mb-2 group-hover:text-yellow-600 transition-colors">
                                         {admin.name}
                                     </h3>
 
@@ -218,12 +218,12 @@ export default function AdministrationsPage() {
                                     {/* Footer */}
                                     <div className="flex items-center justify-between pt-4 border-t border-gray-50">
                                         <div className="flex items-center gap-2 text-sm text-gray-500">
-                                            <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center">
-                                                <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                                            <div className="w-6 h-6 rounded-full bg-yellow-50 flex items-center justify-center">
+                                                <Building2 className="w-3.5 h-3.5 text-yellow-600" />
                                             </div>
                                             <span className="font-bold">{admin.total_active_counters} guichets</span>
                                         </div>
-                                        <span className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                                        <span className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-yellow-500 group-hover:text-white transition-all duration-300">
                                             <ArrowRight className="w-5 h-5" />
                                         </span>
                                     </div>

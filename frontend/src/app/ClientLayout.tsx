@@ -77,11 +77,11 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         {isMenuOpen && (
           <>
             {/* Overlay pour fermer au clic extérieur */}
-            <div 
+            <div
               className="fixed inset-0 bg-black/50 z-40 md:hidden"
               onClick={closeMenu}
             />
-            
+
             {/* Menu */}
             <div className="md:hidden absolute top-full left-0 right-0 bg-white shadow-2xl z-50 border-t-4 border-yellow-500">
               <div className="container mx-auto px-4 py-4 space-y-2">
@@ -110,7 +110,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       {/* ChatBot Button */}
       <button
         onClick={toggleChat}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-full shadow-2xl hover:scale-110 transition-all z-40 flex items-center justify-center"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full shadow-2xl hover:scale-110 transition-all z-40 flex items-center justify-center"
         aria-label="Ouvrir le chat"
       >
         {isChatOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
@@ -120,16 +120,16 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       {isChatOpen && (
         <>
           {/* Overlay mobile */}
-          <div 
+          <div
             className="fixed inset-0 bg-black/50 z-40 lg:hidden"
             onClick={toggleChat}
           />
-          
+
           {/* Fenêtre chat - Responsive */}
           <div className="fixed inset-x-4 bottom-24 lg:right-6 lg:bottom-6 lg:left-auto lg:w-96 z-50">
             <div className="bg-white rounded-2xl shadow-2xl flex flex-col h-[70vh] lg:h-[600px] overflow-hidden animate-slideIn">
               {/* Header */}
-              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 flex items-center justify-between">
+              <div className="bg-gray-900 text-white p-4 flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                     <span className="text-xl">🤖</span>
@@ -152,20 +152,20 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4">
-                <ChatMessage 
+                <ChatMessage
                   role="assistant"
                   content="Bonjour ! 👋 Je suis l'assistant ViteviteApp. Comment puis-je vous aider ?"
                 />
-                <div className="bg-purple-50 border-l-4 border-purple-500 rounded-lg p-4">
-                  <p className="text-sm text-purple-900 font-semibold mb-2">💡 Questions fréquentes</p>
+                <div className="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4">
+                  <p className="text-sm text-yellow-900 font-semibold mb-2">💡 Questions fréquentes</p>
                   <div className="space-y-2 text-xs">
-                    <button className="w-full text-left px-3 py-2 bg-white rounded-lg hover:bg-purple-100 transition">
+                    <button className="w-full text-left px-3 py-2 bg-white rounded-lg hover:bg-yellow-100 transition">
                       Comment prendre un ticket ?
                     </button>
-                    <button className="w-full text-left px-3 py-2 bg-white rounded-lg hover:bg-purple-100 transition">
+                    <button className="w-full text-left px-3 py-2 bg-white rounded-lg hover:bg-yellow-100 transition">
                       Quels documents pour la mairie ?
                     </button>
-                    <button className="w-full text-left px-3 py-2 bg-white rounded-lg hover:bg-purple-100 transition">
+                    <button className="w-full text-left px-3 py-2 bg-white rounded-lg hover:bg-yellow-100 transition">
                       Comment fonctionne la marketplace ?
                     </button>
                   </div>
@@ -178,9 +178,9 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                   <input
                     type="text"
                     placeholder="Votre question..."
-                    className="flex-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                    className="flex-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                   />
-                  <button className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-xl hover:shadow-lg transition">
+                  <button className="w-12 h-12 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl hover:shadow-lg transition">
                     <span className="text-xl">🚀</span>
                   </button>
                 </div>
@@ -260,11 +260,10 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 function ChatMessage({ role, content }: { role: string; content: string }) {
   return (
     <div className={`flex ${role === 'user' ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-        role === 'user' 
-          ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white'
+      <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${role === 'user'
+          ? 'bg-yellow-500 text-white'
           : 'bg-white border border-gray-200 text-gray-900'
-      }`}>
+        }`}>
         {role === 'assistant' && (
           <div className="flex items-center space-x-2 mb-2">
             <span>🤖</span>

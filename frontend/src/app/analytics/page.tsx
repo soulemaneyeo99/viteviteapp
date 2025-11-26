@@ -38,6 +38,7 @@ type MetricCardProps = {
   color: string;
   trend?: 'improving' | string;
   suffix?: string;
+  textColor?: string;
 };
 
 type HourlyBarProps = {
@@ -56,7 +57,6 @@ type BusinessInsightProps = {
 
 const ViteviteAnalytics = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('today');
-  const [selectedMetric, setSelectedMetric] = useState('all');
 
   // Données de démonstration
   const aiInsights: AIInsight[] = [
@@ -152,30 +152,30 @@ const ViteviteAnalytics = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 shadow-2xl">
+      <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-white rounded-2xl shadow-xl flex items-center justify-center">
-                <Brain className="w-10 h-10 text-purple-600" />
+              <div className="w-16 h-16 bg-yellow-50 rounded-2xl flex items-center justify-center">
+                <Brain className="w-10 h-10 text-yellow-500" />
               </div>
-              <div className="text-white">
-                <h1 className="text-3xl font-black">Analytics & IA Dashboard</h1>
-                <p className="text-purple-100">Intelligence artificielle pour l'optimisation des services</p>
+              <div>
+                <h1 className="text-3xl font-black text-gray-900">Analytics & IA Dashboard</h1>
+                <p className="text-gray-500">Intelligence artificielle pour l'optimisation des services</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <select
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="px-4 py-2 bg-white/20 text-white border-2 border-white/30 rounded-xl font-semibold backdrop-blur-sm"
+                className="px-4 py-2 bg-gray-50 text-gray-900 border border-gray-200 rounded-xl font-semibold focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none"
               >
-                <option value="today" className="text-gray-900">Aujourd'hui</option>
-                <option value="week" className="text-gray-900">Cette semaine</option>
-                <option value="month" className="text-gray-900">Ce mois</option>
-                <option value="year" className="text-gray-900">Cette année</option>
+                <option value="today">Aujourd'hui</option>
+                <option value="week">Cette semaine</option>
+                <option value="month">Ce mois</option>
+                <option value="year">Cette année</option>
               </select>
             </div>
           </div>
@@ -186,7 +186,7 @@ const ViteviteAnalytics = () => {
         {/* Performance KPIs */}
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-            <Target className="w-6 h-6 mr-2 text-purple-600" />
+            <Target className="w-6 h-6 mr-2 text-yellow-500" />
             Indicateurs de performance IA
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -194,39 +194,45 @@ const ViteviteAnalytics = () => {
               icon={<Clock />}
               value={`-${performanceMetrics.avgWaitTimeReduction}%`}
               label="Réduction attente"
-              color="from-green-500 to-emerald-600"
+              color="bg-white border border-gray-100"
+              textColor="text-green-600"
               trend="improving"
             />
             <MetricCard
               icon={<Users />}
               value={performanceMetrics.userSatisfaction}
               label="Satisfaction"
-              color="from-blue-500 to-indigo-600"
+              color="bg-white border border-gray-100"
+              textColor="text-yellow-600"
               suffix="/5"
             />
             <MetricCard
               icon={<Activity />}
               value={performanceMetrics.ticketsProcessedToday}
               label="Tickets traités"
-              color="from-purple-500 to-purple-600"
+              color="bg-white border border-gray-100"
+              textColor="text-gray-900"
             />
             <MetricCard
               icon={<Zap />}
               value={`${performanceMetrics.timeSavedToday}h`}
               label="Temps économisé"
-              color="from-orange-500 to-red-600"
+              color="bg-white border border-gray-100"
+              textColor="text-yellow-600"
             />
             <MetricCard
               icon={<TrendingUp />}
               value={performanceMetrics.peakHoursPredicted}
               label="Pics prédits"
-              color="from-yellow-500 to-yellow-600"
+              color="bg-white border border-gray-100"
+              textColor="text-gray-900"
             />
             <MetricCard
               icon={<Brain />}
               value={`${performanceMetrics.aiAccuracy}%`}
               label="Précision IA"
-              color="from-pink-500 to-rose-600"
+              color="bg-white border border-gray-100"
+              textColor="text-yellow-500"
             />
           </div>
         </section>
@@ -245,19 +251,19 @@ const ViteviteAnalytics = () => {
         </section>
 
         {/* Hourly Analysis Chart */}
-        <section className="bg-white rounded-3xl shadow-xl p-8">
+        <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
           <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
             <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-              <BarChart3 className="w-6 h-6 mr-2 text-purple-600" />
+              <BarChart3 className="w-6 h-6 mr-2 text-gray-400" />
               Analyse horaire de l'affluence
             </h2>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-purple-500 rounded"></div>
+                <div className="w-4 h-4 bg-yellow-500 rounded"></div>
                 <span className="text-sm text-gray-600">Tickets</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-orange-500 rounded"></div>
+                <div className="w-4 h-4 bg-gray-400 rounded"></div>
                 <span className="text-sm text-gray-600">Temps d'attente</span>
               </div>
             </div>
@@ -270,7 +276,7 @@ const ViteviteAnalytics = () => {
         </section>
 
         {/* Service Trends */}
-        <section className="bg-white rounded-3xl shadow-xl p-8">
+        <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
             <TrendingUp className="w-6 h-6 mr-2 text-green-600" />
             Tendances par service
@@ -285,7 +291,7 @@ const ViteviteAnalytics = () => {
         {/* AI Recommendations */}
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-            <Brain className="w-6 h-6 mr-2 text-purple-600" />
+            <Brain className="w-6 h-6 mr-2 text-yellow-500" />
             Recommandations IA stratégiques
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -295,39 +301,8 @@ const ViteviteAnalytics = () => {
           </div>
         </section>
 
-        {/* Predictive Map Placeholder */}
-        <section className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-10 text-white">
-          <h2 className="text-3xl font-bold mb-6 flex items-center">
-            <MapPin className="w-8 h-8 mr-3" />
-            Carte prédictive des flux de population
-          </h2>
-          <div className="bg-gray-800 rounded-2xl p-8 text-center">
-            <div className="text-8xl mb-6">🗺️</div>
-            <p className="text-xl text-gray-300 mb-6">
-              Visualisation en temps réel des zones de forte affluence à Abidjan
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-              <div className="bg-green-500/20 border-2 border-green-500 rounded-xl p-4">
-                <div className="text-3xl font-bold text-green-400">12</div>
-                <div className="text-sm text-green-300">Zones fluides</div>
-              </div>
-              <div className="bg-yellow-500/20 border-2 border-yellow-500 rounded-xl p-4">
-                <div className="text-3xl font-bold text-yellow-400">8</div>
-                <div className="text-sm text-yellow-300">Affluence modérée</div>
-              </div>
-              <div className="bg-red-500/20 border-2 border-red-500 rounded-xl p-4">
-                <div className="text-3xl font-bold text-red-400">3</div>
-                <div className="text-sm text-red-300">Zones saturées</div>
-              </div>
-            </div>
-            <button className="mt-8 px-8 py-4 bg-purple-600 text-white rounded-xl font-bold text-lg hover:bg-purple-700 transition-all">
-              Voir la carte interactive
-            </button>
-          </div>
-        </section>
-
         {/* Business Insights */}
-        <section className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-10 text-white">
+        <section className="bg-gray-900 rounded-3xl p-10 text-white">
           <h2 className="text-3xl font-bold mb-8 text-center">Insights Business</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <BusinessInsight
@@ -358,17 +333,17 @@ const ViteviteAnalytics = () => {
   );
 };
 
-const MetricCard = ({ icon, value, label, color, trend, suffix = '' }: MetricCardProps) => (
-  <div className={`bg-gradient-to-br ${color} rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all`}>
-    <div className="mb-4">
+const MetricCard = ({ icon, value, label, color, trend, suffix = '', textColor = 'text-gray-900' }: MetricCardProps) => (
+  <div className={`${color} rounded-2xl p-6 shadow-sm hover:shadow-md transition-all`}>
+    <div className="mb-4 text-gray-400">
       {React.cloneElement(icon, { className: 'w-8 h-8' })}
     </div>
-    <div className="text-3xl font-black mb-1">
+    <div className={`text-3xl font-black mb-1 ${textColor}`}>
       {value}{suffix}
     </div>
-    <div className="text-sm font-medium opacity-90">{label}</div>
+    <div className="text-sm font-medium text-gray-500">{label}</div>
     {trend === 'improving' && (
-      <div className="mt-2 flex items-center text-xs">
+      <div className="mt-2 flex items-center text-xs text-green-600 font-bold">
         <TrendingUp className="w-4 h-4 mr-1" />
         Amélioration
       </div>
@@ -378,19 +353,19 @@ const MetricCard = ({ icon, value, label, color, trend, suffix = '' }: MetricCar
 
 const AIInsightCard = ({ insight }: { insight: AIInsight }) => {
   const priorityColors: Record<AIInsight['priority'], string> = {
-    high: 'from-red-500 to-pink-600',
-    medium: 'from-yellow-500 to-orange-600',
-    low: 'from-blue-500 to-indigo-600'
+    high: 'bg-red-50 text-red-700 border-red-100',
+    medium: 'bg-yellow-50 text-yellow-700 border-yellow-100',
+    low: 'bg-gray-50 text-gray-700 border-gray-100'
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
-      <div className={`bg-gradient-to-r ${priorityColors[insight.priority]} p-4 text-white`}>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all">
+      <div className={`p-4 border-b ${priorityColors[insight.priority].replace('bg-', 'border-')}`}>
         <div className="flex items-center justify-between">
           <div className="text-4xl">{insight.icon}</div>
           <div className="text-right">
-            <div className="text-xs font-semibold opacity-90">Confiance IA</div>
-            <div className="text-2xl font-black">{insight.confidence}%</div>
+            <div className="text-xs font-semibold text-gray-500">Confiance IA</div>
+            <div className="text-2xl font-black text-gray-900">{insight.confidence}%</div>
           </div>
         </div>
       </div>
@@ -399,11 +374,11 @@ const AIInsightCard = ({ insight }: { insight: AIInsight }) => {
           <h3 className="font-bold text-lg text-gray-900 mb-2">{insight.title}</h3>
           <p className="text-gray-600 text-sm">{insight.message}</p>
         </div>
-        <div className="bg-purple-50 border-l-4 border-purple-500 rounded p-3">
-          <div className="text-xs font-semibold text-purple-900 mb-1">Action recommandée</div>
-          <div className="text-sm text-purple-800">{insight.action}</div>
+        <div className="bg-yellow-50 border-l-4 border-yellow-500 rounded p-3">
+          <div className="text-xs font-semibold text-yellow-900 mb-1">Action recommandée</div>
+          <div className="text-sm text-yellow-800">{insight.action}</div>
         </div>
-        <button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+        <button className="w-full bg-gray-900 text-white py-3 rounded-xl font-semibold hover:bg-gray-800 transition-all">
           Appliquer la recommandation
         </button>
       </div>
@@ -420,9 +395,9 @@ const HourlyBar = ({ data, maxTickets, maxWait }: HourlyBarProps) => {
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-semibold text-gray-700 w-12">{data.hour}</span>
         <div className="flex-1 flex items-center space-x-2">
-          <div className="flex-1 bg-gray-100 rounded-full h-8 overflow-hidden">
+          <div className="flex-1 bg-gray-50 rounded-full h-8 overflow-hidden">
             <div
-              className="bg-gradient-to-r from-purple-500 to-purple-600 h-full rounded-full flex items-center justify-end pr-2"
+              className="bg-yellow-500 h-full rounded-full flex items-center justify-end pr-2"
               style={{ width: `${ticketWidth}%` }}
             >
               {ticketWidth > 15 && (
@@ -430,9 +405,9 @@ const HourlyBar = ({ data, maxTickets, maxWait }: HourlyBarProps) => {
               )}
             </div>
           </div>
-          <div className="flex-1 bg-gray-100 rounded-full h-8 overflow-hidden">
+          <div className="flex-1 bg-gray-50 rounded-full h-8 overflow-hidden">
             <div
-              className="bg-gradient-to-r from-orange-500 to-red-600 h-full rounded-full flex items-center justify-end pr-2"
+              className="bg-gray-400 h-full rounded-full flex items-center justify-end pr-2"
               style={{ width: `${waitWidth}%` }}
             >
               {waitWidth > 15 && (
@@ -448,21 +423,21 @@ const HourlyBar = ({ data, maxTickets, maxWait }: HourlyBarProps) => {
 
 const ServiceTrendRow = ({ service }: { service: Service }) => {
   const trendIcons = {
-    up: { icon: <TrendingUp className="w-5 h-5" />, color: 'text-red-600', bg: 'bg-red-100' },
-    down: { icon: <TrendingDown className="w-5 h-5" />, color: 'text-green-600', bg: 'bg-green-100' },
-    stable: { icon: <Activity className="w-5 h-5" />, color: 'text-blue-600', bg: 'bg-blue-100' }
+    up: { icon: <TrendingUp className="w-5 h-5" />, color: 'text-red-600', bg: 'bg-red-50' },
+    down: { icon: <TrendingDown className="w-5 h-5" />, color: 'text-green-600', bg: 'bg-green-50' },
+    stable: { icon: <Activity className="w-5 h-5" />, color: 'text-gray-600', bg: 'bg-gray-50' }
   };
 
   const statusColors: Record<Service['status'], string> = {
     improving: 'bg-green-100 text-green-800',
-    stable: 'bg-blue-100 text-blue-800',
+    stable: 'bg-gray-100 text-gray-800',
     worsening: 'bg-red-100 text-red-800'
   };
 
   const trend = trendIcons[service.trend];
 
   return (
-    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all">
+    <div className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-xl hover:border-yellow-200 transition-all">
       <div className="flex items-center space-x-4 flex-1">
         <div className={`p-3 ${trend.bg} rounded-xl`}>
           {React.cloneElement(trend.icon, { className: `w-6 h-6 ${trend.color}` })}
@@ -475,7 +450,7 @@ const ServiceTrendRow = ({ service }: { service: Service }) => {
             </span>
             <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusColors[service.status]}`}>
               {service.status === 'improving' ? '✅ Amélioration' :
-               service.status === 'stable' ? '➡️ Stable' : '⚠️ Détérioration'}
+                service.status === 'stable' ? '➡️ Stable' : '⚠️ Détérioration'}
             </span>
           </div>
         </div>
@@ -488,7 +463,7 @@ const RecommendationCard = ({ recommendation }: { recommendation: Recommendation
   const priorityBadge: Record<Recommendation['priority'], { color: string; label: string }> = {
     high: { color: 'bg-red-100 text-red-800', label: '🔴 Haute' },
     medium: { color: 'bg-yellow-100 text-yellow-800', label: '🟡 Moyenne' },
-    low: { color: 'bg-blue-100 text-blue-800', label: '🔵 Basse' }
+    low: { color: 'bg-gray-100 text-gray-800', label: '🔵 Basse' }
   };
 
   const costBadge: Record<Recommendation['cost'], string> = {
@@ -500,7 +475,7 @@ const RecommendationCard = ({ recommendation }: { recommendation: Recommendation
   const priority = priorityBadge[recommendation.priority];
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-lg transition-all">
       <div className="flex items-start justify-between mb-4 flex-wrap gap-2">
         <span className={`px-3 py-1 rounded-full text-xs font-bold ${priority.color}`}>
           {priority.label}
@@ -509,16 +484,16 @@ const RecommendationCard = ({ recommendation }: { recommendation: Recommendation
           Coût: {recommendation.cost}
         </span>
       </div>
-      
+
       <h3 className="font-bold text-lg text-gray-900 mb-2">{recommendation.title}</h3>
-      
+
       <div className="space-y-3 mb-4 text-sm">
         <div className="flex items-start space-x-2">
           <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
           <span className="text-gray-600">{recommendation.location}</span>
         </div>
         <div className="flex items-start space-x-2">
-          <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+          <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
           <span className="text-gray-600">{recommendation.reason}</span>
         </div>
         <div className="flex items-start space-x-2">
@@ -527,7 +502,7 @@ const RecommendationCard = ({ recommendation }: { recommendation: Recommendation
         </div>
       </div>
 
-      <button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+      <button className="w-full bg-white border-2 border-gray-100 text-gray-900 py-3 rounded-xl font-semibold hover:border-yellow-500 hover:text-yellow-600 transition-all">
         Analyser en détail
       </button>
     </div>
@@ -535,13 +510,13 @@ const RecommendationCard = ({ recommendation }: { recommendation: Recommendation
 };
 
 const BusinessInsight = ({ icon, title, value, change, period }: BusinessInsightProps) => (
-  <div className="bg-white/10 backdrop-blur-lg border-2 border-white/20 rounded-2xl p-6">
+  <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6">
     <div className="text-5xl mb-4">{icon}</div>
-    <h3 className="text-lg font-semibold mb-2 opacity-90">{title}</h3>
-    <div className="text-4xl font-black mb-2">{value}</div>
+    <h3 className="text-lg font-semibold mb-2 text-gray-300">{title}</h3>
+    <div className="text-4xl font-black mb-2 text-white">{value}</div>
     <div className="flex items-center space-x-2 text-sm flex-wrap gap-1">
-      <span className="bg-green-400 text-green-900 px-2 py-1 rounded font-bold">{change}</span>
-      <span className="opacity-75">{period}</span>
+      <span className="bg-green-500/20 text-green-300 px-2 py-1 rounded font-bold">{change}</span>
+      <span className="text-gray-400">{period}</span>
     </div>
   </div>
 );

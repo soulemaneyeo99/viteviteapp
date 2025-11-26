@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import {
   Users,
   Clock,
@@ -69,12 +68,9 @@ export default function QueueManagement() {
     queryKey: ["admin-tickets", selectedService],
     queryFn: async () => {
       if (!selectedService) return { tickets: [] };
-      const response = await axios.get(`${API_URL}/api/v1/admin/tickets`, {
-        params: {
-          service_id: selectedService,
-          status: "en_attente,appelé,en_service"
-        },
-        headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+      const response = await ticketsAPI.getAll({
+        service_id: selectedService,
+        status: "en_attente,appelé,en_service"
       });
       return response.data;
     },
@@ -88,9 +84,7 @@ export default function QueueManagement() {
   const { data: pendingData } = useQuery({
     queryKey: ["pending-tickets"],
     queryFn: async () => {
-      const response = await axios.get(`${API_URL}/api/v1/tickets/pending-validation`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
-      });
+      const response = await ticketsAPI.getPending();
       return response.data;
     },
     refetchInterval: 5000,
@@ -115,9 +109,7 @@ export default function QueueManagement() {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ ticketId, status }: { ticketId: string; status: string }) => {
-      await axios.put(`${API_URL}/api/v1/admin/tickets/${ticketId}`, { status }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
-      });
+      await ticketsAPI.updateStatus(ticketId, status);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-tickets"] });
@@ -139,13 +131,7 @@ export default function QueueManagement() {
   // Validation Mutation
   const validateMutation = useMutation({
     mutationFn: async ({ ticketId, action }: { ticketId: string; action: string }) => {
-      await axios.post(
-        `${API_URL}/api/v1/tickets/${ticketId}/validate?action=${action}`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
-        }
-      );
+      await ticketsAPI.validate(ticketId, action);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["pending-tickets"] });
@@ -169,14 +155,7 @@ export default function QueueManagement() {
   // Create Ticket Mutation
   const createTicketMutation = useMutation({
     mutationFn: async (data: { service_id: string; user_name: string; user_phone: string; notes?: string }) => {
-      const response = await axios.post(
-        `${API_URL}/api/v1/admin/create-ticket`,
-        null,
-        {
-          params: data,
-          headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
-        }
-      );
+      const response = await ticketsAPI.createWalkIn(data);
       return response.data;
     },
     onSuccess: (data) => {
@@ -212,7 +191,7 @@ export default function QueueManagement() {
               <ChevronLeft className="w-6 h-6" />
             </Link>
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-[#FF8C00] rounded-xl flex items-center justify-center shadow-lg shadow-orange-200">
+              <div className="w-10 h-10 bg-yellow-500 rounded-xl flex items-center justify-center shadow-lg shadow-yellow-200">
                 <Users className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -235,7 +214,7 @@ export default function QueueManagement() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <StatCard
-            icon={<Users className="w-6 h-6 text-[#FF8C00]" />}
+            icon={<Users className="w-6 h-6 text-yellow-500" />}
             value={stats.active_tickets}
             label="En attente"
             sublabel="Tickets actifs"
@@ -247,7 +226,7 @@ export default function QueueManagement() {
             sublabel="Attente estimée"
           />
           <StatCard
-            icon={<TrendingUp className="w-6 h-6 text-blue-600" />}
+            icon={<TrendingUp className="w-6 h-6 text-gray-600" />}
             value={stats.total_tickets_today}
             label="Traités aujourd'hui"
             sublabel="Total tickets"
@@ -262,10 +241,10 @@ export default function QueueManagement() {
 
         {/* Pending Validation Section */}
         {pendingTickets.length > 0 && (
-          <div className="mb-8 bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-3xl p-6">
+          <div className="mb-8 bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-3xl p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-orange-500 rounded-xl">
+                <div className="p-3 bg-yellow-500 rounded-xl">
                   <AlertCircle className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -277,7 +256,7 @@ export default function QueueManagement() {
                   </p>
                 </div>
               </div>
-              <span className="px-4 py-2 bg-orange-500 text-white rounded-full text-sm font-bold shadow-lg">
+              <span className="px-4 py-2 bg-yellow-500 text-white rounded-full text-sm font-bold shadow-lg">
                 {pendingTickets.length} en attente
               </span>
             </div>
@@ -312,12 +291,12 @@ export default function QueueManagement() {
                   key={service.id}
                   onClick={() => setSelectedService(service.id)}
                   className={`w-full text-left p-4 rounded-xl transition-all duration-200 border ${selectedService === service.id
-                    ? "bg-white border-[#FF8C00] shadow-md ring-1 ring-[#FF8C00]/20"
-                    : "bg-white border-gray-100 hover:border-[#FF8C00]/50 hover:shadow-sm"
+                    ? "bg-white border-yellow-500 shadow-md ring-1 ring-yellow-500/20"
+                    : "bg-white border-gray-100 hover:border-yellow-500/50 hover:shadow-sm"
                     }`}
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className={`font-bold ${selectedService === service.id ? "text-[#FF8C00]" : "text-gray-800"}`}>
+                    <h3 className={`font-bold ${selectedService === service.id ? "text-yellow-600" : "text-gray-800"}`}>
                       {service.name}
                     </h3>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${service.is_active
@@ -352,7 +331,7 @@ export default function QueueManagement() {
                       <h2 className="text-xl font-bold text-gray-900">
                         File d'attente
                         <span className="text-gray-400 font-normal mx-2">•</span>
-                        <span className="text-[#FF8C00]">
+                        <span className="text-yellow-600">
                           {services.find((s: any) => s.id === selectedService)?.name}
                         </span>
                       </h2>
@@ -361,7 +340,7 @@ export default function QueueManagement() {
                     <div className="flex space-x-2">
                       <button
                         onClick={() => setShowCreateModal(true)}
-                        className="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-bold shadow-lg shadow-blue-200 transition-all active:scale-95"
+                        className="flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-bold shadow-lg shadow-gray-200 transition-all active:scale-95"
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         Créer un ticket
@@ -369,7 +348,7 @@ export default function QueueManagement() {
                       <button
                         onClick={handleCallNext}
                         disabled={callNextMutation.isPending}
-                        className="flex items-center px-4 py-2 bg-[#FF8C00] hover:bg-[#FF7D00] text-white rounded-lg font-bold shadow-lg shadow-orange-200 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-bold shadow-lg shadow-yellow-200 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Play className="w-4 h-4 mr-2 fill-current" />
                         Appeler le suivant
@@ -380,7 +359,7 @@ export default function QueueManagement() {
                   <div className="flex-1 p-6 overflow-y-auto">
                     {isLoadingTickets ? (
                       <div className="flex justify-center py-12">
-                        <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#FF8C00] border-t-transparent" />
+                        <div className="animate-spin rounded-full h-10 w-10 border-4 border-yellow-500 border-t-transparent" />
                       </div>
                     ) : tickets.length === 0 ? (
                       <div className="text-center py-20">
@@ -396,13 +375,13 @@ export default function QueueManagement() {
                           <div
                             key={ticket.id}
                             className={`group flex items-center justify-between p-4 rounded-xl border transition-all duration-200 ${ticket.status === 'appelé'
-                              ? "bg-orange-50 border-orange-200 shadow-sm"
+                              ? "bg-yellow-50 border-yellow-200 shadow-sm"
                               : "bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm"
                               }`}
                           >
                             <div className="flex items-center space-x-4">
                               <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg ${ticket.status === 'appelé'
-                                ? "bg-[#FF8C00] text-white shadow-lg shadow-orange-200"
+                                ? "bg-yellow-500 text-white shadow-lg shadow-yellow-200"
                                 : "bg-gray-100 text-gray-600"
                                 }`}>
                                 {ticket.ticket_number}
@@ -411,7 +390,7 @@ export default function QueueManagement() {
                                 <div className="font-bold text-gray-900 flex items-center">
                                   {ticket.user_name || "Utilisateur anonyme"}
                                   {ticket.status === 'appelé' && (
-                                    <span className="ml-2 px-2 py-0.5 bg-orange-100 text-[#FF8C00] text-[10px] font-bold uppercase rounded-full">
+                                    <span className="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-[10px] font-bold uppercase rounded-full">
                                       En cours
                                     </span>
                                   )}
@@ -443,7 +422,7 @@ export default function QueueManagement() {
                               ) : (
                                 <button
                                   onClick={() => handleStatusUpdate(ticket.id, 'appelé')}
-                                  className="px-3 py-1.5 bg-[#FF8C00] hover:bg-[#FF7D00] text-white text-xs font-bold rounded-lg transition-colors flex items-center shadow-sm"
+                                  className="px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold rounded-lg transition-colors flex items-center shadow-sm"
                                 >
                                   <Bell className="w-3 h-3 mr-1.5" />
                                   Appeler
@@ -458,8 +437,8 @@ export default function QueueManagement() {
                 </>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-12">
-                  <div className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mb-6">
-                    <MoreVertical className="w-12 h-12 text-[#FF8C00] opacity-50" />
+                  <div className="w-24 h-24 bg-yellow-50 rounded-full flex items-center justify-center mb-6">
+                    <MoreVertical className="w-12 h-12 text-yellow-500 opacity-50" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">Sélectionnez un service</h3>
                   <p className="text-gray-500 max-w-md mx-auto">
@@ -649,11 +628,11 @@ function PendingTicketCard({ ticket, onConfirm, onReject, isLoading }: {
   isLoading: boolean;
 }) {
   return (
-    <div className="bg-white border-2 border-orange-300 rounded-2xl p-5 shadow-md hover:shadow-xl transition-all">
+    <div className="bg-white border-2 border-yellow-300 rounded-2xl p-5 shadow-md hover:shadow-xl transition-all">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-            <span className="text-lg font-black text-orange-600">
+          <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+            <span className="text-lg font-black text-yellow-700">
               {ticket.ticket_number}
             </span>
           </div>
@@ -662,7 +641,7 @@ function PendingTicketCard({ ticket, onConfirm, onReject, isLoading }: {
             <div className="text-xs text-gray-500">{ticket.user_phone || "N/A"}</div>
           </div>
         </div>
-        <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">
+        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
           À valider
         </span>
       </div>
@@ -675,8 +654,8 @@ function PendingTicketCard({ ticket, onConfirm, onReject, isLoading }: {
       </div>
 
       {ticket.notes && (
-        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="text-xs text-blue-600 mb-1 font-bold">Note du client</div>
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="text-xs text-gray-600 mb-1 font-bold">Note du client</div>
           <div className="text-sm text-gray-700">{ticket.notes}</div>
         </div>
       )}

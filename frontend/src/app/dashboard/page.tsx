@@ -46,7 +46,7 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-yellow-500 border-t-transparent" />
       </div>
     );
   }
@@ -67,8 +67,8 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-3 bg-white px-4 py-3 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="w-5 h-5 text-primary" />
+            <div className="w-10 h-10 rounded-full bg-yellow-50 flex items-center justify-center">
+              <User className="w-5 h-5 text-yellow-600" />
             </div>
             <div className="text-left">
               <div className="text-xs text-gray-500 font-medium">Connecté en tant que</div>
@@ -104,9 +104,9 @@ export default function DashboardPage() {
             icon={<Clock className="w-5 h-5 sm:w-6 sm:h-6" />}
             value={activeTickets.length}
             label="Tickets actifs"
-            bgColor="bg-orange-50"
-            iconColor="text-orange-600"
-            borderColor="border-orange-100"
+            bgColor="bg-yellow-50"
+            iconColor="text-yellow-600"
+            borderColor="border-yellow-100"
           />
           <StatCard
             icon={<CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />}
@@ -120,9 +120,9 @@ export default function DashboardPage() {
             icon={<TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />}
             value={tickets.length}
             label="Total tickets"
-            bgColor="bg-blue-50"
-            iconColor="text-blue-600"
-            borderColor="border-blue-100"
+            bgColor="bg-gray-50"
+            iconColor="text-gray-600"
+            borderColor="border-gray-100"
           />
           <StatCard
             icon={<XCircle className="w-5 h-5 sm:w-6 sm:h-6" />}
@@ -163,7 +163,7 @@ export default function DashboardPage() {
                 </p>
                 <Link
                   href="/services"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark transition-all shadow-lg shadow-primary/25 hover:shadow-xl hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-yellow-500 text-white font-bold rounded-xl hover:bg-yellow-600 transition-all shadow-lg shadow-yellow-500/25 hover:shadow-xl hover:-translate-y-0.5"
                 >
                   Prendre un ticket
                   <ArrowRight className="w-5 h-5" />
@@ -199,7 +199,7 @@ function StatCard({
   borderColor: string;
 }) {
   return (
-    <div className={`bg-white border-2 ${borderColor} rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:border-primary/30`}>
+    <div className={`bg-white border-2 ${borderColor} rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:border-yellow-500/30`}>
       <div className="flex items-center justify-between">
         <div className={`p-2 sm:p-3 ${bgColor} rounded-xl ${iconColor}`}>
           {icon}
@@ -217,16 +217,16 @@ function TicketCard({ ticket }: { ticket: Ticket }) {
   const statusColors: Record<string, string> = {
     en_attente: "bg-yellow-50 text-yellow-700 border-yellow-200",
     appelé: "bg-green-50 text-green-700 border-green-200",
-    en_service: "bg-blue-50 text-blue-700 border-blue-200",
+    en_service: "bg-gray-100 text-gray-700 border-gray-200",
   };
 
   return (
     <Link
       href={`/ticket/${ticket.id}`}
-      className="block bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 p-5 sm:p-6 border-2 border-gray-100 hover:border-primary/30 group"
+      className="block bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 p-5 sm:p-6 border-2 border-gray-100 hover:border-yellow-500/30 group"
     >
       <div className="flex items-center justify-between mb-4">
-        <div className="text-2xl sm:text-3xl font-black text-primary group-hover:text-primary-dark transition-colors">
+        <div className="text-2xl sm:text-3xl font-black text-yellow-600 group-hover:text-yellow-700 transition-colors">
           {ticket.ticket_number}
         </div>
         <span
@@ -266,7 +266,7 @@ function TicketRow({ ticket }: { ticket: Ticket }) {
   const statusColors: Record<string, string> = {
     en_attente: "text-yellow-600",
     appelé: "text-green-600",
-    en_service: "text-blue-600",
+    en_service: "text-gray-600",
     terminé: "text-gray-600",
     annulé: "text-gray-400",
     refusé: "text-red-600",
@@ -289,7 +289,7 @@ function TicketRow({ ticket }: { ticket: Ticket }) {
       <div className="flex items-center space-x-3 sm:space-x-4">
         <div className="text-2xl sm:text-3xl">{statusIcons[ticket.status]}</div>
         <div>
-          <div className="font-bold text-gray-900 group-hover:text-primary transition-colors">
+          <div className="font-bold text-gray-900 group-hover:text-yellow-600 transition-colors">
             {ticket.ticket_number}
           </div>
           <div className="text-xs sm:text-sm text-gray-500 mt-0.5 flex items-center gap-2">

@@ -90,6 +90,20 @@ export const ticketsAPI = {
   complete: (ticketId: string) => api.post(`/tickets/${ticketId}/complete`, {}),
 
   getTodayStats: () => api.get("/tickets/stats/today"),
+
+  getAll: (params?: { skip?: number; limit?: number; status?: string; service_id?: string }) =>
+    api.get("/admin/tickets", { params }),
+
+  getPending: () => api.get("/tickets/pending-validation"),
+
+  updateStatus: (ticketId: string, status: string) =>
+    api.put(`/admin/tickets/${ticketId}`, { status }),
+
+  validate: (ticketId: string, action: string) =>
+    api.post(`/tickets/${ticketId}/validate`, {}, { params: { action } }),
+
+  createWalkIn: (data: { service_id: string; user_name: string; user_phone: string; notes?: string }) =>
+    api.post("/admin/create-ticket", null, { params: data }),
 };
 
 export const predictionsAPI = {

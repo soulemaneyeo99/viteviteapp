@@ -6,19 +6,26 @@
   :root {
     /* Official Brand Colors - Yellow, White, Gray */
     --primary: #FDB913;
-    /* Vibrant Yellow */
+    /* Vibrant Yellow - Main Brand Color */
     --primary-dark: #F59E0B;
-    /* Darker Yellow/Amber */
+    /* Darker Yellow for hover states */
     --primary-light: #FEF3C7;
-    /* Light Yellow */
+    /* Light Yellow for backgrounds */
+
     --secondary: #6B7280;
-    /* Medium Gray */
+    /* Medium Gray - Secondary Text */
     --accent: #111827;
-    /* Dark Gray/Almost Black */
-    --background: #F9FAFB;
-    /* Light Gray Background */
-    --surface: #FFFFFF;
-    /* White */
+    /* Dark Gray/Black - Primary Text & Headings */
+
+    --background: #FFFFFF;
+    /* Pure White Background */
+    --surface: #F9FAFB;
+    /* Light Gray Surface for cards/sections */
+
+    --success: #10B981;
+    /* Green for open status */
+    --error: #EF4444;
+    /* Red for closed status */
   }
 
   body {

@@ -8,8 +8,8 @@ import Link from 'next/link';
 
 // Composant Carte simulé (placeholder pour Google Maps)
 const MapPlaceholder = ({ buses, stops }: { buses: any[], stops: any[] }) => (
-    <div className="w-full h-full bg-slate-100 relative overflow-hidden rounded-2xl border border-slate-200">
-        <div className="absolute inset-0 flex items-center justify-center text-slate-300 font-bold text-2xl select-none pointer-events-none">
+    <div className="w-full h-full bg-gray-100 relative overflow-hidden rounded-2xl border border-gray-200">
+        <div className="absolute inset-0 flex items-center justify-center text-gray-300 font-bold text-2xl select-none pointer-events-none">
             CARTE GOOGLE MAPS
         </div>
 
@@ -17,7 +17,7 @@ const MapPlaceholder = ({ buses, stops }: { buses: any[], stops: any[] }) => (
         {stops.map((stop, i) => (
             <div
                 key={stop.id}
-                className="absolute w-4 h-4 bg-white border-2 border-slate-400 rounded-full shadow-sm"
+                className="absolute w-4 h-4 bg-white border-2 border-gray-400 rounded-full shadow-sm"
                 style={{ top: `${30 + (i * 15)}%`, left: `${20 + (i * 10)}%` }}
                 title={stop.name}
             />
@@ -27,7 +27,7 @@ const MapPlaceholder = ({ buses, stops }: { buses: any[], stops: any[] }) => (
         {buses.map((bus) => (
             <div
                 key={bus.id}
-                className="absolute w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white animate-pulse"
+                className="absolute w-8 h-8 bg-yellow-500 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white animate-pulse"
                 style={{ top: `${bus.lat * 1000 % 80 + 10}%`, left: `${bus.lng * 1000 % 80 + 10}%` }}
             >
                 <Navigation className="w-4 h-4 -rotate-45" />
@@ -74,15 +74,15 @@ export default function SotraLinePage() {
         }
     };
 
-    if (loading || !lineData) return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Chargement...</div>;
+    if (loading || !lineData) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Chargement...</div>;
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col h-screen">
+        <div className="min-h-screen bg-gray-50 flex flex-col h-screen">
             {/* Header */}
-            <div className="bg-white border-b border-slate-200 p-4 flex items-center justify-between shadow-sm z-10">
+            <div className="bg-white border-b border-gray-200 p-4 flex items-center justify-between shadow-sm z-10">
                 <div className="flex items-center gap-4">
-                    <Link href="/transport/sotra" className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                        <ArrowLeft className="w-5 h-5 text-slate-600" />
+                    <Link href="/transport/sotra" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                        <ArrowLeft className="w-5 h-5 text-gray-600" />
                     </Link>
                     <div
                         className="w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold text-white shadow-sm"
@@ -91,9 +91,9 @@ export default function SotraLinePage() {
                         {lineData.line.number}
                     </div>
                     <div>
-                        <h1 className="font-bold text-slate-800 text-sm md:text-base">{lineData.line.origin} → {lineData.line.destination}</h1>
-                        <p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                        <h1 className="font-bold text-gray-900 text-sm md:text-base">{lineData.line.origin} → {lineData.line.destination}</h1>
+                        <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                             Trafic fluide
                         </p>
                     </div>
@@ -104,55 +104,55 @@ export default function SotraLinePage() {
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
 
                 {/* Map Area */}
-                <div className="flex-1 relative bg-slate-200">
+                <div className="flex-1 relative bg-gray-200">
                     <MapPlaceholder buses={lineData.buses} stops={lineData.stops} />
 
                     {/* Mobile Bottom Sheet Trigger (Visible only on mobile) */}
                     <div className="absolute bottom-4 left-4 right-4 bg-white rounded-xl p-4 shadow-lg md:hidden">
-                        <h3 className="font-bold text-slate-800 mb-2">Prochains passages</h3>
+                        <h3 className="font-bold text-gray-900 mb-2">Prochains passages</h3>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <Clock className="w-5 h-5 text-emerald-600" />
-                                <span className="text-2xl font-bold text-slate-800">5 min</span>
+                                <Clock className="w-5 h-5 text-green-600" />
+                                <span className="text-2xl font-bold text-gray-900">5 min</span>
                             </div>
-                            <span className="text-sm text-slate-500">Arrêt Sorbonne</span>
+                            <span className="text-sm text-gray-500">Arrêt Sorbonne</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Info Panel (Sidebar on Desktop) */}
-                <div className="w-full md:w-96 bg-white border-l border-slate-200 overflow-y-auto hidden md:block">
+                <div className="w-full md:w-96 bg-white border-l border-gray-200 overflow-y-auto hidden md:block">
                     <div className="p-6">
-                        <h2 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                            <MapPin className="w-5 h-5 text-slate-400" />
+                        <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <MapPin className="w-5 h-5 text-gray-400" />
                             Arrêts de la ligne
                         </h2>
 
                         <div className="space-y-2 relative">
                             {/* Ligne verticale de connexion */}
-                            <div className="absolute left-[15px] top-4 bottom-4 w-0.5 bg-slate-200"></div>
+                            <div className="absolute left-[15px] top-4 bottom-4 w-0.5 bg-gray-200"></div>
 
                             {lineData.stops.map((stop: any) => (
                                 <button
                                     key={stop.id}
                                     onClick={() => handleStopClick(stop)}
                                     className={`relative flex items-center gap-4 w-full p-3 rounded-xl transition-all text-left ${selectedStop?.id === stop.id
-                                            ? 'bg-emerald-50 border border-emerald-100'
-                                            : 'hover:bg-slate-50'
+                                        ? 'bg-green-50 border border-green-100'
+                                        : 'hover:bg-gray-50'
                                         }`}
                                 >
                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 border-2 ${selectedStop?.id === stop.id
-                                            ? 'bg-emerald-600 border-emerald-100 text-white'
-                                            : 'bg-white border-slate-300 text-slate-400'
+                                        ? 'bg-green-600 border-green-100 text-white'
+                                        : 'bg-white border-gray-300 text-gray-400'
                                         }`}>
                                         <div className="w-2 h-2 bg-current rounded-full"></div>
                                     </div>
                                     <div>
-                                        <div className={`font-bold ${selectedStop?.id === stop.id ? 'text-emerald-800' : 'text-slate-700'}`}>
+                                        <div className={`font-bold ${selectedStop?.id === stop.id ? 'text-green-800' : 'text-gray-700'}`}>
                                             {stop.name}
                                         </div>
                                         {selectedStop?.id === stop.id && (
-                                            <div className="text-xs text-emerald-600 font-medium mt-0.5">
+                                            <div className="text-xs text-green-600 font-medium mt-0.5">
                                                 Sélectionné
                                             </div>
                                         )}
@@ -162,20 +162,20 @@ export default function SotraLinePage() {
                         </div>
 
                         {selectedStop && (
-                            <div className="mt-8 pt-6 border-t border-slate-100 animate-in slide-in-from-bottom-4">
-                                <h3 className="font-bold text-slate-800 mb-4">Prochains passages à {selectedStop.name}</h3>
+                            <div className="mt-8 pt-6 border-t border-gray-100 animate-in slide-in-from-bottom-4">
+                                <h3 className="font-bold text-gray-900 mb-4">Prochains passages à {selectedStop.name}</h3>
                                 <div className="space-y-3">
                                     {arrivals.map((arr, i) => (
-                                        <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                        <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
                                             <div className="flex items-center gap-3">
-                                                <div className="font-bold text-slate-800 text-lg">{arr.minutes} min</div>
-                                                <div className="text-xs text-slate-500">
+                                                <div className="font-bold text-gray-900 text-lg">{arr.minutes} min</div>
+                                                <div className="text-xs text-gray-500">
                                                     Vers {arr.destination}
                                                 </div>
                                             </div>
-                                            <div className={`px-2 py-1 rounded text-xs font-bold ${arr.load === 'low' ? 'bg-emerald-100 text-emerald-700' :
-                                                    arr.load === 'medium' ? 'bg-amber-100 text-amber-700' :
-                                                        'bg-red-100 text-red-700'
+                                            <div className={`px-2 py-1 rounded text-xs font-bold ${arr.load === 'low' ? 'bg-green-100 text-green-700' :
+                                                arr.load === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                                                    'bg-red-100 text-red-700'
                                                 }`}>
                                                 <Users className="w-3 h-3 inline mr-1" />
                                                 {arr.load === 'low' ? 'Peu de monde' : arr.load === 'medium' ? 'Normal' : 'Bondé'}
