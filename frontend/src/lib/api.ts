@@ -103,6 +103,9 @@ export const ticketsAPI = {
 
   updateStatus: (ticketId: string, status: string) =>
     api.put(`/tickets/${ticketId}/status`, { status }),
+
+  createWalkIn: (data: { service_id: string; sub_service_id?: string; user_name: string; user_phone: string; notes?: string }) =>
+    api.post("/tickets", { ...data, status: "pending_validation" }),
 };
 
 export const predictionsAPI = {
