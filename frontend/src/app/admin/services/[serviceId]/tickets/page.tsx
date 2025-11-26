@@ -3,6 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { LayoutDashboard, Users, ListChecks, Ticket, BarChart3, Settings, LogOut, Search, Filter, Download, Calendar, CheckCircle, XCircle, Clock } from "lucide-react";
 import Link from "next/link";
+import { formatDuration } from "@/lib/utils";
 
 export default function ServiceTicketsPage() {
     const params = useParams();
@@ -21,14 +22,14 @@ export default function ServiceTicketsPage() {
 
     // Hardcoded Tickets Data
     const tickets = [
-        { id: "T-1023", number: "A-040", user: "Kouassi Yves", service: "État Civil", agent: "Kouamé Sarah", date: "26 Nov, 10:15", duration: "12 min", status: "completed" },
-        { id: "T-1022", number: "B-011", user: "Touré Awa", service: "Légalisation", agent: "Koné Awa", date: "26 Nov, 10:10", duration: "5 min", status: "completed" },
-        { id: "T-1021", number: "A-039", user: "N'Dri Paul", service: "État Civil", agent: "Kouamé Sarah", date: "26 Nov, 10:05", duration: "--", status: "cancelled" },
-        { id: "T-1020", number: "C-002", user: "Fofana Ali", service: "Réclamation", agent: "Diop Moussa", date: "26 Nov, 09:55", duration: "25 min", status: "completed" },
-        { id: "T-1019", number: "A-038", user: "Bamba Mariam", service: "État Civil", agent: "Kouamé Sarah", date: "26 Nov, 09:45", duration: "15 min", status: "completed" },
-        { id: "T-1018", number: "A-037", user: "Kouadio Jean", service: "État Civil", agent: "Kouamé Sarah", date: "26 Nov, 09:30", duration: "10 min", status: "completed" },
-        { id: "T-1017", number: "B-010", user: "Yéo Sita", service: "Légalisation", agent: "Koné Awa", date: "26 Nov, 09:25", duration: "--", status: "noshow" },
-        { id: "T-1016", number: "A-036", user: "Diaby Mohamed", service: "État Civil", agent: "Kouamé Sarah", date: "26 Nov, 09:15", duration: "18 min", status: "completed" },
+        { id: "T-1023", number: "A-040", user: "Kouassi Yves", service: "État Civil", agent: "Kouamé Sarah", date: "26 Nov, 10:15", duration: 12, status: "completed" },
+        { id: "T-1022", number: "B-011", user: "Touré Awa", service: "Légalisation", agent: "Koné Awa", date: "26 Nov, 10:10", duration: 5, status: "completed" },
+        { id: "T-1021", number: "A-039", user: "N'Dri Paul", service: "État Civil", agent: "Kouamé Sarah", date: "26 Nov, 10:05", duration: null, status: "cancelled" },
+        { id: "T-1020", number: "C-002", user: "Fofana Ali", service: "Réclamation", agent: "Diop Moussa", date: "26 Nov, 09:55", duration: 25, status: "completed" },
+        { id: "T-1019", number: "A-038", user: "Bamba Mariam", service: "État Civil", agent: "Kouamé Sarah", date: "26 Nov, 09:45", duration: 15, status: "completed" },
+        { id: "T-1018", number: "A-037", user: "Kouadio Jean", service: "État Civil", agent: "Kouamé Sarah", date: "26 Nov, 09:30", duration: 10, status: "completed" },
+        { id: "T-1017", number: "B-010", user: "Yéo Sita", service: "Légalisation", agent: "Koné Awa", date: "26 Nov, 09:25", duration: null, status: "noshow" },
+        { id: "T-1016", number: "A-036", user: "Diaby Mohamed", service: "État Civil", agent: "Kouamé Sarah", date: "26 Nov, 09:15", duration: 18, status: "completed" },
     ];
 
     return (
@@ -53,8 +54,8 @@ export default function ServiceTicketsPage() {
                             key={item.label}
                             href={item.href}
                             className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${item.active
-                                    ? "bg-primary text-white shadow-lg shadow-primary/20"
-                                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                                ? "bg-primary text-white shadow-lg shadow-primary/20"
+                                : "text-slate-400 hover:bg-slate-800 hover:text-white"
                                 }`}
                         >
                             <item.icon className="w-5 h-5" />
@@ -185,7 +186,9 @@ export default function ServiceTicketsPage() {
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                <div className="font-mono text-sm font-bold text-gray-900">{ticket.duration}</div>
+                                                <div className="font-mono text-sm font-bold text-gray-900">
+                                                    {ticket.duration ? formatDuration(ticket.duration) : '--'}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}

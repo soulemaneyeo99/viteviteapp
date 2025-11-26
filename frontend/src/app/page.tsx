@@ -7,6 +7,7 @@ import {
   Building2, Hospital, Pill, Bus, ShieldCheck,
   ChevronRight, Star
 } from "lucide-react";
+import { formatDuration } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { servicesAPI } from "@/lib/api";
 import { Service } from "@/types";
@@ -199,7 +200,7 @@ function LiveQueueStatus() {
               <h4 className="font-medium text-slate-900 group-hover:text-primary-600 transition-colors">{service.name}</h4>
               <div className="flex items-center gap-3 mt-1 text-sm text-slate-500">
                 <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {service.current_queue_size}</span>
-                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {service.estimated_wait_time} min</span>
+                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatDuration(service.estimated_wait_time)}</span>
               </div>
             </div>
           </div>

@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useState } from "react";
 import CreateTicketModal from "@/components/admin/CreateTicketModal";
 import ValidateTicketModal from "@/components/admin/ValidateTicketModal";
+import { formatDuration } from "@/lib/utils";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -318,8 +319,8 @@ export default function ServiceControlCenter() {
                                                 <td className="px-6 py-4">
                                                     <StatusBadge status={ticket.status} />
                                                 </td>
-                                                <td className="px-6 py-4 text-gray-500 text-sm">
-                                                    Il y a {ticket.estimated_wait_time} min
+                                                <td className="px-6 py-4 text-gray-500 font-medium">
+                                                    Il y a {formatDuration(ticket.estimated_wait_time)}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     {ticket.status === 'en_attente_validation' ? (

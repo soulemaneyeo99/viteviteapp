@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ticketsAPI } from '@/lib/api';
 import { X, CheckCircle, XCircle, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatDuration } from '@/lib/utils';
 
 interface Ticket {
     id: string;
@@ -106,7 +107,7 @@ export default function ValidateTicketModal({ isOpen, onClose, ticket }: Validat
                             </div>
                             <div>
                                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Attente estimée</p>
-                                <p className="text-lg font-black text-gray-900">{ticket.estimated_wait_time} min</p>
+                                <p className="text-lg font-black text-gray-900">{formatDuration(ticket.estimated_wait_time)}</p>
                             </div>
                         </div>
                     </div>

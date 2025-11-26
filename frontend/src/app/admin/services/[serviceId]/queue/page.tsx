@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { LayoutDashboard, Users, ListChecks, Ticket, BarChart3, Settings, LogOut, Clock, ArrowRight, MoreHorizontal, Filter, Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { formatDuration } from "@/lib/utils";
 
 export default function ServiceQueuePage() {
     const params = useParams();
@@ -23,12 +24,12 @@ export default function ServiceQueuePage() {
 
     // Hardcoded Queue Data
     const queueItems = [
-        { id: 1, ticket: "A-045", name: "Traoré Aminata", time: "10:30", wait: "12 min", priority: "high", type: "Handicap", avatar: "TA" },
-        { id: 2, ticket: "A-046", name: "Koffi Michel", time: "10:32", wait: "10 min", priority: "normal", type: "Standard", avatar: "KM" },
-        { id: 3, ticket: "B-015", name: "Soro Guillaume", time: "10:35", wait: "7 min", priority: "normal", type: "Standard", avatar: "SG" },
-        { id: 4, ticket: "A-047", name: "Diallo Ousmane", time: "10:38", wait: "4 min", priority: "vip", type: "VIP", avatar: "DO" },
-        { id: 5, ticket: "C-003", name: "Bakayoko Aïcha", time: "10:40", wait: "2 min", priority: "normal", type: "Standard", avatar: "BA" },
-        { id: 6, ticket: "A-048", name: "Client Anonyme", time: "10:41", wait: "1 min", priority: "normal", type: "Standard", avatar: null },
+        { id: 1, ticket: "A-045", name: "Traoré Aminata", time: "10:30", wait: 12, priority: "high", type: "Handicap", avatar: "TA" },
+        { id: 2, ticket: "A-046", name: "Koffi Michel", time: "10:32", wait: 10, priority: "normal", type: "Standard", avatar: "KM" },
+        { id: 3, ticket: "B-015", name: "Soro Guillaume", time: "10:35", wait: 7, priority: "normal", type: "Standard", avatar: "SG" },
+        { id: 4, ticket: "A-047", name: "Diallo Ousmane", time: "10:38", wait: 4, priority: "vip", type: "VIP", avatar: "DO" },
+        { id: 5, ticket: "C-003", name: "Bakayoko Aïcha", time: "10:40", wait: 2, priority: "normal", type: "Standard", avatar: "BA" },
+        { id: 6, ticket: "A-048", name: "Client Anonyme", time: "10:41", wait: 1, priority: "normal", type: "Standard", avatar: null },
     ];
 
     return (
@@ -53,8 +54,8 @@ export default function ServiceQueuePage() {
                             key={item.label}
                             href={item.href}
                             className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${item.active
-                                    ? "bg-primary text-white shadow-lg shadow-primary/20"
-                                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                                ? "bg-primary text-white shadow-lg shadow-primary/20"
+                                : "text-slate-400 hover:bg-slate-800 hover:text-white"
                                 }`}
                         >
                             <item.icon className="w-5 h-5" />
@@ -173,8 +174,8 @@ export default function ServiceQueuePage() {
                                                     <p className="font-bold text-gray-900">{item.name}</p>
                                                     <div className="flex items-center gap-2">
                                                         <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${item.priority === 'high' ? 'bg-blue-100 text-blue-700' :
-                                                                item.priority === 'vip' ? 'bg-purple-100 text-purple-700' :
-                                                                    'bg-gray-100 text-gray-600'
+                                                            item.priority === 'vip' ? 'bg-purple-100 text-purple-700' :
+                                                                'bg-gray-100 text-gray-600'
                                                             }`}>
                                                             {item.type}
                                                         </span>
@@ -189,7 +190,7 @@ export default function ServiceQueuePage() {
                                         <div className="flex items-center gap-6">
                                             <div className="text-right">
                                                 <p className="text-xs font-bold text-gray-400 uppercase">Attente</p>
-                                                <p className="text-lg font-black text-gray-900">{item.wait}</p>
+                                                <p className="text-lg font-black text-gray-900">{formatDuration(item.wait)}</p>
                                             </div>
                                             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button className="p-2 bg-white border border-gray-200 rounded-lg hover:bg-primary hover:border-primary hover:text-white transition-colors text-gray-500 shadow-sm">

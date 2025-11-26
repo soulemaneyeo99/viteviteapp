@@ -42,8 +42,8 @@ export default function ServiceCard({ service, onTakeTicket }: ServiceCardProps)
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           <div className="w-12 h-12 bg-[#FFD43B] rounded-lg flex items-center justify-center text-2xl">
-            {service.icon === 'hospital' ? '🏥' : 
-             service.icon === 'building-columns' ? '🏦' : '🏢'}
+            {service.icon === 'hospital' ? '🏥' :
+              service.icon === 'building-columns' ? '🏦' : '🏢'}
           </div>
           <div>
             <h3 className="text-lg font-bold text-gray-900">{service.name}</h3>
@@ -124,11 +124,10 @@ export default function ServiceCard({ service, onTakeTicket }: ServiceCardProps)
       <button
         onClick={() => onTakeTicket(service)}
         disabled={service.status !== 'ouvert'}
-        className={`w-full py-3 rounded-lg font-semibold transition-all duration-200 ${
-          service.status === 'ouvert'
+        className={`w-full py-3 rounded-lg font-semibold transition-all duration-200 ${service.status === 'ouvert'
             ? 'bg-[#FFD43B] text-gray-900 hover:bg-[#FFC107] hover:shadow-lg'
             : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-        }`}
+          }`}
       >
         {service.status === 'ouvert' ? '🎫 Prendre un ticket' : '🔒 Service fermé'}
       </button>

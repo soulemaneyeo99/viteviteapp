@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { LayoutDashboard, Users, ListChecks, Ticket, BarChart3, Settings, LogOut, TrendingUp, TrendingDown, Clock, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 import AffluenceChart from "@/components/charts/AffluenceChart";
+import { formatDuration } from "@/lib/utils";
 
 export default function ServiceAnalyticsPage() {
     const params = useParams();
@@ -42,8 +43,8 @@ export default function ServiceAnalyticsPage() {
                             key={item.label}
                             href={item.href}
                             className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${item.active
-                                    ? "bg-primary text-white shadow-lg shadow-primary/20"
-                                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                                ? "bg-primary text-white shadow-lg shadow-primary/20"
+                                : "text-slate-400 hover:bg-slate-800 hover:text-white"
                                 }`}
                         >
                             <item.icon className="w-5 h-5" />
@@ -100,7 +101,7 @@ export default function ServiceAnalyticsPage() {
                                     </span>
                                 </div>
                                 <p className="text-sm font-medium text-gray-500">Attente Moyenne</p>
-                                <h3 className="text-3xl font-black text-gray-900">14m 30s</h3>
+                                <h3 className="text-3xl font-black text-gray-900">{formatDuration(14.5)}</h3>
                             </div>
 
                             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
