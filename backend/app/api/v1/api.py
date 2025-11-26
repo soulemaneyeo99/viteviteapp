@@ -23,6 +23,7 @@ from app.api.v1.endpoints import (
     analytics,
     administrations,
     admin_dashboard,
+    seed,
 )
 api_router = APIRouter()
 api_router.include_router(services.router, prefix="/services", tags=["services"])
@@ -44,6 +45,7 @@ api_router.include_router(notifications.router, prefix="/notifications", tags=["
 api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
 api_router.include_router(administrations.router, prefix="/administrations", tags=["administrations"])
 api_router.include_router(admin_dashboard.router, prefix="/admin/dashboard", tags=["admin-dashboard"])
+api_router.include_router(seed.router, prefix="/seed", tags=["seed"])
 
 
 @api_router.get("/health")

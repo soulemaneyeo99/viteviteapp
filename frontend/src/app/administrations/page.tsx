@@ -62,25 +62,25 @@ export default function AdministrationsPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20 font-sans">
-            {/* Header */}
-            <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white pt-32 pb-20 px-6 overflow-hidden">
-                {/* Pattern Background */}
-                <div className="absolute inset-0 opacity-10">
+            {/* Header - Yellow/White/Gray Theme */}
+            <div className="relative bg-white text-gray-900 pt-32 pb-20 px-6 overflow-hidden border-b-4 border-yellow-500">
+                {/* Yellow Accent Pattern */}
+                <div className="absolute inset-0 opacity-5">
                     <div className="absolute inset-0" style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FDB913' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
                     }} />
                 </div>
 
                 <div className="max-w-6xl mx-auto relative z-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 border border-white/20 rounded-full mb-6 backdrop-blur-sm">
-                        <Building2 className="w-4 h-4 text-yellow-400" />
-                        <span className="text-xs font-bold text-white/90 uppercase tracking-wide">Services Administratifs</span>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-yellow-50 border border-yellow-200 rounded-full mb-6">
+                        <Building2 className="w-4 h-4 text-yellow-600" />
+                        <span className="text-xs font-bold text-yellow-700 uppercase tracking-wide">Services Administratifs</span>
                     </div>
 
-                    <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tight">
-                        Administrations <span className="text-white">& Services Publics</span>
+                    <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tight text-gray-900">
+                        Administrations <span className="text-yellow-600">&</span> Services Publics
                     </h1>
-                    <p className="text-gray-300 text-xl max-w-2xl font-medium leading-relaxed">
+                    <p className="text-gray-600 text-xl max-w-2xl font-medium leading-relaxed">
                         Trouvez rapidement l'administration dont vous avez besoin. Files d'attente en temps réel, horaires, et services disponibles.
                     </p>
                 </div>
