@@ -4,12 +4,20 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ticketsAPI, servicesAPI } from "@/lib/api";
 import { Ticket, Service } from "@/types";
-import { Clock, Users, MapPin, FileCheck, X, RefreshCw } from "lucide-react";
+import { Clock, Users, MapPin, FileCheck, X, RefreshCw, Share2, Download } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { QRCodeCanvas } from "qrcode.react";
 
 export default function TicketPage({ params }: { params: { id: string } }) {
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [ticketUrl, setTicketUrl] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setTicketUrl(window.location.href);
+    }
+  }, []);
 
   // Fetch ticket
   const { data: ticketData, isLoading, refetch } = useQuery({
@@ -50,7 +58,7 @@ export default function TicketPage({ params }: { params: { id: string } }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
       </div>
     );
@@ -58,7 +66,7 @@ export default function TicketPage({ params }: { params: { id: string } }) {
 
   if (!ticket) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="text-6xl mb-4">❌</div>
           <h2 className="text-2xl font-bold mb-2">Ticket non trouvé</h2>
@@ -73,140 +81,155 @@ export default function TicketPage({ params }: { params: { id: string } }) {
   const statusInfo = getStatusInfo(ticket.status);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 font-sans text-slate-900">
       {/* Header */}
-      <header className="bg-white border-b">
+      <header className="bg-white border-b sticky top-0 z-10">
         <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <span className="text-xl">⚡</span>
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+              <span className="text-lg font-bold">⚡</span>
             </div>
-            <span className="text-xl font-black">ViteviteApp</span>
+            <span className="text-lg font-black tracking-tight">ViteviteApp</span>
           </Link>
         </nav>
       </header>
 
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-black mb-2">Votre ticket virtuel</h1>
-          <p className="text-gray-600">Suivez l'évolution en temps réel</p>
+      <div className="container mx-auto px-4 py-8 max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-black mb-1 text-slate-900">Votre ticket virtuel</h1>
+          <p className="text-slate-500 text-sm">Suivez l'évolution en temps réel</p>
         </div>
 
         {/* Ticket Card */}
-        <div className={`rounded-3xl overflow-hidden shadow-2xl mb-6 ${statusInfo.bgColor}`}>
-          <div className="bg-gradient-to-r from-primary to-primary-dark p-8 text-center">
-            <div className="text-6xl mb-3">🎫</div>
-            <div className="text-6xl font-black text-black mb-2">{ticket.ticket_number}</div>
-            <div className="bg-white/30 rounded-full px-4 py-2 inline-block">
-              <p className="text-sm font-semibold text-black">Votre ticket virtuel</p>
+        <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-slate-100 relative">
+          {/* Orange Header */}
+          <div className="bg-primary p-8 text-center relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+
+            <div className="relative z-10">
+              <div className="text-white/80 mb-2">
+                <div className="inline-flex items-center justify-center w-12 h-8 rounded border-2 border-white/30 mb-2">
+                  <div className="w-1 h-1 bg-white rounded-full mx-0.5"></div>
+                  <div className="w-1 h-1 bg-white rounded-full mx-0.5"></div>
+                  <div className="w-1 h-1 bg-white rounded-full mx-0.5"></div>
+                </div>
+              </div>
+              <div className="text-6xl font-black text-white tracking-tighter mb-4 drop-shadow-sm">
+                {ticket.ticket_number}
+              </div>
+              <div className="inline-block bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 border border-white/30">
+                <p className="text-xs font-bold text-white uppercase tracking-wide">Votre ticket virtuel</p>
+              </div>
             </div>
           </div>
 
-          <div className="p-6 bg-white">
-            {/* Status */}
-            <div className={`text-center p-4 rounded-xl mb-6 ${statusInfo.bgColor} border-2 ${statusInfo.borderColor}`}>
-              <div className="text-4xl mb-2">{statusInfo.icon}</div>
-              <h2 className={`text-2xl font-bold mb-1 ${statusInfo.textColor}`}>{statusInfo.title}</h2>
-              <p className="text-sm opacity-90">{statusInfo.message}</p>
+          <div className="p-6">
+            {/* Status Box */}
+            <div className={`text-center p-4 rounded-2xl mb-8 border-2 ${statusInfo.borderColor} ${statusInfo.bgColor}`}>
+              <div className="text-3xl mb-2">{statusInfo.icon}</div>
+              <h2 className={`text-xl font-bold mb-1 ${statusInfo.textColor}`}>{statusInfo.title}</h2>
+              <p className={`text-xs font-medium ${statusInfo.textColor} opacity-80`}>{statusInfo.message}</p>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <div className="text-sm text-gray-600 mb-1">Position</div>
-                <div className="text-4xl font-bold text-primary">#{ticket.position_in_queue}</div>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="bg-slate-50 rounded-2xl p-5 text-center border border-slate-100">
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Position</div>
+                <div className="text-4xl font-black text-primary">#{ticket.position_in_queue}</div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <div className="text-sm text-gray-600 mb-1">Attente estimée</div>
-                <div className="text-4xl font-bold text-primary">{ticket.estimated_wait_time}</div>
-                <div className="text-xs text-gray-500">minutes</div>
+              <div className="bg-slate-50 rounded-2xl p-5 text-center border border-slate-100">
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Attente estimée</div>
+                <div className="text-4xl font-black text-primary">{ticket.estimated_wait_time}</div>
+                <div className="text-xs font-bold text-slate-400 mt-1">minutes</div>
               </div>
             </div>
 
             {/* Service Info */}
             {service && (
-              <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <h3 className="font-bold mb-3 flex items-center">
-                  <span className="mr-2">🏢</span>
-                  Service
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Nom:</span>
-                    <span className="font-semibold">{service.name}</span>
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-1 h-4 bg-primary rounded-full"></div>
+                  <h3 className="font-bold text-slate-900">Détails du service</h3>
+                </div>
+                <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-500">Service</span>
+                    <span className="text-sm font-bold text-slate-900 text-right">{service.name}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Catégorie:</span>
-                    <span className="font-semibold">{service.category}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-500">Catégorie</span>
+                    <span className="text-sm font-medium text-slate-700">{service.category}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Horaires:</span>
-                    <span className="font-semibold">{service.opening_hours}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-500">Horaires</span>
+                    <span className="text-sm font-medium text-slate-700">{service.opening_hours}</span>
                   </div>
                   {service.location && (
-                    <div className="flex items-start justify-between">
-                      <span className="text-gray-600">Adresse:</span>
-                      <span className="font-semibold text-right text-xs">{service.location.address}</span>
+                    <div className="flex justify-between items-start pt-2 border-t border-slate-200 mt-2">
+                      <span className="text-sm text-slate-500">Adresse</span>
+                      <span className="text-xs font-medium text-slate-700 text-right max-w-[150px]">{service.location.address}</span>
                     </div>
                   )}
                 </div>
               </div>
             )}
 
-            {/* QR Code Placeholder */}
-            <div className="text-center mb-4">
-              <div className="inline-block bg-gray-100 p-4 rounded-lg">
-                <div className="w-32 h-32 bg-white border-2 border-gray-300 rounded flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-3xl mb-1">📱</div>
-                    <div className="text-xs text-gray-500">QR Code</div>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-600 mt-2">Scannez pour suivre</p>
+            {/* QR Code */}
+            <div className="flex flex-col items-center justify-center mb-6">
+              <div className="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-sm mb-3">
+                {ticketUrl && (
+                  <QRCodeCanvas
+                    value={ticketUrl}
+                    size={120}
+                    bgColor={"#ffffff"}
+                    fgColor={"#000000"}
+                    level={"H"}
+                    includeMargin={false}
+                  />
+                )}
               </div>
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Scannez pour suivre</p>
             </div>
           </div>
         </div>
 
         {/* Auto-refresh Toggle */}
-        <div className="bg-white rounded-lg p-4 flex items-center justify-between mb-4 shadow">
-          <span className="text-sm font-semibold text-gray-600">Actualisation automatique</span>
+        <div className="mt-6 bg-white rounded-2xl p-4 flex items-center justify-between shadow-sm border border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className={`w-2 h-2 rounded-full ${autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></div>
+            <span className="text-sm font-bold text-slate-700">Actualisation automatique</span>
+          </div>
           <button
             onClick={() => setAutoRefresh(!autoRefresh)}
-            className={`px-4 py-2 rounded-lg font-semibold transition ${
-              autoRefresh ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"
-            }`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${autoRefresh ? 'bg-green-500' : 'bg-slate-200'
+              }`}
           >
-            {autoRefresh ? "✅ Activé" : "⏸️ Désactivé"}
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autoRefresh ? 'translate-x-6' : 'translate-x-1'
+                }`}
+            />
           </button>
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3">
+        <div className="mt-6 space-y-3">
           <Link
             href="/services"
-            className="flex-1 text-center px-6 py-3 bg-white border-2 border-gray-300 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition"
+            className="block w-full text-center py-4 bg-white border-2 border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all"
           >
-            ← Retour
+            ← Retour à l'accueil
           </Link>
+
           {ticket.status === "en_attente" && (
             <button
               onClick={handleCancel}
-              className="flex-1 px-6 py-3 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition"
+              className="block w-full py-4 text-red-500 font-bold text-sm hover:underline transition-all"
             >
-              Annuler
+              Annuler mon ticket
             </button>
           )}
         </div>
-
-        {/* Alert if called */}
-        {ticket.status === "appelé" && (
-          <div className="mt-6 bg-green-500 text-white rounded-xl p-6 text-center animate-pulse">
-            <div className="text-5xl mb-3">🔔</div>
-            <h3 className="text-2xl font-bold mb-2">C'EST VOTRE TOUR !</h3>
-            <p className="text-lg">Présentez-vous au guichet maintenant</p>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -219,15 +242,23 @@ function getStatusInfo(status: string) {
       title: "En attente",
       message: "Votre ticket est en file d'attente",
       bgColor: "bg-yellow-50",
-      borderColor: "border-yellow-300",
+      borderColor: "border-yellow-200",
       textColor: "text-yellow-800",
+    },
+    en_attente_validation: {
+      icon: "🔍",
+      title: "Validation",
+      message: "En attente de validation par un agent",
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-200",
+      textColor: "text-blue-800",
     },
     appelé: {
       icon: "🔔",
       title: "C'EST VOTRE TOUR !",
-      message: "Veuillez vous présenter immédiatement",
+      message: "Veuillez vous présenter au guichet",
       bgColor: "bg-green-50",
-      borderColor: "border-green-300",
+      borderColor: "border-green-200",
       textColor: "text-green-800",
     },
     en_service: {
@@ -235,23 +266,31 @@ function getStatusInfo(status: string) {
       title: "En cours",
       message: "Votre demande est en cours de traitement",
       bgColor: "bg-blue-50",
-      borderColor: "border-blue-300",
+      borderColor: "border-blue-200",
       textColor: "text-blue-800",
     },
     terminé: {
       icon: "✅",
       title: "Terminé",
       message: "Merci d'avoir utilisé ViteviteApp",
-      bgColor: "bg-gray-50",
-      borderColor: "border-gray-300",
-      textColor: "text-gray-800",
+      bgColor: "bg-slate-50",
+      borderColor: "border-slate-200",
+      textColor: "text-slate-800",
     },
     annulé: {
       icon: "❌",
       title: "Annulé",
       message: "Ce ticket a été annulé",
       bgColor: "bg-red-50",
-      borderColor: "border-red-300",
+      borderColor: "border-red-200",
+      textColor: "text-red-800",
+    },
+    refusé: {
+      icon: "⛔",
+      title: "Refusé",
+      message: "Votre ticket a été refusé",
+      bgColor: "bg-red-50",
+      borderColor: "border-red-200",
       textColor: "text-red-800",
     },
   };
