@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Sparkles, Bot, User, Zap, Clock, MapPin, FileText, AlertCircle } from 'lucide-react';
+import { MessageCircle, X, Send, Sparkles, Bot, User, Zap, Clock, MapPin, FileText, AlertCircle, Trash2 } from 'lucide-react';
 import { chatAPI, servicesAPI } from '@/lib/api';
 import { toast } from 'sonner';
 
@@ -28,10 +28,10 @@ export default function ChatWidget() {
 
     // Quick reply suggestions
     const quickReplies: QuickReply[] = [
-        { icon: <Clock className="w-4 h-4" />, text: "Temps d'attente", prompt: "Quels sont les temps d'attente actuels ?" },
-        { icon: <MapPin className="w-4 h-4" />, text: "Services proches", prompt: "Quels services sont proches de moi ?" },
-        { icon: <FileText className="w-4 h-4" />, text: "Documents requis", prompt: "Quels documents dois-je apporter ?" },
-        { icon: <Zap className="w-4 h-4" />, text: "Meilleur moment", prompt: "Quel est le meilleur moment pour venir ?" },
+        { icon: <Clock className="w-3.5 h-3.5" />, text: "Temps d'attente", prompt: "Quels sont les temps d'attente actuels ?" },
+        { icon: <MapPin className="w-3.5 h-3.5" />, text: "Services proches", prompt: "Quels services sont proches de moi ?" },
+        { icon: <FileText className="w-3.5 h-3.5" />, text: "Documents", prompt: "Quels documents dois-je apporter ?" },
+        { icon: <Zap className="w-3.5 h-3.5" />, text: "Meilleur moment", prompt: "Quel est le meilleur moment pour venir ?" },
     ];
 
     // Load services for context
@@ -64,7 +64,7 @@ export default function ChatWidget() {
             // Welcome message
             setMessages([{
                 role: 'assistant',
-                content: '👋 Bonjour ! Je suis votre assistant IA ViteVite.\n\nJe peux vous aider avec :\n• 📊 Prédictions de temps d\'attente\n• 🏥 Triage médical d\'urgence\n• 📄 Documents requis\n• 🗺️ Services à proximité\n• ⏰ Meilleurs moments pour visiter\n\nComment puis-je vous aider ?',
+                content: '👋 Bonjour ! Je suis votre assistant IA ViteVite.\n\nJe peux vous aider avec :\n• 📊 Prédictions de temps d\'attente\n• 🏥 Triage médical d\'urgence\n• 📄 Documents requis\n• 🗺️ Services à proximité\n\nComment puis-je vous aider ?',
                 timestamp: new Date()
             }]);
         }
@@ -113,7 +113,7 @@ export default function ChatWidget() {
                     status: s.status
                 })),
                 timestamp: new Date().toISOString(),
-                user_location: 'Abidjan' // Could be enhanced with real geolocation
+                user_location: 'Abidjan'
             };
 
             const response = await chatAPI.sendMessage(messageToSend, messages, context);
@@ -134,7 +134,7 @@ export default function ChatWidget() {
             toast.error('Erreur de connexion');
             const errorMessage: Message = {
                 role: 'assistant',
-                content: '😔 Désolé, je rencontre un problème technique. Veuillez réessayer dans quelques instants.\n\nEn attendant, vous pouvez :\n• Consulter la page Services\n• Prendre un ticket directement\n• Contacter le support',
+                content: '😔 Désolé, je rencontre un problème technique. Veuillez réessayer dans quelques instants.',
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, errorMessage]);
@@ -164,12 +164,12 @@ export default function ChatWidget() {
 
     return (
         <>
-            {/* Toggle Button with notification badge */}
+            {/* Toggle Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 ${isOpen
-                        ? 'bg-slate-800 rotate-90'
-                        : 'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 animate-pulse-glow'
+                className={`fixed bottom-6 right-6 z-[60] p-4 rounded-full shadow-custom-xl transition-all duration-300 hover:scale-105 active:scale-95 ${isOpen
+                    ? 'bg-slate-900 rotate-90'
+                    : 'bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700'
                     } text-white group`}
                 aria-label="Assistant IA"
             >
@@ -178,133 +178,147 @@ export default function ChatWidget() {
                 ) : (
                     <>
                         <MessageCircle className="w-6 h-6" />
-                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></span>
+                        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white animate-pulse"></span>
                     </>
                 )}
             </button>
 
-            {/* Chat Window */}
+            {/* Chat Window Overlay (Mobile) */}
             {isOpen && (
-                <div className="fixed bottom-24 right-6 z-50 w-full max-w-[400px] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300 h-[600px] max-h-[85vh]">
-                    {/* Header */}
-                    <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 p-5 flex items-center justify-between text-white">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-sm">
-                                <Sparkles className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-base">Assistant ViteVite IA</h3>
-                                <div className="flex items-center gap-1.5">
-                                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                                    <span className="text-xs text-indigo-100">Gemini AI • En ligne</span>
-                                </div>
+                <div
+                    className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[55] md:hidden"
+                    onClick={() => setIsOpen(false)}
+                />
+            )}
+
+            {/* Chat Window */}
+            <div className={`fixed z-[60] transition-all duration-300 ease-in-out bg-white shadow-2xl overflow-hidden flex flex-col
+                ${isOpen
+                    ? 'opacity-100 translate-y-0 pointer-events-auto'
+                    : 'opacity-0 translate-y-10 pointer-events-none'
+                }
+                md:bottom-24 md:right-6 md:w-[380px] md:h-[600px] md:max-h-[calc(100vh-120px)] md:rounded-3xl border border-slate-100
+                bottom-0 left-0 right-0 h-[85vh] rounded-t-3xl
+            `}>
+                {/* Header */}
+                <div className="bg-white border-b border-slate-100 p-4 flex items-center justify-between sticky top-0 z-10">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary-50 rounded-xl">
+                            <Sparkles className="w-5 h-5 text-primary-600" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-slate-900 text-sm">Assistant ViteVite</h3>
+                            <div className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                                <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wide">En ligne</span>
                             </div>
                         </div>
-                        <button
-                            onClick={clearHistory}
-                            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                            title="Effacer l'historique"
+                    </div>
+                    <button
+                        onClick={clearHistory}
+                        className="p-2 hover:bg-slate-50 rounded-lg transition-colors text-slate-400 hover:text-red-500"
+                        title="Effacer l'historique"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </button>
+                </div>
+
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-slate-50/50 scroll-smooth">
+                    {messages.map((msg, idx) => (
+                        <div
+                            key={idx}
+                            className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-fade-in`}
                         >
-                            <AlertCircle className="w-5 h-5" />
-                        </button>
-                    </div>
-
-                    {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-slate-50 to-white">
-                        {messages.map((msg, idx) => (
-                            <div
-                                key={idx}
-                                className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-in fade-in slide-in-from-bottom-2 duration-300`}
-                            >
-                                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${msg.role === 'user'
-                                        ? 'bg-gradient-to-br from-slate-700 to-slate-900'
-                                        : 'bg-gradient-to-br from-violet-500 to-indigo-600'
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm border ${msg.role === 'user'
+                                ? 'bg-slate-900 border-slate-900'
+                                : 'bg-white border-slate-100'
+                                }`}>
+                                {msg.role === 'user' ? (
+                                    <User className="w-4 h-4 text-white" />
+                                ) : (
+                                    <Bot className="w-4 h-4 text-primary-600" />
+                                )}
+                            </div>
+                            <div className={`max-w-[80%] flex flex-col gap-1 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                                <div className={`p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.role === 'user'
+                                    ? 'bg-slate-900 text-white rounded-tr-sm'
+                                    : 'bg-white border border-slate-100 text-slate-700 rounded-tl-sm'
                                     }`}>
-                                    {msg.role === 'user' ? (
-                                        <User className="w-4 h-4 text-white" />
-                                    ) : (
-                                        <Bot className="w-4 h-4 text-white" />
-                                    )}
+                                    {msg.content.split('\n').map((line, i) => (
+                                        <p key={i} className={i > 0 ? 'mt-2' : ''}>{line}</p>
+                                    ))}
                                 </div>
-                                <div className={`max-w-[75%] ${msg.role === 'user' ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-                                    <div className={`p-3.5 rounded-2xl text-sm leading-relaxed ${msg.role === 'user'
-                                            ? 'bg-gradient-to-br from-slate-800 to-slate-900 text-white rounded-tr-sm shadow-lg'
-                                            : 'bg-white border border-slate-200 text-slate-700 rounded-tl-sm shadow-md'
-                                        }`}>
-                                        {msg.content.split('\n').map((line, i) => (
-                                            <p key={i} className={i > 0 ? 'mt-2' : ''}>{line}</p>
-                                        ))}
-                                    </div>
-                                    {msg.timestamp && (
-                                        <span className="text-xs text-slate-400 px-1">
-                                            {msg.timestamp.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                                        </span>
-                                    )}
-                                </div>
+                                {msg.timestamp && (
+                                    <span className="text-[10px] text-slate-400 px-1">
+                                        {msg.timestamp.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                )}
                             </div>
-                        ))}
+                        </div>
+                    ))}
 
-                        {/* Loading indicator */}
-                        {isLoading && (
-                            <div className="flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-                                    <Bot className="w-4 h-4 text-white" />
-                                </div>
-                                <div className="bg-white border border-slate-200 p-3.5 rounded-2xl rounded-tl-sm shadow-md flex items-center gap-1.5">
-                                    <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce"></span>
-                                    <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
-                                    <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
-                                </div>
+                    {/* Loading indicator */}
+                    {isLoading && (
+                        <div className="flex gap-3 animate-fade-in">
+                            <div className="w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center flex-shrink-0 shadow-sm">
+                                <Bot className="w-4 h-4 text-primary-600" />
                             </div>
-                        )}
-
-                        <div ref={messagesEndRef} />
-                    </div>
-
-                    {/* Quick Replies */}
-                    {showQuickReplies && messages.length <= 2 && !isLoading && (
-                        <div className="px-4 pb-3 space-y-2 bg-white border-t border-slate-100">
-                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Suggestions rapides</p>
-                            <div className="grid grid-cols-2 gap-2">
-                                {quickReplies.map((reply, idx) => (
-                                    <button
-                                        key={idx}
-                                        onClick={() => handleQuickReply(reply.prompt)}
-                                        className="flex items-center gap-2 p-2.5 bg-gradient-to-br from-violet-50 to-indigo-50 hover:from-violet-100 hover:to-indigo-100 border border-violet-200 rounded-xl text-xs font-medium text-slate-700 transition-all hover:shadow-md"
-                                    >
-                                        <span className="text-violet-600">{reply.icon}</span>
-                                        <span className="truncate">{reply.text}</span>
-                                    </button>
-                                ))}
+                            <div className="bg-white border border-slate-100 p-4 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce"></span>
+                                <span className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
+                                <span className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
                             </div>
                         </div>
                     )}
 
-                    {/* Input */}
-                    <form onSubmit={handleSubmit} className="p-4 bg-white border-t border-slate-100">
-                        <div className="relative flex items-center">
-                            <input
-                                type="text"
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                placeholder="Posez votre question..."
-                                className="w-full pl-4 pr-12 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 text-sm placeholder:text-slate-400 transition-all"
-                                disabled={isLoading}
-                            />
-                            <button
-                                type="submit"
-                                disabled={!input.trim() || isLoading}
-                                className="absolute right-2 p-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-lg hover:from-violet-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
-                            >
-                                <Send className="w-4 h-4" />
-                            </button>
-                        </div>
-                        <p className="text-xs text-slate-400 mt-2 text-center">
-                            Propulsé par <span className="font-semibold text-violet-600">Google Gemini AI</span>
-                        </p>
-                    </form>
+                    <div ref={messagesEndRef} />
                 </div>
-            )}
+
+                {/* Quick Replies */}
+                {showQuickReplies && messages.length <= 2 && !isLoading && (
+                    <div className="px-4 pb-2 bg-slate-50/50">
+                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                            {quickReplies.map((reply, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => handleQuickReply(reply.prompt)}
+                                    className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 hover:border-primary-300 hover:bg-primary-50 rounded-full text-xs font-medium text-slate-600 transition-all whitespace-nowrap shadow-sm"
+                                >
+                                    <span className="text-primary-600">{reply.icon}</span>
+                                    <span>{reply.text}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Input */}
+                <form onSubmit={handleSubmit} className="p-3 bg-white border-t border-slate-100">
+                    <div className="relative flex items-center gap-2">
+                        <input
+                            type="text"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder="Posez votre question..."
+                            className="w-full pl-4 pr-12 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary-100 text-sm placeholder:text-slate-400 transition-all"
+                            disabled={isLoading}
+                        />
+                        <button
+                            type="submit"
+                            disabled={!input.trim() || isLoading}
+                            className="absolute right-2 p-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+                        >
+                            <Send className="w-4 h-4" />
+                        </button>
+                    </div>
+                    <div className="text-center mt-2">
+                        <p className="text-[10px] text-slate-400">
+                            Propulsé par <span className="font-semibold text-primary-600">Gemini AI</span>
+                        </p>
+                    </div>
+                </form>
+            </div>
         </>
     );
 }
