@@ -70,7 +70,7 @@ export default function LandingPage() {
         {/* Photorealistic Background */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/images/hero_bg_queue_visible.png"
+            src="/images/hero_bg_ultimate.png"
             alt="Abidjan Life - Queue vs Solution"
             fill
             className="object-cover object-center"
@@ -183,13 +183,9 @@ export default function LandingPage() {
                 </div>
 
                 {/* Content */}
-                <div className="relative z-10 w-full h-full p-8 flex flex-col items-center text-center pt-32">
-                  <div className={`w-16 h-16 mb-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <category.icon className="w-8 h-8" />
-                  </div>
-
-                  <h3 className="text-xl font-bold text-white mb-2">{category.name}</h3>
-                  <div className="flex items-center gap-1 text-sm font-medium text-white/80 group-hover:text-primary-400 transition-colors">
+                <div className="relative z-10 w-full h-full p-8 flex flex-col items-center text-center pt-48 justify-end">
+                  <h3 className="text-2xl font-bold text-white mb-2 drop-shadow-md">{category.name}</h3>
+                  <div className="flex items-center gap-1 text-sm font-medium text-white/90 group-hover:text-primary-400 transition-colors drop-shadow-sm">
                     <span>Explorer</span>
                     <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </div>
