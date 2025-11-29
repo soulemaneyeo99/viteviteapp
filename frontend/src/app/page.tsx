@@ -70,7 +70,7 @@ export default function LandingPage() {
         {/* Photorealistic Background */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/images/hero_bg_ultimate_flex.png"
+            src="/images/hero_bg_jury_ready.png"
             alt="Abidjan Life - Queue vs Solution"
             fill
             className="object-cover object-center"
