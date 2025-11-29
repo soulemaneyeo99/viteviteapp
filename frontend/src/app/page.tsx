@@ -70,15 +70,15 @@ export default function LandingPage() {
         {/* Photorealistic Background */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/images/hero_bg_premium.png"
-            alt="Abidjan Life"
+            src="/images/hero_bg_queue_visible.png"
+            alt="Abidjan Life - Queue vs Solution"
             fill
             className="object-cover object-center"
             priority
-            quality={90}
+            quality={95}
           />
-          {/* Professional Overlay - Gradient for readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-slate-900/60 to-transparent"></div>
+          {/* Professional Overlay - Adjusted for visibility of background queue */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/40 to-transparent"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-transparent to-transparent"></div>
         </div>
 
@@ -104,23 +104,23 @@ export default function LandingPage() {
               <span className="block mt-2 font-medium text-white">Vivez mieux votre ville.</span>
             </p>
 
-            {/* Search Bar - Glassmorphism & Premium */}
+            {/* Search Bar - Glassmorphism & Premium - Optimized for Mobile */}
             <div className="max-w-2xl relative group">
               <div className="absolute -inset-1 bg-primary-500/30 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition duration-700"></div>
-              <form onSubmit={handleSearch} className="relative flex items-center bg-white/95 backdrop-blur-xl p-2 rounded-full shadow-2xl border border-white/20 transition-transform hover:scale-[1.01]">
-                <div className="pl-6 pr-4 text-slate-400">
-                  <Search className="w-6 h-6" />
+              <form onSubmit={handleSearch} className="relative flex items-center bg-white/95 backdrop-blur-xl p-1.5 md:p-2 rounded-full shadow-2xl border border-white/20 transition-transform hover:scale-[1.01]">
+                <div className="pl-4 pr-2 md:pl-6 md:pr-4 text-slate-400">
+                  <Search className="w-5 h-5 md:w-6 md:h-6" />
                 </div>
                 <input
                   type="text"
                   placeholder="Mairie, Banque, Hôpital..."
-                  className="w-full py-4 text-lg bg-transparent border-none focus:ring-0 placeholder:text-slate-400 text-slate-900 font-medium"
+                  className="w-full py-3 md:py-4 text-base md:text-lg bg-transparent border-none focus:ring-0 placeholder:text-slate-400 text-slate-900 font-medium truncate"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <button type="submit" className="bg-primary-500 text-white px-8 py-4 rounded-full font-bold hover:bg-primary-600 transition-all flex items-center gap-2 shadow-lg active:scale-95">
+                <button type="submit" className="bg-primary-500 text-white w-12 h-12 md:w-auto md:h-auto md:px-8 md:py-4 rounded-full font-bold hover:bg-primary-600 transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95 shrink-0">
                   <span className="hidden md:inline">Rechercher</span>
-                  <ArrowRight className="w-5 h-5 md:hidden" />
+                  <ArrowRight className="w-5 h-5" />
                 </button>
               </form>
             </div>
