@@ -26,39 +26,39 @@ export default function LandingPage() {
     }
   };
 
-  // Categories with Solid Colors (Approved)
+  // Categories with Real Images
   const categories = [
     {
       id: "administrations",
       name: "Administrations",
+      image: "/images/administrations/mairie_plateau.png",
       icon: Building2,
       href: "/administrations",
-      color: "bg-blue-500", // Solid Blue
-      lightColor: "bg-blue-50",
+      color: "bg-blue-500",
     },
     {
       id: "hospitals",
       name: "Santé",
+      image: "/images/administrations/chu_cocody.png",
       icon: Hospital,
       href: "/urgences",
-      color: "bg-red-500", // Solid Red
-      lightColor: "bg-red-50",
+      color: "bg-red-500",
     },
     {
       id: "transport",
       name: "Transport",
+      image: "/images/administrations/mairie_abobo.png",
       icon: Bus,
       href: "/transport",
-      color: "bg-orange-500", // Solid Orange
-      lightColor: "bg-orange-50",
+      color: "bg-orange-500",
     },
     {
       id: "pharmacies",
       name: "Pharmacies",
+      image: "/images/administrations/cnps_plateau.png",
       icon: Pill,
       href: "/pharmacies",
-      color: "bg-green-500", // Solid Green
-      lightColor: "bg-green-50",
+      color: "bg-green-500",
     },
   ];
 
@@ -169,17 +169,30 @@ export default function LandingPage() {
               <Link
                 key={category.id}
                 href={category.href}
-                className="group relative flex flex-col items-center p-8 bg-white rounded-[2rem] border border-slate-100 shadow-custom-sm hover:shadow-custom-xl hover:border-primary-100 transition-all duration-300 hover:-translate-y-2"
+                className="group relative flex flex-col items-center overflow-hidden bg-white rounded-[2rem] border border-slate-100 shadow-custom-sm hover:shadow-custom-xl hover:border-primary-100 transition-all duration-300 hover:-translate-y-2"
               >
-                {/* Solid Color Block Icon */}
-                <div className={`w-20 h-20 mb-6 rounded-2xl ${category.color} text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                  <category.icon className="w-10 h-10" />
+                {/* Image Background with Overlay */}
+                <div className="absolute inset-0 z-0">
+                  <Image
+                    src={category.image}
+                    alt={category.name}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/50 to-transparent"></div>
                 </div>
 
-                <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-primary-600 transition-colors">{category.name}</h3>
-                <div className="flex items-center gap-1 text-sm font-medium text-slate-400 group-hover:text-primary-500 transition-colors">
-                  <span>Explorer</span>
-                  <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                {/* Content */}
+                <div className="relative z-10 w-full h-full p-8 flex flex-col items-center text-center pt-32">
+                  <div className={`w-16 h-16 mb-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                    <category.icon className="w-8 h-8" />
+                  </div>
+
+                  <h3 className="text-xl font-bold text-white mb-2">{category.name}</h3>
+                  <div className="flex items-center gap-1 text-sm font-medium text-white/80 group-hover:text-primary-400 transition-colors">
+                    <span>Explorer</span>
+                    <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </div>
                 </div>
               </Link>
             ))}
