@@ -207,9 +207,7 @@ export default function LandingPage() {
               >
                 <div className={`absolute top-0 left-0 w-full h-1 ${category.color.split(' ')[0].replace('bg-', 'bg-')}`}></div>
                 <div className="p-8 flex flex-col items-center text-center">
-                  <div className={`w-20 h-20 mb-6 rounded-2xl ${category.color} flex items-center justify-center transition-transform group-hover:scale-110 duration-300`}>
-                    <category.icon className="w-10 h-10" />
-                  </div>
+                  <div className={`w-20 h-20 mb-6 rounded-2xl transition-all duration-300 group-hover:scale-110 ${category.color.split(' ')[0]}`}></div>
                   <h3 className="text-xl font-bold text-slate-900 mb-2">{category.name}</h3>
                   <p className="text-sm text-slate-400 font-medium">Voir les services</p>
                 </div>
@@ -260,7 +258,7 @@ export default function LandingPage() {
             <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center text-white font-bold">V</div>
             <span className="font-bold text-slate-900 text-lg">ViteviteApp</span>
           </div>
-          <p className="text-sm text-slate-400">© 2024 ViteviteApp. Fait avec ❤️ à Abidjan.</p>
+          <p className="text-sm text-slate-400">© 2024 ViteviteApp</p>
           <div className="flex gap-6 text-sm font-medium text-slate-500">
             <Link href="#" className="hover:text-primary-600 transition-colors">À propos</Link>
             <Link href="#" className="hover:text-primary-600 transition-colors">Confidentialité</Link>
